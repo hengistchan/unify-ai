@@ -1,0 +1,391 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/rules.schema.json",
+  "title": "Rules Configuration",
+  "description": "Core rules/instructions schema - the minimal subset supported by all AI tools. This represents the common denominator of instruction configuration across Cursor, Claude Code, Codex, Copilot, Windsurf, Cline, Aider, and Continue.",
+
+  "type": "object",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation",
+      "format": "uri"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0",
+      "examples": ["1.0.0", "1.2.0"]
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/metadata",
+      "description": "Metadata about the rules configuration"
+    },
+
+    "rules": {
+      "type": "array",
+      "description": "List of instruction rules for the AI agent",
+      "items": {
+        "$ref": "#/$defs/rule"
+      },
+      "minItems": 1
+    },
+
+    "context": {
+      "$ref": "#/$defs/context",
+      "description": "Project context and background information"
+    },
+
+    "preferences": {
+      "$ref": "#/$defs/preferences",
+      "description": "Coding style and behavior preferences"
+    }
+  },
+
+  "required": ["rules"],
+
+  "$defs": {
+    "metadata": {
+      "type": "object",
+      "description": "Metadata describing the configuration",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name for this configuration",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of what this configuration is for",
+          "maxLength": 500
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or team responsible for this configuration"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp in ISO 8601 format"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp in ISO 8601 format"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorization and filtering",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "examples": [["typescript", "react", "backend"]]
+        },
+        "version": {
+          "type": "string",
+          "description": "Configuration version (semantic versioning)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?$"
+        }
+      }
+    },
+
+    "rule": {
+      "type": "object",
+      "description": "A single instruction rule for the AI agent",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the rule",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short title describing the rule",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "content": {
+          "type": "string",
+          "description": "The actual instruction content in Markdown format",
+          "minLength": 1
+        },
+        "priority": {
+          "type": "string",
+          "description": "Priority level determines rule importance",
+          "enum": ["critical", "high", "medium", "low"],
+          "default": "medium"
+        },
+        "scope": {
+          "$ref": "#/$defs/scope",
+          "description": "When and where this rule applies"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this rule is active",
+          "default": true
+        },
+        "conditions": {
+          "$ref": "#/$defs/conditions",
+          "description": "Conditions under which this rule applies"
+        }
+      },
+      "required": ["content"]
+    },
+
+    "scope": {
+      "type": "object",
+      "description": "Scope definition for when a rule applies",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Scope type",
+          "enum": [
+            "always",
+            "file_pattern",
+            "directory",
+            "language",
+            "task_type",
+            "custom"
+          ],
+          "default": "always"
+        },
+        "patterns": {
+          "type": "array",
+          "description": "File patterns (glob) for file_pattern scope",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["**/*.ts", "**/*.tsx", "src/**/*.js"]]
+        },
+        "languages": {
+          "type": "array",
+          "description": "Programming languages this rule applies to",
+          "items": {
+            "type": "string",
+            "enum": [
+              "typescript", "javascript", "python", "rust", "go", "java",
+              "kotlin", "swift", "c", "cpp", "csharp", "ruby", "php",
+              "scala", "elixir", "haskell", "lua", "r", "sql", "html",
+              "css", "scss", "sass", "less", "json", "yaml", "toml",
+              "markdown", "shell", "dockerfile", "graphql", "vue", "svelte"
+            ]
+          },
+          "examples": [["typescript", "javascript"]]
+        },
+        "tasks": {
+          "type": "array",
+          "description": "Task types this rule applies to",
+          "items": {
+            "type": "string",
+            "enum": [
+              "code_generation",
+              "code_review",
+              "refactoring",
+              "debugging",
+              "testing",
+              "documentation",
+              "architecture",
+              "security",
+              "performance"
+            ]
+          }
+        }
+      }
+    },
+
+    "conditions": {
+      "type": "object",
+      "description": "Conditional logic for rule activation",
+      "properties": {
+        "when": {
+          "type": "string",
+          "description": "Expression for when to apply (supports simple boolean logic)",
+          "examples": ["language == 'typescript'", "file matches '*.test.ts'"]
+        },
+        "unless": {
+          "type": "string",
+          "description": "Expression for when NOT to apply",
+          "examples": ["file matches '*.d.ts'"]
+        },
+        "depends_on": {
+          "type": "array",
+          "description": "Other rule IDs that must be satisfied first",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "context": {
+      "type": "object",
+      "description": "Project context information",
+      "properties": {
+        "project_type": {
+          "type": "string",
+          "description": "Type of project",
+          "enum": [
+            "web_app",
+            "api",
+            "cli",
+            "library",
+            "mobile_app",
+            "desktop_app",
+            "microservice",
+            "monorepo",
+            "other"
+          ]
+        },
+        "framework": {
+          "type": "string",
+          "description": "Primary framework used",
+          "examples": ["react", "vue", "angular", "next.js", "express", "fastify"]
+        },
+        "language": {
+          "type": "string",
+          "description": "Primary programming language"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief project description for AI context"
+        },
+        "conventions": {
+          "type": "object",
+          "description": "Project-specific conventions",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [{"naming": "camelCase for variables", "file_structure": "feature-based"}]
+        }
+      }
+    },
+
+    "preferences": {
+      "type": "object",
+      "description": "Coding style and behavior preferences",
+      "properties": {
+        "code_style": {
+          "$ref": "#/$defs/code_style"
+        },
+        "response_style": {
+          "$ref": "#/$defs/response_style"
+        },
+        "verbosity": {
+          "type": "string",
+          "description": "Preferred verbosity level in responses",
+          "enum": ["concise", "normal", "detailed"],
+          "default": "normal"
+        },
+        "language_preference": {
+          "type": "string",
+          "description": "Preferred natural language for responses",
+          "default": "en",
+          "examples": ["en", "zh", "ja", "es", "fr", "de"]
+        }
+      }
+    },
+
+    "code_style": {
+      "type": "object",
+      "description": "Code formatting and style preferences",
+      "properties": {
+        "indentation": {
+          "type": "string",
+          "enum": ["spaces", "tabs"],
+          "default": "spaces"
+        },
+        "indent_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8,
+          "default": 2
+        },
+        "quotes": {
+          "type": "string",
+          "enum": ["single", "double"],
+          "default": "double"
+        },
+        "semicolons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use semicolons (primarily for JS/TS)"
+        },
+        "trailing_comma": {
+          "type": "string",
+          "enum": ["none", "es5", "all"],
+          "default": "es5"
+        },
+        "max_line_length": {
+          "type": "integer",
+          "minimum": 40,
+          "maximum": 200,
+          "default": 100
+        },
+        "naming_conventions": {
+          "type": "object",
+          "description": "Naming convention preferences",
+          "properties": {
+            "variables": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "PascalCase"],
+              "default": "camelCase"
+            },
+            "functions": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "PascalCase"],
+              "default": "camelCase"
+            },
+            "classes": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "PascalCase"],
+              "default": "PascalCase"
+            },
+            "constants": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "UPPER_SNAKE_CASE", "PascalCase"],
+              "default": "UPPER_SNAKE_CASE"
+            },
+            "files": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "kebab-case", "PascalCase"],
+              "default": "kebab-case"
+            }
+          }
+        }
+      }
+    },
+
+    "response_style": {
+      "type": "object",
+      "description": "How the AI should format responses",
+      "properties": {
+        "include_explanations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include explanations with code changes"
+        },
+        "include_examples": {
+          "type": "boolean",
+          "default": false,
+          "description": "Include usage examples in documentation"
+        },
+        "step_by_step": {
+          "type": "boolean",
+          "default": false,
+          "description": "Present solutions in step-by-step format"
+        },
+        "confirm_before_actions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ask for confirmation before executing actions"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/permission.schema.json",
+  "title": "Permission Configuration",
+  "description": "Permission control schema for AI agent operations. Defines what actions the agent is allowed to perform, with granular control over file system, network, and command execution.",
+
+  "type": "object",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation",
+      "format": "uri"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+
+    "mode": {
+      "type": "string",
+      "description": "Permission mode",
+      "enum": ["permissive", "moderate", "restrictive", "custom"],
+      "default": "moderate",
+      "examples": ["moderate"]
+    },
+
+    "profiles": {
+      "type": "object",
+      "description": "Named permission profiles",
+      "additionalProperties": {
+        "$ref": "#/$defs/permission_profile"
+      }
+    },
+
+    "allow": {
+      "type": "array",
+      "description": "List of allowed operations (whitelist)",
+      "items": {
+        "$ref": "#/$defs/permission_rule"
+      }
+    },
+
+    "deny": {
+      "type": "array",
+      "description": "List of denied operations (blacklist)",
+      "items": {
+        "$ref": "#/$defs/permission_rule"
+      }
+    },
+
+    "ask": {
+      "type": "array",
+      "description": "Operations that require user confirmation",
+      "items": {
+        "$ref": "#/$defs/permission_rule"
+      }
+    },
+
+    "file_system": {
+      "$ref": "#/$defs/file_system_permissions",
+      "description": "File system specific permissions"
+    },
+
+    "network": {
+      "$ref": "#/$defs/network_permissions",
+      "description": "Network specific permissions"
+    },
+
+    "commands": {
+      "$ref": "#/$defs/command_permissions",
+      "description": "Command execution permissions"
+    },
+
+    "tools": {
+      "$ref": "#/$defs/tool_permissions",
+      "description": "Tool-specific permissions"
+    },
+
+    "scope": {
+      "$ref": "#/$defs/permission_scope",
+      "description": "Scope restrictions for permissions"
+    }
+  },
+
+  "$defs": {
+    "permission_profile": {
+      "type": "object",
+      "description": "A predefined permission profile",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Profile name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Profile description"
+        },
+        "extends": {
+          "type": "string",
+          "description": "Parent profile to inherit from",
+          "examples": ["moderate", "restrictive"]
+        },
+        "allow": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/permission_rule" }
+        },
+        "deny": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/permission_rule" }
+        },
+        "ask": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/permission_rule" }
+        }
+      }
+    },
+
+    "permission_rule": {
+      "type": "string",
+      "description": "A permission rule in format: Tool(pattern) or category:action",
+      "pattern": "^([A-Za-z]+\\([^)]*\\)|[a-z_]+:[a-z_]+|\\*)$",
+      "examples": [
+        "Bash(git status)",
+        "Bash(git add:*)",
+        "Bash(npm install)",
+        "Read(*)",
+        "Write(src/**)",
+        "Edit(**)",
+        "fs:read",
+        "fs:write",
+        "net:fetch",
+        "exec:bash",
+        "*"
+      ]
+    },
+
+    "file_system_permissions": {
+      "type": "object",
+      "description": "File system operation permissions",
+      "properties": {
+        "read": {
+          "type": "array",
+          "description": "Paths allowed for reading",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["**", "src/**", "!**/secrets/**"]]
+        },
+        "write": {
+          "type": "array",
+          "description": "Paths allowed for writing",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["src/**", "tests/**", "docs/**"]]
+        },
+        "delete": {
+          "type": "array",
+          "description": "Paths allowed for deletion",
+          "items": {
+            "type": "string"
+          }
+        },
+        "protected": {
+          "type": "array",
+          "description": "Protected paths that require confirmation",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["**/.env*", "**/credentials*", "**/secrets/**"]]
+        },
+        "forbidden": {
+          "type": "array",
+          "description": "Forbidden paths (cannot be accessed)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["**/.git/**", "**/node_modules/.bin/**"]]
+        },
+        "max_file_size": {
+          "type": "integer",
+          "description": "Maximum file size in bytes allowed for operations",
+          "minimum": 1,
+          "default": 10485760
+        },
+        "follow_symlinks": {
+          "type": "boolean",
+          "description": "Whether to follow symbolic links",
+          "default": true
+        }
+      }
+    },
+
+    "network_permissions": {
+      "type": "object",
+      "description": "Network operation permissions",
+      "properties": {
+        "fetch": {
+          "type": "object",
+          "description": "URL fetch permissions",
+          "properties": {
+            "allowed_domains": {
+              "type": "array",
+              "description": "Allowed domains for fetch operations",
+              "items": {
+                "type": "string",
+                "format": "hostname"
+              },
+              "examples": [["api.github.com", "registry.npmjs.org", "*.example.com"]]
+            },
+            "blocked_domains": {
+              "type": "array",
+              "description": "Blocked domains",
+              "items": {
+                "type": "string"
+              }
+            },
+            "allow_localhost": {
+              "type": "boolean",
+              "description": "Allow access to localhost",
+              "default": true
+            },
+            "allow_private_ips": {
+              "type": "boolean",
+              "description": "Allow access to private IP ranges",
+              "default": false
+            }
+          }
+        },
+        "websockets": {
+          "type": "object",
+          "description": "WebSocket permissions",
+          "properties": {
+            "allowed": {
+              "type": "boolean",
+              "default": true
+            },
+            "allowed_origins": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Default network timeout in milliseconds",
+          "minimum": 1000,
+          "default": 30000
+        }
+      }
+    },
+
+    "command_permissions": {
+      "type": "object",
+      "description": "Command execution permissions",
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "description": "Allowed command patterns",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["git status", "git add:*", "npm *", "node *"]]
+        },
+        "forbidden": {
+          "type": "array",
+          "description": "Forbidden commands/patterns",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["rm -rf /*", "sudo *", "chmod 777 *"]]
+        },
+        "ask_for": {
+          "type": "array",
+          "description": "Commands that require confirmation",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["git push*", "npm publish", "docker push*"]]
+        },
+        "dangerous_commands": {
+          "type": "array",
+          "description": "Commands that are always blocked",
+          "items": {
+            "type": "string"
+          },
+          "default": ["rm -rf /", "mkfs", "dd if=* of=/dev/*"]
+        },
+        "shell": {
+          "type": "string",
+          "description": "Shell to use for command execution",
+          "enum": ["bash", "zsh", "sh", "fish"],
+          "default": "bash"
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Default command timeout in milliseconds",
+          "minimum": 1000,
+          "default": 120000
+        }
+      }
+    },
+
+    "tool_permissions": {
+      "type": "object",
+      "description": "Tool-specific permissions",
+      "properties": {
+        "bash": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Bash tool permissions"
+        },
+        "read": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Read tool permissions"
+        },
+        "write": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Write tool permissions"
+        },
+        "edit": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Edit tool permissions"
+        },
+        "grep": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Grep tool permissions"
+        },
+        "glob": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Glob tool permissions"
+        },
+        "web_search": {
+          "$ref": "#/$defs/tool_permission",
+          "description": "Web search tool permissions"
+        },
+        "mcp_tools": {
+          "type": "object",
+          "description": "MCP tool permissions by server",
+          "additionalProperties": {
+            "$ref": "#/$defs/tool_permission"
+          }
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/tool_permission"
+      }
+    },
+
+    "tool_permission": {
+      "type": "object",
+      "description": "Permission configuration for a specific tool",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the tool is enabled",
+          "default": true
+        },
+        "mode": {
+          "type": "string",
+          "description": "Permission mode for this tool",
+          "enum": ["allow", "ask", "deny"],
+          "default": "ask"
+        },
+        "patterns": {
+          "type": "array",
+          "description": "Allowed patterns for tool invocations",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rate_limit": {
+          "$ref": "#/$defs/rate_limit",
+          "description": "Rate limiting configuration"
+        },
+        "constraints": {
+          "type": "object",
+          "description": "Tool-specific constraints",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "rate_limit": {
+      "type": "object",
+      "description": "Rate limiting configuration",
+      "properties": {
+        "max_requests": {
+          "type": "integer",
+          "description": "Maximum requests allowed",
+          "minimum": 1
+        },
+        "window": {
+          "type": "string",
+          "description": "Time window (e.g., '1m', '1h', '1d')",
+          "pattern": "^\\d+[mhd]$",
+          "examples": ["1m", "1h", "1d"]
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Rate limit strategy",
+          "enum": ["fixed_window", "sliding_window", "token_bucket"],
+          "default": "sliding_window"
+        }
+      }
+    },
+
+    "permission_scope": {
+      "type": "object",
+      "description": "Scope restrictions for all permissions",
+      "properties": {
+        "project_root": {
+          "type": "boolean",
+          "description": "Restrict all operations to project root",
+          "default": true
+        },
+        "allowed_paths": {
+          "type": "array",
+          "description": "Additional allowed paths outside project root",
+          "items": {
+            "type": "string",
+            "format": "uri-reference"
+          }
+        },
+        "environment": {
+          "type": "string",
+          "description": "Environment context",
+          "enum": ["development", "staging", "production", "testing"],
+          "default": "development"
+        },
+        "time_restrictions": {
+          "type": "object",
+          "description": "Time-based restrictions",
+          "properties": {
+            "allowed_hours": {
+              "type": "string",
+              "description": "Allowed hours (cron-style)",
+              "examples": ["9-17", "0-23"]
+            },
+            "timezone": {
+              "type": "string",
+              "description": "Timezone for restrictions",
+              "default": "UTC"
+            }
+          }
+        }
+      }
+    }
+  }
+}

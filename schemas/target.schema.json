@@ -1,0 +1,650 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/target.schema.json",
+  "title": "Target Tool Configuration",
+  "description": "Target AI tool configuration schema. Defines how to map unified configurations to specific AI tools (Cursor, Claude Code, Codex, Copilot, Windsurf, Cline, Aider, Continue).",
+
+  "type": "object",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation",
+      "format": "uri"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+
+    "target": {
+      "type": "string",
+      "description": "Target tool identifier",
+      "enum": [
+        "cursor",
+        "claude-code",
+        "codex",
+        "copilot",
+        "windsurf",
+        "cline",
+        "aider",
+        "continue",
+        "all"
+      ]
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/target_metadata",
+      "description": "Metadata about this target configuration"
+    },
+
+    "output": {
+      "$ref": "#/$defs/output_config",
+      "description": "Output file configuration"
+    },
+
+    "mapping": {
+      "$ref": "#/$defs/mapping_config",
+      "description": "Field mapping configuration"
+    },
+
+    "transformations": {
+      "type": "array",
+      "description": "Custom transformation rules",
+      "items": {
+        "$ref": "#/$defs/transformation"
+      }
+    },
+
+    "features": {
+      "$ref": "#/$defs/feature_support",
+      "description": "Feature support for this target"
+    },
+
+    "validation": {
+      "$ref": "#/$defs/validation_config",
+      "description": "Validation rules for target output"
+    }
+  },
+
+  "required": ["target"],
+
+  "$defs": {
+    "target_metadata": {
+      "type": "object",
+      "description": "Metadata about the target tool",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable tool name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Target tool version this config supports"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the target tool"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to tool documentation"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to tool repository"
+        }
+      }
+    },
+
+    "output_config": {
+      "type": "object",
+      "description": "Output file configuration",
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "Output file format",
+          "enum": ["json", "yaml", "toml", "markdown", "text"],
+          "default": "json"
+        },
+        "files": {
+          "type": "array",
+          "description": "Output files to generate",
+          "items": {
+            "$ref": "#/$defs/output_file"
+          }
+        },
+        "directory": {
+          "type": "string",
+          "description": "Output directory (relative to project root)",
+          "default": "."
+        },
+        "naming": {
+          "type": "object",
+          "description": "Naming conventions for output files",
+          "properties": {
+            "case": {
+              "type": "string",
+              "enum": ["camelCase", "snake_case", "kebab-case", "PascalCase", "UPPER_CASE"]
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "suffix": {
+              "type": "string"
+            }
+          }
+        },
+        "template": {
+          "type": "string",
+          "description": "Template file for custom output formatting"
+        }
+      }
+    },
+
+    "output_file": {
+      "type": "object",
+      "description": "Single output file definition",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path relative to output directory"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json", "yaml", "toml", "markdown", "text", "frontmatter"]
+        },
+        "template": {
+          "type": "string",
+          "description": "Template for file content"
+        },
+        "source": {
+          "type": "string",
+          "description": "Source schema section to use",
+          "enum": ["rules", "mcp", "permissions", "model", "all"]
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition for generating this file"
+        },
+        "merge": {
+          "type": "boolean",
+          "description": "Whether to merge with existing file",
+          "default": false
+        },
+        "merge_strategy": {
+          "type": "string",
+          "description": "Strategy for merging",
+          "enum": ["replace", "append", "prepend", "deep_merge", "smart_merge"],
+          "default": "smart_merge"
+        }
+      },
+      "required": ["path"]
+    },
+
+    "mapping_config": {
+      "type": "object",
+      "description": "Field mapping configuration",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "description": "Field-level mappings",
+          "items": {
+            "$ref": "#/$defs/field_mapping"
+          }
+        },
+        "sections": {
+          "type": "object",
+          "description": "Section-level mappings",
+          "additionalProperties": {
+            "$ref": "#/$defs/section_mapping"
+          }
+        },
+        "defaults": {
+          "type": "object",
+          "description": "Default values for unmapped fields",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "field_mapping": {
+      "type": "object",
+      "description": "Mapping for a single field",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Source field path (dot notation)",
+          "examples": ["rules.content", "mcp.servers"]
+        },
+        "target": {
+          "type": "string",
+          "description": "Target field path (dot notation)",
+          "examples": ["instructions", "mcpServers"]
+        },
+        "transform": {
+          "type": "string",
+          "description": "Transformation function to apply",
+          "enum": [
+            "identity",
+            "stringify",
+            "parse",
+            "array_to_string",
+            "string_to_array",
+            "markdown_to_html",
+            "object_keys",
+            "flatten",
+            "nest",
+            "custom"
+          ],
+          "default": "identity"
+        },
+        "transform_function": {
+          "type": "string",
+          "description": "Custom transform function (if transform=custom)"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this field is required",
+          "default": false
+        },
+        "default": {
+          "description": "Default value if source is missing"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition for applying this mapping"
+        }
+      },
+      "required": ["source", "target"]
+    },
+
+    "section_mapping": {
+      "type": "object",
+      "description": "Mapping for a section of the configuration",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Source schema section"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target file or section"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/field_mapping"
+          }
+        },
+        "transform": {
+          "type": "string",
+          "description": "Section-level transformation"
+        }
+      }
+    },
+
+    "transformation": {
+      "type": "object",
+      "description": "Custom transformation rule",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Transformation name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Transformation type",
+          "enum": ["pre", "post", "field", "section"]
+        },
+        "order": {
+          "type": "integer",
+          "description": "Execution order",
+          "default": 0
+        },
+        "script": {
+          "type": "string",
+          "description": "Transformation script (JavaScript/TypeScript)"
+        },
+        "function": {
+          "type": "string",
+          "description": "Built-in transformation function name"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition for applying transformation"
+        }
+      }
+    },
+
+    "feature_support": {
+      "type": "object",
+      "description": "Feature support matrix for target tool",
+      "properties": {
+        "rules": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Rules/instructions support"
+        },
+        "mcp": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "MCP server support"
+        },
+        "permissions": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Permission control support"
+        },
+        "model_selection": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Model selection support"
+        },
+        "context_files": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Context files support"
+        },
+        "memory": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Memory/persistence support"
+        },
+        "multi_file_edit": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Multi-file editing support"
+        },
+        "vision": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Vision/image support"
+        },
+        "web_access": {
+          "$ref": "#/$defs/feature_detail",
+          "description": "Web access support"
+        }
+      }
+    },
+
+    "feature_detail": {
+      "type": "object",
+      "description": "Detailed feature support information",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether feature is supported",
+          "default": false
+        },
+        "partial": {
+          "type": "boolean",
+          "description": "Whether support is partial",
+          "default": false
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about support level"
+        },
+        "limitations": {
+          "type": "array",
+          "description": "Known limitations",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workarounds": {
+          "type": "array",
+          "description": "Available workarounds",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+
+    "validation_config": {
+      "type": "object",
+      "description": "Validation configuration for target output",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "strict": {
+          "type": "boolean",
+          "description": "Enable strict validation",
+          "default": false
+        },
+        "rules": {
+          "type": "array",
+          "description": "Custom validation rules",
+          "items": {
+            "$ref": "#/$defs/validation_rule"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "description": "JSON Schema for output validation",
+          "format": "uri"
+        }
+      }
+    },
+
+    "validation_rule": {
+      "type": "object",
+      "description": "A validation rule",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Rule name"
+        },
+        "field": {
+          "type": "string",
+          "description": "Field to validate"
+        },
+        "type": {
+          "type": "string",
+          "description": "Validation type",
+          "enum": [
+            "required",
+            "type",
+            "format",
+            "pattern",
+            "enum",
+            "range",
+            "custom"
+          ]
+        },
+        "value": {
+          "description": "Expected value or constraint"
+        },
+        "message": {
+          "type": "string",
+          "description": "Error message on failure"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Error severity",
+          "enum": ["error", "warning", "info"],
+          "default": "error"
+        }
+      }
+    },
+
+    "tool_specific_configs": {
+      "type": "object",
+      "description": "Tool-specific configuration presets",
+      "properties": {
+        "cursor": {
+          "$ref": "#/$defs/cursor_config"
+        },
+        "claude_code": {
+          "$ref": "#/$defs/claude_code_config"
+        },
+        "codex": {
+          "$ref": "#/$defs/codex_config"
+        },
+        "copilot": {
+          "$ref": "#/$defs/copilot_config"
+        },
+        "windsurf": {
+          "$ref": "#/$defs/windsurf_config"
+        },
+        "cline": {
+          "$ref": "#/$defs/cline_config"
+        },
+        "aider": {
+          "$ref": "#/$defs/aider_config"
+        },
+        "continue_config": {
+          "$ref": "#/$defs/continue_config"
+        }
+      }
+    },
+
+    "cursor_config": {
+      "type": "object",
+      "description": "Cursor-specific configuration",
+      "properties": {
+        "rules_dir": {
+          "type": "string",
+          "default": ".cursor/rules"
+        },
+        "rules_format": {
+          "type": "string",
+          "enum": ["markdown", "mdc"],
+          "default": "markdown"
+        },
+        "supports_frontmatter": {
+          "type": "boolean",
+          "default": true
+        },
+        "frontmatter_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["globs", "description", "alwaysApply"]
+        }
+      }
+    },
+
+    "claude_code_config": {
+      "type": "object",
+      "description": "Claude Code-specific configuration",
+      "properties": {
+        "claude_md": {
+          "type": "string",
+          "default": "CLAUDE.md"
+        },
+        "settings_file": {
+          "type": "string",
+          "default": ".claude/settings.json"
+        },
+        "mcp_file": {
+          "type": "string",
+          "default": ".mcp.json"
+        },
+        "commands_dir": {
+          "type": "string",
+          "default": ".claude/commands"
+        }
+      }
+    },
+
+    "codex_config": {
+      "type": "object",
+      "description": "OpenAI Codex-specific configuration",
+      "properties": {
+        "config_file": {
+          "type": "string",
+          "default": ".codex/config.toml"
+        },
+        "instructions_file": {
+          "type": "string",
+          "default": "AGENTS.md"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["toml", "markdown"],
+          "default": "toml"
+        }
+      }
+    },
+
+    "copilot_config": {
+      "type": "object",
+      "description": "GitHub Copilot-specific configuration",
+      "properties": {
+        "instructions_file": {
+          "type": "string",
+          "default": ".github/copilot-instructions.md"
+        },
+        "format": {
+          "type": "string",
+          "default": "markdown"
+        }
+      }
+    },
+
+    "windsurf_config": {
+      "type": "object",
+      "description": "Windsurf-specific configuration",
+      "properties": {
+        "rules_file": {
+          "type": "string",
+          "default": ".windsurfrules"
+        },
+        "format": {
+          "type": "string",
+          "default": "text"
+        }
+      }
+    },
+
+    "cline_config": {
+      "type": "object",
+      "description": "Cline-specific configuration",
+      "properties": {
+        "rules_dir": {
+          "type": "string",
+          "default": ".clinerules"
+        },
+        "state_file": {
+          "type": "string",
+          "default": ".cline/globalState.json"
+        },
+        "format": {
+          "type": "string",
+          "default": "markdown"
+        }
+      }
+    },
+
+    "aider_config": {
+      "type": "object",
+      "description": "Aider-specific configuration",
+      "properties": {
+        "config_file": {
+          "type": "string",
+          "default": ".aider.conf.yml"
+        },
+        "format": {
+          "type": "string",
+          "default": "yaml"
+        }
+      }
+    },
+
+    "continue_config": {
+      "type": "object",
+      "description": "Continue-specific configuration",
+      "properties": {
+        "config_file": {
+          "type": "string",
+          "default": ".continue/config.yaml"
+        },
+        "format": {
+          "type": "string",
+          "default": "yaml"
+        }
+      }
+    }
+  }
+}

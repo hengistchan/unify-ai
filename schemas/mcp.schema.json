@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/mcp.schema.json",
+  "title": "MCP Server Configuration",
+  "description": "Model Context Protocol (MCP) server configuration schema. Defines how to connect to and configure MCP servers that provide extended capabilities to AI agents.",
+
+  "type": "object",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation",
+      "format": "uri"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+
+    "servers": {
+      "type": "object",
+      "description": "Dictionary of MCP server configurations",
+      "additionalProperties": {
+        "$ref": "#/$defs/server"
+      }
+    },
+
+    "profiles": {
+      "type": "object",
+      "description": "Predefined server configuration profiles for quick setup",
+      "additionalProperties": {
+        "$ref": "#/$defs/profile"
+      }
+    },
+
+    "groups": {
+      "type": "object",
+      "description": "Server groups for batch enable/disable",
+      "additionalProperties": {
+        "$ref": "#/$defs/group"
+      }
+    }
+  },
+
+  "required": ["servers"],
+
+  "$defs": {
+    "server": {
+      "type": "object",
+      "description": "Configuration for a single MCP server",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for this server",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable server name",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of server capabilities"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this server is active",
+          "default": true
+        },
+        "transport": {
+          "$ref": "#/$defs/transport",
+          "description": "Transport mechanism for server communication"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/capabilities",
+          "description": "Server capabilities configuration"
+        },
+        "tools": {
+          "type": "array",
+          "description": "List of tools provided by this server",
+          "items": {
+            "$ref": "#/$defs/tool"
+          }
+        },
+        "resources": {
+          "type": "array",
+          "description": "List of resources provided by this server",
+          "items": {
+            "$ref": "#/$defs/resource"
+          }
+        },
+        "prompts": {
+          "type": "array",
+          "description": "List of prompts provided by this server",
+          "items": {
+            "$ref": "#/$defs/prompt"
+          }
+        },
+        "env": {
+          "type": "object",
+          "description": "Environment variables for the server process",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Timeout in milliseconds for server operations",
+          "minimum": 1000,
+          "default": 60000
+        },
+        "retry": {
+          "$ref": "#/$defs/retry_config",
+          "description": "Retry configuration for failed operations"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional server metadata",
+          "additionalProperties": true
+        }
+      },
+      "required": ["name", "transport"]
+    },
+
+    "transport": {
+      "type": "object",
+      "description": "Transport configuration for MCP server",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Transport type",
+          "enum": ["stdio", "http", "websocket", "sse"],
+          "default": "stdio"
+        },
+        "command": {
+          "type": "string",
+          "description": "Command to execute (for stdio transport)",
+          "examples": ["node", "python", "uvx", "npx"]
+        },
+        "args": {
+          "type": "array",
+          "description": "Command arguments (for stdio transport)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["server.js", "--port", "3000"]]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Server URL (for http/websocket/sse transport)",
+          "examples": ["http://localhost:3000", "ws://localhost:8080"]
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP headers (for http/sse transport)",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Working directory for the server process",
+          "format": "uri-reference"
+        }
+      },
+      "required": ["type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "stdio" } }
+          },
+          "then": {
+            "required": ["command"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "enum": ["http", "websocket", "sse"] } }
+          },
+          "then": {
+            "required": ["url"]
+          }
+        }
+      ]
+    },
+
+    "capabilities": {
+      "type": "object",
+      "description": "MCP server capabilities",
+      "properties": {
+        "tools": {
+          "type": "boolean",
+          "description": "Server provides tools",
+          "default": true
+        },
+        "resources": {
+          "type": "boolean",
+          "description": "Server provides resources",
+          "default": false
+        },
+        "prompts": {
+          "type": "boolean",
+          "description": "Server provides prompts",
+          "default": false
+        },
+        "logging": {
+          "type": "boolean",
+          "description": "Server supports logging",
+          "default": false
+        },
+        "sampling": {
+          "type": "boolean",
+          "description": "Server supports LLM sampling",
+          "default": false
+        },
+        "roots": {
+          "type": "boolean",
+          "description": "Server supports roots listing",
+          "default": false
+        }
+      }
+    },
+
+    "tool": {
+      "type": "object",
+      "description": "MCP tool definition",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Tool description"
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for tool input",
+          "$ref": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this tool is enabled",
+          "default": true
+        },
+        "permissions": {
+          "type": "array",
+          "description": "Required permissions for this tool",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["read:fs", "write:fs", "execute:bash"]]
+        }
+      },
+      "required": ["name", "description"]
+    },
+
+    "resource": {
+      "type": "object",
+      "description": "MCP resource definition",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "Resource URI"
+        },
+        "name": {
+          "type": "string",
+          "description": "Resource name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Resource description"
+        },
+        "mime_type": {
+          "type": "string",
+          "description": "Resource MIME type",
+          "examples": ["text/plain", "application/json", "text/markdown"]
+        }
+      },
+      "required": ["uri", "name"]
+    },
+
+    "prompt": {
+      "type": "object",
+      "description": "MCP prompt template definition",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Prompt name",
+          "pattern": "^[a-zA-Z0-9_]+$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Prompt description"
+        },
+        "arguments": {
+          "type": "array",
+          "description": "Prompt template arguments",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "description": { "type": "string" },
+              "required": { "type": "boolean", "default": false }
+            },
+            "required": ["name"]
+          }
+        }
+      },
+      "required": ["name", "description"]
+    },
+
+    "retry_config": {
+      "type": "object",
+      "description": "Retry configuration for failed operations",
+      "properties": {
+        "max_retries": {
+          "type": "integer",
+          "description": "Maximum number of retry attempts",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        },
+        "initial_delay": {
+          "type": "integer",
+          "description": "Initial retry delay in milliseconds",
+          "minimum": 100,
+          "default": 1000
+        },
+        "max_delay": {
+          "type": "integer",
+          "description": "Maximum retry delay in milliseconds",
+          "minimum": 1000,
+          "default": 30000
+        },
+        "backoff_multiplier": {
+          "type": "number",
+          "description": "Exponential backoff multiplier",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 2
+        }
+      }
+    },
+
+    "profile": {
+      "type": "object",
+      "description": "Predefined server profile",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Profile name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Profile description"
+        },
+        "template": {
+          "$ref": "#/$defs/server",
+          "description": "Server template with default values"
+        },
+        "variables": {
+          "type": "object",
+          "description": "Variables to substitute in template",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "default": { "type": "string" },
+              "required": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+
+    "group": {
+      "type": "object",
+      "description": "Server group for batch operations",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Group name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Group description"
+        },
+        "servers": {
+          "type": "array",
+          "description": "Server IDs in this group",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether all servers in group are enabled",
+          "default": true
+        }
+      }
+    }
+  }
+}

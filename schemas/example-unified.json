@@ -1,0 +1,268 @@
+{
+  "$schema": "./unified.schema.json",
+  "version": "1.0.0",
+
+  "metadata": {
+    "name": "My TypeScript Project",
+    "description": "A modern TypeScript project with React frontend and Node.js backend",
+    "version": "0.1.0",
+    "authors": [
+      {
+        "name": "Developer",
+        "email": "dev@example.com"
+      }
+    ],
+    "license": "MIT"
+  },
+
+  "rules": {
+    "version": "1.0.0",
+    "metadata": {
+      "name": "TypeScript Project Rules",
+      "tags": ["typescript", "react", "nodejs"]
+    },
+    "context": {
+      "project_type": "web_app",
+      "framework": "react",
+      "language": "typescript",
+      "description": "Full-stack TypeScript application",
+      "conventions": {
+        "naming": "camelCase for variables, PascalCase for components",
+        "file_structure": "feature-based organization"
+      }
+    },
+    "preferences": {
+      "verbosity": "normal",
+      "language_preference": "en",
+      "code_style": {
+        "indentation": "spaces",
+        "indent_size": 2,
+        "quotes": "single",
+        "semicolons": true,
+        "trailing_comma": "es5",
+        "max_line_length": 100
+      }
+    },
+    "rules": [
+      {
+        "id": "typescript-basics",
+        "title": "TypeScript Best Practices",
+        "content": "Use strict TypeScript configuration. Prefer interfaces over types for object shapes. Use const assertions for literal types.",
+        "priority": "high",
+        "scope": {
+          "languages": ["typescript"]
+        }
+      },
+      {
+        "id": "react-guidelines",
+        "title": "React Component Guidelines",
+        "content": "Use functional components with hooks. Keep components small and focused. Use proper prop typing with TypeScript interfaces.",
+        "priority": "high",
+        "scope": {
+          "type": "file_pattern",
+          "patterns": ["**/*.tsx", "**/components/**"]
+        }
+      },
+      {
+        "id": "testing-rules",
+        "title": "Testing Standards",
+        "content": "Write unit tests for all utility functions. Use React Testing Library for component tests. Aim for 80% code coverage.",
+        "priority": "medium",
+        "scope": {
+          "type": "file_pattern",
+          "patterns": ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"]
+        }
+      }
+    ]
+  },
+
+  "mcp": {
+    "servers": {
+      "filesystem": {
+        "name": "Filesystem Server",
+        "description": "Local filesystem access",
+        "enabled": true,
+        "transport": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/project"]
+        },
+        "capabilities": {
+          "resources": true,
+          "tools": true
+        }
+      },
+      "github": {
+        "name": "GitHub Server",
+        "description": "GitHub API integration",
+        "enabled": true,
+        "transport": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-github"]
+        },
+        "env": {
+          "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+        }
+      },
+      "shadcn": {
+        "name": "shadcn/ui Server",
+        "description": "shadcn/ui component helpers",
+        "enabled": true,
+        "transport": {
+          "type": "stdio",
+          "command": "npx",
+          "args": ["shadcn-mcp"]
+        }
+      }
+    }
+  },
+
+  "permissions": {
+    "mode": "moderate",
+    "allow": [
+      "Read(**)",
+      "Write(src/**)",
+      "Write(tests/**)",
+      "Bash(npm *)",
+      "Bash(pnpm *)",
+      "Bash(git status)",
+      "Bash(git diff*)"
+    ],
+    "deny": [
+      "Read(**/.env*)",
+      "Read(**/secrets/**)",
+      "Write(**/.env*)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(npm publish)",
+      "Write(**/package.json)"
+    ],
+    "file_system": {
+      "protected": ["**/.env*", "**/credentials*"],
+      "forbidden": ["**/.git/**"]
+    },
+    "commands": {
+      "forbidden": ["rm -rf /*", "sudo *"],
+      "timeout": 120000
+    }
+  },
+
+  "model": {
+    "providers": {
+      "anthropic": {
+        "id": "anthropic",
+        "enabled": true,
+        "api_key": "${ANTHROPIC_API_KEY}"
+      },
+      "openai": {
+        "id": "openai",
+        "enabled": true,
+        "api_key": "${OPENAI_API_KEY}"
+      }
+    },
+    "default": {
+      "primary": "claude-opus-4",
+      "fast": "claude-sonnet-4",
+      "fallback": ["gpt-4o", "claude-sonnet-4"]
+    },
+    "profiles": {
+      "coding": {
+        "model": "claude-opus-4",
+        "parameters": {
+          "temperature": 0.7
+        }
+      },
+      "quick": {
+        "model": "claude-sonnet-4",
+        "parameters": {
+          "temperature": 0.5
+        }
+      }
+    }
+  },
+
+  "targets": {
+    "cursor": {
+      "target": "cursor",
+      "output": {
+        "files": [
+          {
+            "path": ".cursor/rules",
+            "format": "markdown",
+            "source": "rules"
+          }
+        ]
+      }
+    },
+    "claude-code": {
+      "target": "claude-code",
+      "output": {
+        "files": [
+          {
+            "path": "CLAUDE.md",
+            "format": "markdown",
+            "source": "rules"
+          },
+          {
+            "path": ".mcp.json",
+            "format": "json",
+            "source": "mcp"
+          },
+          {
+            "path": ".claude/settings.json",
+            "format": "json",
+            "source": "permissions"
+          }
+        ]
+      }
+    },
+    "copilot": {
+      "target": "copilot",
+      "output": {
+        "files": [
+          {
+            "path": ".github/copilot-instructions.md",
+            "format": "markdown",
+            "source": "rules"
+          }
+        ]
+      }
+    }
+  },
+
+  "profiles": {
+    "minimal": {
+      "description": "Minimal configuration for quick tasks",
+      "extends": [],
+      "rules": {
+        "rules": [
+          {
+            "content": "Be helpful and concise."
+          }
+        ]
+      }
+    },
+    "full": {
+      "description": "Full configuration with all features enabled",
+      "extends": [],
+      "targets": ["all"]
+    }
+  },
+
+  "environments": {
+    "development": {
+      "permissions": {
+        "mode": "permissive",
+        "allow": ["*"]
+      }
+    },
+    "production": {
+      "permissions": {
+        "mode": "restrictive",
+        "ask": ["Write(**)", "Bash(*)"]
+      }
+    }
+  }
+}

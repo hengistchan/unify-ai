@@ -1,0 +1,580 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/model.schema.json",
+  "title": "Model Configuration",
+  "description": "AI model configuration schema. Defines model selection, parameters, providers, and fallback strategies.",
+
+  "type": "object",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to the JSON schema for validation",
+      "format": "uri"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Schema version for backward compatibility",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+
+    "providers": {
+      "type": "object",
+      "description": "AI provider configurations",
+      "additionalProperties": {
+        "$ref": "#/$defs/provider"
+      }
+    },
+
+    "models": {
+      "type": "object",
+      "description": "Model definitions and configurations",
+      "additionalProperties": {
+        "$ref": "#/$defs/model"
+      }
+    },
+
+    "profiles": {
+      "type": "object",
+      "description": "Model configuration profiles for different use cases",
+      "additionalProperties": {
+        "$ref": "#/$defs/model_profile"
+      }
+    },
+
+    "default": {
+      "$ref": "#/$defs/model_selection",
+      "description": "Default model selection configuration"
+    },
+
+    "fallback": {
+      "$ref": "#/$defs/fallback_config",
+      "description": "Fallback configuration when primary model fails"
+    },
+
+    "routing": {
+      "$ref": "#/$defs/routing_config",
+      "description": "Intelligent routing configuration"
+    }
+  },
+
+  "required": ["providers"],
+
+  "$defs": {
+    "provider": {
+      "type": "object",
+      "description": "AI provider configuration",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Provider identifier",
+          "enum": [
+            "anthropic",
+            "openai",
+            "google",
+            "azure",
+            "aws",
+            "cohere",
+            "mistral",
+            "meta",
+            "deepseek",
+            "local",
+            "custom"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable provider name"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this provider is enabled",
+          "default": true
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API key (or reference to environment variable)",
+          "examples": ["${ANTHROPIC_API_KEY}", "${OPENAI_API_KEY}"]
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for API requests",
+          "examples": ["https://api.anthropic.com", "https://api.openai.com/v1"]
+        },
+        "api_version": {
+          "type": "string",
+          "description": "API version to use"
+        },
+        "organization": {
+          "type": "string",
+          "description": "Organization ID (for enterprise accounts)"
+        },
+        "project": {
+          "type": "string",
+          "description": "Project ID (for cloud providers)"
+        },
+        "region": {
+          "type": "string",
+          "description": "Region for API endpoints",
+          "examples": ["us-east-1", "eu-west-1"]
+        },
+        "timeout": {
+          "type": "integer",
+          "description": "Request timeout in milliseconds",
+          "minimum": 1000,
+          "default": 60000
+        },
+        "max_retries": {
+          "type": "integer",
+          "description": "Maximum retry attempts",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        },
+        "rate_limit": {
+          "$ref": "#/$defs/rate_limit"
+        },
+        "headers": {
+          "type": "object",
+          "description": "Additional HTTP headers",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id"]
+    },
+
+    "model": {
+      "type": "object",
+      "description": "Model configuration",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Model identifier",
+          "examples": ["claude-opus-4", "gpt-4o", "gemini-2.0-flash"]
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable model name"
+        },
+        "provider": {
+          "type": "string",
+          "description": "Provider ID this model belongs to"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether this model is available",
+          "default": true
+        },
+        "type": {
+          "type": "string",
+          "description": "Model type",
+          "enum": ["chat", "completion", "embedding", "image", "audio", "multimodal"],
+          "default": "chat"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/model_capabilities",
+          "description": "Model capabilities"
+        },
+        "parameters": {
+          "$ref": "#/$defs/model_parameters",
+          "description": "Default model parameters"
+        },
+        "limits": {
+          "$ref": "#/$defs/model_limits",
+          "description": "Model limits"
+        },
+        "pricing": {
+          "$ref": "#/$defs/model_pricing",
+          "description": "Model pricing information"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional model metadata",
+          "additionalProperties": true
+        }
+      },
+      "required": ["id", "provider"]
+    },
+
+    "model_capabilities": {
+      "type": "object",
+      "description": "Model capabilities",
+      "properties": {
+        "vision": {
+          "type": "boolean",
+          "description": "Supports image input",
+          "default": false
+        },
+        "tools": {
+          "type": "boolean",
+          "description": "Supports function/tool calling",
+          "default": true
+        },
+        "streaming": {
+          "type": "boolean",
+          "description": "Supports streaming responses",
+          "default": true
+        },
+        "json_mode": {
+          "type": "boolean",
+          "description": "Supports JSON output mode",
+          "default": false
+        },
+        "system_prompt": {
+          "type": "boolean",
+          "description": "Supports system prompts",
+          "default": true
+        },
+        "multi_turn": {
+          "type": "boolean",
+          "description": "Supports multi-turn conversations",
+          "default": true
+        },
+        "code_execution": {
+          "type": "boolean",
+          "description": "Supports code execution",
+          "default": false
+        },
+        "web_search": {
+          "type": "boolean",
+          "description": "Has built-in web search",
+          "default": false
+        },
+        "reasoning": {
+          "type": "boolean",
+          "description": "Extended reasoning capabilities",
+          "default": false
+        }
+      }
+    },
+
+    "model_parameters": {
+      "type": "object",
+      "description": "Model inference parameters",
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "description": "Sampling temperature (0-2)",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 1
+        },
+        "top_p": {
+          "type": "number",
+          "description": "Nucleus sampling probability (0-1)",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "top_k": {
+          "type": "integer",
+          "description": "Top-k sampling",
+          "minimum": 1
+        },
+        "max_tokens": {
+          "type": "integer",
+          "description": "Maximum output tokens",
+          "minimum": 1
+        },
+        "stop_sequences": {
+          "type": "array",
+          "description": "Stop sequences",
+          "items": {
+            "type": "string"
+          }
+        },
+        "frequency_penalty": {
+          "type": "number",
+          "description": "Frequency penalty (-2 to 2)",
+          "minimum": -2,
+          "maximum": 2,
+          "default": 0
+        },
+        "presence_penalty": {
+          "type": "number",
+          "description": "Presence penalty (-2 to 2)",
+          "minimum": -2,
+          "maximum": 2,
+          "default": 0
+        },
+        "seed": {
+          "type": "integer",
+          "description": "Random seed for reproducibility"
+        },
+        "response_format": {
+          "type": "object",
+          "description": "Response format specification",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["text", "json_object", "json_schema"]
+            },
+            "schema": {
+              "type": "object",
+              "description": "JSON schema for structured output"
+            }
+          }
+        }
+      }
+    },
+
+    "model_limits": {
+      "type": "object",
+      "description": "Model limits",
+      "properties": {
+        "context_window": {
+          "type": "integer",
+          "description": "Maximum context window size in tokens",
+          "minimum": 1
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "description": "Maximum output tokens",
+          "minimum": 1
+        },
+        "requests_per_minute": {
+          "type": "integer",
+          "description": "Rate limit: requests per minute"
+        },
+        "tokens_per_minute": {
+          "type": "integer",
+          "description": "Rate limit: tokens per minute"
+        }
+      }
+    },
+
+    "model_pricing": {
+      "type": "object",
+      "description": "Model pricing information",
+      "properties": {
+        "input_per_million": {
+          "type": "number",
+          "description": "Input price per million tokens (USD)"
+        },
+        "output_per_million": {
+          "type": "number",
+          "description": "Output price per million tokens (USD)"
+        },
+        "cache_read_per_million": {
+          "type": "number",
+          "description": "Cached read price per million tokens (USD)"
+        },
+        "cache_write_per_million": {
+          "type": "number",
+          "description": "Cache write price per million tokens (USD)"
+        }
+      }
+    },
+
+    "model_profile": {
+      "type": "object",
+      "description": "A model configuration profile",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Profile name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Profile description"
+        },
+        "model": {
+          "type": "string",
+          "description": "Model ID to use"
+        },
+        "parameters": {
+          "$ref": "#/$defs/model_parameters",
+          "description": "Parameters for this profile"
+        },
+        "use_case": {
+          "type": "string",
+          "description": "Intended use case",
+          "enum": [
+            "coding",
+            "analysis",
+            "writing",
+            "reasoning",
+            "creative",
+            "quick",
+            "balanced",
+            "comprehensive"
+          ]
+        }
+      }
+    },
+
+    "model_selection": {
+      "type": "object",
+      "description": "Model selection configuration",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Primary model ID",
+          "examples": ["claude-opus-4", "gpt-4o"]
+        },
+        "fast": {
+          "type": "string",
+          "description": "Fast model for quick tasks",
+          "examples": ["claude-sonnet-4", "gpt-4o-mini"]
+        },
+        "fallback": {
+          "type": "array",
+          "description": "Fallback models in order",
+          "items": {
+            "type": "string"
+          }
+        },
+        "task_mapping": {
+          "type": "object",
+          "description": "Model selection by task type",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "examples": [{
+            "code_generation": "claude-opus-4",
+            "quick_question": "claude-sonnet-4",
+            "code_review": "claude-opus-4"
+          }]
+        }
+      }
+    },
+
+    "fallback_config": {
+      "type": "object",
+      "description": "Fallback configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Fallback strategy",
+          "enum": ["sequential", "parallel", "smart"],
+          "default": "sequential"
+        },
+        "models": {
+          "type": "array",
+          "description": "Ordered list of fallback models",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Conditions that trigger fallback",
+          "items": {
+            "type": "string",
+            "enum": [
+              "rate_limit",
+              "timeout",
+              "error",
+              "capacity",
+              "quality_threshold"
+            ]
+          }
+        },
+        "max_attempts": {
+          "type": "integer",
+          "description": "Maximum fallback attempts",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 3
+        }
+      }
+    },
+
+    "routing_config": {
+      "type": "object",
+      "description": "Intelligent routing configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Routing strategy",
+          "enum": ["cost_optimized", "latency_optimized", "quality_optimized", "custom"],
+          "default": "balanced"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Custom routing rules",
+          "items": {
+            "$ref": "#/$defs/routing_rule"
+          }
+        },
+        "load_balancing": {
+          "type": "object",
+          "description": "Load balancing configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "method": {
+              "type": "string",
+              "enum": ["round_robin", "weighted", "least_connections", "random"],
+              "default": "round_robin"
+            },
+            "weights": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "routing_rule": {
+      "type": "object",
+      "description": "A custom routing rule",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Rule name"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Condition expression"
+        },
+        "model": {
+          "type": "string",
+          "description": "Model to route to"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Rule priority (higher = more important)",
+          "default": 0
+        }
+      }
+    },
+
+    "rate_limit": {
+      "type": "object",
+      "description": "Rate limiting configuration",
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tokens_per_minute": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "requests_per_day": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

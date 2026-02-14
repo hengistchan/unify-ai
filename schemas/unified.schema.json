@@ -1,0 +1,516 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unify-ai.dev/schemas/unified.schema.json",
+  "title": "Unified AI Configuration",
+  "description": "Main schema that aggregates all configuration modules for the unify-ai project. This is the primary configuration format that can be converted to any supported AI tool format.",
+
+  "type": "object",
+
+  "$comment": "This schema follows a modular design where each section can be used independently or combined. The 'rules' section is the minimal subset supported by all tools.",
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON schema for validation and IDE support",
+      "format": "uri",
+      "default": "https://unify-ai.dev/schemas/unified.schema.json"
+    },
+
+    "unify-ai": {
+      "$ref": "#/$defs/unify_ai_metadata",
+      "description": "Unify-AI specific metadata and configuration"
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Configuration schema version following semantic versioning",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?(\\+[a-zA-Z0-9.]+)?$",
+      "default": "1.0.0",
+      "examples": ["1.0.0", "1.2.0-beta", "2.0.0"]
+    },
+
+    "metadata": {
+      "$ref": "#/$defs/project_metadata",
+      "description": "Project-level metadata"
+    },
+
+    "rules": {
+      "$ref": "rules.schema.json",
+      "description": "Core rules/instructions - the minimal subset supported by all AI tools. REQUIRED for basic functionality."
+    },
+
+    "mcp": {
+      "$ref": "mcp.schema.json",
+      "description": "MCP (Model Context Protocol) server configurations. EXTENSION - supported by Claude Code, Cursor, and others."
+    },
+
+    "permissions": {
+      "$ref": "permission.schema.json",
+      "description": "Permission and security controls. EXTENSION - supported by Claude Code, Cline, and others."
+    },
+
+    "model": {
+      "$ref": "model.schema.json",
+      "description": "Model selection and configuration. EXTENSION - supported by most tools with varying capabilities."
+    },
+
+    "targets": {
+      "type": "object",
+      "description": "Target-specific configurations for conversion to individual AI tools",
+      "additionalProperties": {
+        "$ref": "target.schema.json"
+      },
+      "properties": {
+        "cursor": {
+          "$ref": "target.schema.json",
+          "description": "Cursor IDE configuration"
+        },
+        "claude-code": {
+          "$ref": "target.schema.json",
+          "description": "Claude Code CLI configuration"
+        },
+        "codex": {
+          "$ref": "target.schema.json",
+          "description": "OpenAI Codex configuration"
+        },
+        "copilot": {
+          "$ref": "target.schema.json",
+          "description": "GitHub Copilot configuration"
+        },
+        "windsurf": {
+          "$ref": "target.schema.json",
+          "description": "Windsurf IDE configuration"
+        },
+        "cline": {
+          "$ref": "target.schema.json",
+          "description": "Cline VS Code extension configuration"
+        },
+        "aider": {
+          "$ref": "target.schema.json",
+          "description": "Aider CLI configuration"
+        },
+        "continue": {
+          "$ref": "target.schema.json",
+          "description": "Continue VS Code extension configuration"
+        }
+      }
+    },
+
+    "extends": {
+      "type": "array",
+      "description": "Inherit from base configurations (composition pattern)",
+      "items": {
+        "type": "string",
+        "format": "uri-reference",
+        "examples": [
+          "./base.json",
+          "@unify-ai/presets/typescript",
+          "@unify-ai/presets/react"
+        ]
+      }
+    },
+
+    "imports": {
+      "type": "object",
+      "description": "External configuration imports",
+      "additionalProperties": {
+        "$ref": "#/$defs/import_config"
+      }
+    },
+
+    "variables": {
+      "type": "object",
+      "description": "Variables for template substitution",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "array" },
+          { "type": "object" }
+        ]
+      },
+      "examples": [
+        {
+          "PROJECT_NAME": "my-app",
+          "AUTHOR": "John Doe",
+          "FRAMEWORK": "react"
+        }
+      ]
+    },
+
+    "environments": {
+      "type": "object",
+      "description": "Environment-specific overrides",
+      "additionalProperties": {
+        "$ref": "#/$defs/environment_config"
+      },
+      "propertyNames": {
+        "enum": ["development", "staging", "production", "testing", "ci"]
+      }
+    },
+
+    "profiles": {
+      "type": "object",
+      "description": "Named configuration profiles for different use cases",
+      "additionalProperties": {
+        "$ref": "#/$defs/profile_config"
+      },
+      "examples": [
+        {
+          "minimal": {
+            "description": "Minimal configuration for quick tasks",
+            "extends": ["./base-minimal.json"]
+          },
+          "full": {
+            "description": "Full configuration with all features",
+            "extends": ["./base-full.json"]
+          }
+        }
+      ]
+    }
+  },
+
+  "required": ["rules"],
+
+  "allOf": [
+    {
+      "if": {
+        "properties": { "extends": { "type": "array", "minItems": 1 } }
+      },
+      "then": {
+        "$comment": "When extending, validate that referenced configs exist"
+      }
+    }
+  ],
+
+  "$defs": {
+    "unify_ai_metadata": {
+      "type": "object",
+      "description": "Unify-AI specific metadata",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Unify-AI CLI version that created/modified this config",
+          "pattern": "^\\d+\\.\\d+\\.\\d+"
+        },
+        "generated": {
+          "type": "boolean",
+          "description": "Whether this file was auto-generated",
+          "default": false
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the file was generated"
+        },
+        "source_targets": {
+          "type": "array",
+          "description": "Source targets if this was converted from another format",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cursor",
+              "claude-code",
+              "codex",
+              "copilot",
+              "windsurf",
+              "cline",
+              "aider",
+              "continue"
+            ]
+          }
+        },
+        "checksum": {
+          "type": "string",
+          "description": "Checksum of the original source for change detection",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+
+    "project_metadata": {
+      "type": "object",
+      "description": "Project-level metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description",
+          "maxLength": 1000
+        },
+        "version": {
+          "type": "string",
+          "description": "Project version",
+          "pattern": "^\\d+\\.\\d+\\.\\d+"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Repository URL"
+        },
+        "authors": {
+          "type": "array",
+          "description": "Project authors",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "email": { "type": "string", "format": "email" },
+              "url": { "type": "string", "format": "uri" }
+            }
+          }
+        },
+        "license": {
+          "type": "string",
+          "description": "License identifier (SPDX)",
+          "examples": ["MIT", "Apache-2.0", "GPL-3.0"]
+        },
+        "keywords": {
+          "type": "array",
+          "description": "Project keywords for categorization",
+          "items": {
+            "type": "string"
+          }
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Project homepage URL"
+        },
+        "bugs": {
+          "type": "object",
+          "description": "Bug tracker information",
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "email": { "type": "string", "format": "email" }
+          }
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Configuration creation date"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update date"
+        }
+      }
+    },
+
+    "import_config": {
+      "type": "object",
+      "description": "Configuration for importing external modules",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Source path or package reference",
+          "examples": [
+            "./shared-rules.json",
+            "@company/ai-configs/rules",
+            "github:user/repo/path/to/config.json"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "description": "Import type",
+          "enum": ["local", "npm", "github", "url", "preset"],
+          "default": "local"
+        },
+        "merge": {
+          "type": "boolean",
+          "description": "Whether to merge with existing configuration",
+          "default": true
+        },
+        "merge_strategy": {
+          "type": "string",
+          "description": "Strategy for merging configurations",
+          "enum": ["deep_merge", "shallow_merge", "replace", "append"],
+          "default": "deep_merge"
+        },
+        "selective": {
+          "type": "array",
+          "description": "Select specific sections to import",
+          "items": {
+            "type": "string",
+            "enum": ["rules", "mcp", "permissions", "model", "metadata"]
+          }
+        },
+        "transform": {
+          "type": "string",
+          "description": "Transform to apply on import",
+          "examples": ["prefix_rules_with:shared_"]
+        }
+      },
+      "required": ["source"]
+    },
+
+    "environment_config": {
+      "type": "object",
+      "description": "Environment-specific configuration overrides",
+      "properties": {
+        "rules": {
+          "$ref": "rules.schema.json"
+        },
+        "mcp": {
+          "$ref": "mcp.schema.json"
+        },
+        "permissions": {
+          "$ref": "permission.schema.json"
+        },
+        "model": {
+          "$ref": "model.schema.json"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+
+    "profile_config": {
+      "type": "object",
+      "description": "Named configuration profile",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Profile display name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Profile description"
+        },
+        "extends": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rules": {
+          "$ref": "rules.schema.json"
+        },
+        "mcp": {
+          "$ref": "mcp.schema.json"
+        },
+        "permissions": {
+          "$ref": "permission.schema.json"
+        },
+        "model": {
+          "$ref": "model.schema.json"
+        },
+        "targets": {
+          "type": "array",
+          "description": "Target tools this profile is optimized for",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cursor",
+              "claude-code",
+              "codex",
+              "copilot",
+              "windsurf",
+              "cline",
+              "aider",
+              "continue",
+              "all"
+            ]
+          },
+          "default": ["all"]
+        },
+        "default": {
+          "type": "boolean",
+          "description": "Whether this is the default profile",
+          "default": false
+        }
+      }
+    },
+
+    "tool_feature_matrix": {
+      "type": "object",
+      "description": "Feature support matrix for all supported tools",
+      "properties": {
+        "cursor": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "claude-code": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "codex": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "copilot": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "windsurf": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "cline": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "aider": {
+          "$ref": "#/$defs/tool_features"
+        },
+        "continue": {
+          "$ref": "#/$defs/tool_features"
+        }
+      }
+    },
+
+    "tool_features": {
+      "type": "object",
+      "description": "Feature support details for a tool",
+      "properties": {
+        "rules": {
+          "type": "string",
+          "enum": ["full", "partial", "none"],
+          "description": "Rules/instructions support level"
+        },
+        "rules_format": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["markdown", "json", "yaml", "toml", "text"]
+          },
+          "description": "Supported rule formats"
+        },
+        "mcp": {
+          "type": "string",
+          "enum": ["full", "partial", "none"],
+          "description": "MCP server support level"
+        },
+        "permissions": {
+          "type": "string",
+          "enum": ["full", "partial", "none"],
+          "description": "Permission control support level"
+        },
+        "model_selection": {
+          "type": "string",
+          "enum": ["full", "partial", "none"],
+          "description": "Model selection support level"
+        },
+        "multiple_providers": {
+          "type": "boolean",
+          "description": "Whether multiple AI providers are supported"
+        },
+        "streaming": {
+          "type": "boolean",
+          "description": "Whether streaming responses are supported"
+        },
+        "vision": {
+          "type": "boolean",
+          "description": "Whether image input is supported"
+        },
+        "tools": {
+          "type": "boolean",
+          "description": "Whether function/tool calling is supported"
+        }
+      }
+    }
+  },
+
+  "_comment": "See README.md for usage documentation. Key points: (1) Only 'rules' is required - works with all tools. (2) Add 'mcp', 'permissions', 'model' as extensions. (3) Use 'targets' for tool-specific overrides. (4) Use 'extends' for configuration inheritance. (5) Use 'environments' for env-specific overrides. (6) Use 'profiles' for named configurations."
+}

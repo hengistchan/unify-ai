@@ -1,0 +1,30 @@
+{
+  "name": "unify-ai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified configuration management for AI agent tools",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @unify-ai/core",
+    "dev": "npm run dev -w @unify-ai/core",
+    "test": "npm run test -w @unify-ai/core",
+    "cli": "npm run dev -w @unify-ai/cli",
+    "gui": "npm run dev -w @unify-ai/gui"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cursor",
+    "claude",
+    "copilot",
+    "configuration",
+    "unified"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

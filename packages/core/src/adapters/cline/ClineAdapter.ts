@@ -1,12 +1,12 @@
 /**
  * Cline Adapter
  *
- * Cline 配置格式:
- * - .clinerules/*.md - 规则文件 (Markdown, 每个文件一个规则)
- * - .cline/state.json - MCP 服务器配置和其他状态
+ * Cline configuration format:
+ * - .clinerules/*.md - Rule files (Markdown, one rule per file)
+ * - .cline/state.json - MCP server configuration and other state
  *
- * 规则存储在目录中，每个文件一个规则，文件名作为规则名。
- * 类似于 Claude Code 的 .claude/rules/ 模式。
+ * Rules are stored in a directory, one rule per file, with the filename as the rule name.
+ * Similar to Claude Code's .claude/rules/ pattern.
  */
 
 import { promises as fs } from 'fs';
@@ -35,7 +35,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Cline state.json 格式
+ * Cline state.json format
  */
 interface ClineState {
   mcpServers: Record<string, {
@@ -50,7 +50,7 @@ interface ClineState {
 }
 
 /**
- * Cline 适配器
+ * Cline adapter
  */
 export class ClineAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -64,14 +64,14 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.cline();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -91,7 +91,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Cline 配置
+   * Parse Cline configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -100,7 +100,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     let mcp: MCPConfig | undefined;
 
-    // 1. 解析规则文件
+    // 1. Parse rule files
     const ruleFiles = await this.discoverRuleFiles(projectRoot);
     for (const fileInfo of ruleFiles) {
       sourceFiles.push(fileInfo);
@@ -113,7 +113,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析 MCP 配置
+    // 2. Parse MCP configuration
     const statePath = path.join(projectRoot, '.cline/state.json');
     if (await this.fileExists(statePath)) {
       sourceFiles.push({
@@ -130,7 +130,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.CLINE,
@@ -150,12 +150,12 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Cline 配置
+   * Generate Cline configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. 生成规则文件
+    // 1. Generate rule files
     if (config.rules && this.hasCapability(ConfigCapability.RULES)) {
       for (const rule of config.rules) {
         if (rule.enabled !== false) {
@@ -171,9 +171,9 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 生成 MCP 配置
+    // 2. Generate MCP configuration
     if (config.mcp?.servers?.length && this.hasCapability(ConfigCapability.MCP_SERVERS)) {
-      // 读取现有 state.json 以保留其他配置
+      // Read existing state.json to preserve other configuration
       const existingState = await this.loadExistingState('.');
       const mcpContent = this.generateStateContent(config.mcp, existingState);
       files.push({
@@ -191,14 +191,14 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
-    // 判断文件类型
+    // Determine file type
     if (filePath.endsWith('.md') || fileName.endsWith('.md')) {
-      // 可能是规则文件
+      // Possibly a rule file
       const result = await this.parseRuleContent(content, filePath);
       return {
         success: result.errors === undefined || result.errors.length === 0,
@@ -250,7 +250,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则解析
+  // Private methods - Rule parsing
   // ============================================
 
   private async discoverRuleFiles(projectRoot: string): Promise<FileInfo[]> {
@@ -296,7 +296,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     const fileName = path.basename(filePath, '.md');
 
-    // Cline 规则：文件名作为规则名，内容作为规则内容
+    // Cline rule: filename is the rule name, content is the rule content
     const rule: RuleConfig = {
       id: this.generateRuleId(fileName),
       name: fileName,
@@ -312,9 +312,9 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   private getRuleFileName(rule: RuleConfig): string {
-    // 使用规则名称或 ID 生成文件名
+    // Use rule name or ID to generate filename
     const baseName = rule.name || rule.id;
-    // 清理文件名，移除特殊字符
+    // Sanitize filename, remove special characters
     const safeName = baseName
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '-')
@@ -328,7 +328,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - MCP/State 解析
+  // Private methods - MCP/State parsing
   // ============================================
 
   private async loadExistingState(targetDir: string): Promise<ClineState | null> {
@@ -397,7 +397,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   private generateStateContent(mcp: MCPConfig, existingState: ClineState | null): string {
-    // 合并现有状态和新 MCP 配置
+    // Merge existing state with new MCP configuration
     const state: ClineState = existingState
       ? { ...existingState, mcpServers: existingState.mcpServers || {} }
       : { mcpServers: {} };
@@ -418,7 +418,7 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -431,5 +431,5 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const clineAdapter = new ClineAdapter();

@@ -1,6 +1,6 @@
 /**
  * Adapter Interface
- * 所有适配器必须实现的接口
+ * Interface that all adapters must implement
  */
 
 import type {
@@ -17,97 +17,97 @@ import type {
 } from '../../core/types';
 
 /**
- * 适配器接口
- * 所有工具适配器必须实现此接口
+ * Adapter interface
+ * All tool adapters must implement this interface
  */
 export interface IAdapter {
   // ============================================
-  // 元信息
+  // Metadata
   // ============================================
 
   /**
-   * 获取工具元信息
+   * Get tool metadata
    */
   readonly toolMeta: ToolMeta;
 
   /**
-   * 获取适配器版本
+   * Get adapter version
    */
   readonly version: string;
 
   /**
-   * 获取适配器完整信息
+   * Get full adapter information
    */
   getInfo(): AdapterInfo;
 
   // ============================================
-  // 能力声明
+  // Capability declarations
   // ============================================
 
   /**
-   * 获取支持的所有能力
+   * Get all supported capabilities
    */
   getCapabilities(): CapabilityDeclaration[];
 
   /**
-   * 检查是否支持特定能力
+   * Check if a specific capability is supported
    */
   hasCapability(capability: ConfigCapability): boolean;
 
   /**
-   * 获取特定能力的支持级别
+   * Get support level for a specific capability
    */
   getCapabilityLevel(capability: ConfigCapability): CapabilityDeclaration['level'] | undefined;
 
   // ============================================
-  // 文件发现
+  // File discovery
   // ============================================
 
   /**
-   * 获取配置文件模式
+   * Get configuration file patterns
    */
   getFilePatterns(): FilePattern[];
 
   /**
-   * 发现项目中的配置文件
+   * Discover configuration files in project
    */
   discoverFiles(projectRoot: string): Promise<FileInfo[]>;
 
   /**
-   * 检查项目是否使用此工具
+   * Check if project uses this tool
    */
   detect(projectRoot: string): Promise<boolean>;
 
   // ============================================
-  // 解析 (Import)
+  // Parsing (Import)
   // ============================================
 
   /**
-   * 从项目目录解析配置
+   * Parse configuration from project directory
    */
   parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult>;
 
   /**
-   * 从特定文件解析配置
+   * Parse configuration from specific file
    */
   parseFile(filePath: string, options?: ConvertOptions): Promise<ParseResult>;
 
   /**
-   * 从内容字符串解析配置
+   * Parse configuration from content string
    */
   parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult>;
 
   // ============================================
-  // 生成 (Export)
+  // Generation (Export)
   // ============================================
 
   /**
-   * 将统一配置生成为工具特定格式
+   * Generate tool-specific format from unified configuration
    */
   generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult>;
 
   /**
-   * 生成配置文件到指定目录
+   * Generate configuration files to specified directory
    */
   generateTo(
     config: UnifiedConfig,
@@ -116,31 +116,31 @@ export interface IAdapter {
   ): Promise<GenerateResult>;
 
   // ============================================
-  // 验证
+  // Validation
   // ============================================
 
   /**
-   * 验证配置是否有效
+   * Validate if configuration is valid
    */
   validate(config: UnifiedConfig): Promise<ValidationResult>;
 
   // ============================================
-  // 生命周期
+  // Lifecycle
   // ============================================
 
   /**
-   * 初始化适配器
+   * Initialize adapter
    */
   initialize?(): Promise<void>;
 
   /**
-   * 清理资源
+   * Cleanup resources
    */
   dispose?(): Promise<void>;
 }
 
 /**
- * 验证结果
+ * Validation result
  */
 export interface ValidationResult {
   valid: boolean;
@@ -149,7 +149,7 @@ export interface ValidationResult {
 }
 
 export interface ValidationError {
-  path: string;                  // 配置路径，如 "rules[0].content"
+  path: string;                  // Config path, e.g., "rules[0].content"
   message: string;
   value?: unknown;
 }
@@ -161,11 +161,11 @@ export interface ValidationWarning {
 }
 
 // ============================================
-// 分层接口 (可选实现)
+// Layered interfaces (optional to implement)
 // ============================================
 
 /**
- * 规则解析器接口
+ * Rule parser interface
  */
 export interface IRuleParser {
   parseRules(content: string, context?: ParseContext): Promise<RuleParseResult>;
@@ -184,7 +184,7 @@ export interface ParseContext {
 }
 
 /**
- * MCP 解析器接口
+ * MCP parser interface
  */
 export interface IMCPParser {
   parseMCP(content: string, context?: ParseContext): Promise<MCPParseResult>;
@@ -198,7 +198,7 @@ export interface MCPParseResult {
 }
 
 /**
- * 设置解析器接口
+ * Settings parser interface
  */
 export interface ISettingsParser {
   parseSettings(content: string, context?: ParseContext): Promise<SettingsParseResult>;
@@ -211,7 +211,7 @@ export interface SettingsParseResult {
   warnings?: ParseWarning[];
 }
 
-// 导入需要的类型
+// Import required types
 import type {
   ParseError,
   ParseWarning,

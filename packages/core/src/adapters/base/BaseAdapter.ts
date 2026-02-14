@@ -1,6 +1,6 @@
 /**
  * BaseAdapter
- * 适配器抽象基类，提供通用实现
+ * Abstract base class for adapters, providing common implementations
  */
 
 import type {
@@ -22,42 +22,42 @@ import type { IAdapter, ValidationResult } from './IAdapter';
 import { AdapterStatus } from '../../core/types';
 
 /**
- * 抽象适配器基类
+ * Abstract adapter base class
  */
 export abstract class BaseAdapter implements IAdapter {
   // ============================================
-  // 抽象属性和方法 (子类必须实现)
+  // Abstract properties and methods (must be implemented by subclasses)
   // ============================================
 
   abstract readonly toolMeta: ToolMeta;
   abstract readonly version: string;
 
   /**
-   * 获取能力声明列表
+   * Get capability declarations
    */
   abstract getCapabilities(): CapabilityDeclaration[];
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   abstract getFilePatterns(): FilePattern[];
 
   /**
-   * 解析配置
+   * Parse configuration
    */
   abstract parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult>;
 
   /**
-   * 生成配置
+   * Generate configuration
    */
   abstract generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult>;
 
   // ============================================
-  // 通用实现
+  // Common implementations
   // ============================================
 
   /**
-   * 获取适配器完整信息
+   * Get full adapter information
    */
   getInfo(): AdapterInfo {
     return {
@@ -70,7 +70,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 检查是否支持特定能力
+   * Check if a specific capability is supported
    */
   hasCapability(capability: ConfigCapability): boolean {
     const cap = this.getCapabilities().find(c => c.capability === capability);
@@ -78,7 +78,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 获取特定能力的支持级别
+   * Get support level for a specific capability
    */
   getCapabilityLevel(capability: ConfigCapability): CapabilityLevel | undefined {
     const cap = this.getCapabilities().find(c => c.capability === capability);
@@ -86,7 +86,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 发现配置文件
+   * Discover configuration files
    */
   async discoverFiles(projectRoot: string): Promise<FileInfo[]> {
     const patterns = this.getFilePatterns();
@@ -120,14 +120,14 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 检测项目是否使用此工具
+   * Detect if project uses this tool
    */
   async detect(projectRoot: string): Promise<boolean> {
     const patterns = this.getFilePatterns();
     const requiredPatterns = patterns.filter(p => p.type === 'required');
 
     if (requiredPatterns.length === 0) {
-      // 如果没有必需文件，检查是否有任何配置文件存在
+      // If no required files, check if any config files exist
       const files = await this.discoverFiles(projectRoot);
       return files.length > 0;
     }
@@ -150,8 +150,8 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从特定文件解析
-   * 默认实现，子类可覆盖
+   * Parse from specific file
+   * Default implementation, can be overridden by subclasses
    */
   async parseFile(filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     const fs = await import('fs');
@@ -173,15 +173,15 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容字符串解析
-   * 默认实现，子类必须覆盖
+   * Parse from content string
+   * Default implementation, must be overridden by subclasses
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     throw new Error('parseContent must be implemented by subclass');
   }
 
   /**
-   * 生成配置到指定目录
+   * Generate configuration to specified directory
    */
   async generateTo(
     config: UnifiedConfig,
@@ -201,10 +201,10 @@ export abstract class BaseAdapter implements IAdapter {
       const fullPath = path.join(targetDir, file.path);
       const dir = path.dirname(fullPath);
 
-      // 确保目录存在
+      // Ensure directory exists
       await fs.promises.mkdir(dir, { recursive: true });
 
-      // 写入文件
+      // Write file
       const content = typeof file.content === 'string'
         ? file.content
         : file.content;
@@ -215,13 +215,13 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 验证配置
+   * Validate configuration
    */
   async validate(config: UnifiedConfig): Promise<ValidationResult> {
     const errors: ValidationResult['errors'] = [];
     const warnings: ValidationResult['warnings'] = [];
 
-    // 基础验证
+    // Basic validation
     if (!config.version) {
       errors.push({
         path: 'version',
@@ -229,7 +229,7 @@ export abstract class BaseAdapter implements IAdapter {
       });
     }
 
-    // 验证规则
+    // Validate rules
     if (config.rules) {
       for (let i = 0; i < config.rules.length; i++) {
         const rule = config.rules[i];
@@ -248,7 +248,7 @@ export abstract class BaseAdapter implements IAdapter {
       }
     }
 
-    // 验证 MCP 配置
+    // Validate MCP configuration
     if (config.mcp?.servers) {
       for (let i = 0; i < config.mcp.servers.length; i++) {
         const server = config.mcp.servers[i];
@@ -275,11 +275,11 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   /**
-   * 创建成功结果
+   * Create success result
    */
   protected createSuccessResult(
     data: UnifiedConfig,
@@ -296,7 +296,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 创建错误结果
+   * Create error result
    */
   protected createErrorResult(errors: ParseError[], warnings?: ParseWarning[]): ParseResult {
     return {
@@ -311,7 +311,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 合并解析结果
+   * Merge parse results
    */
   protected mergeResults(...results: ParseResult[]): ParseResult {
     const allErrors: ParseError[] = [];
@@ -346,7 +346,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 深度合并对象
+   * Deep merge objects
    */
   protected deepMerge<T extends Record<string, unknown>>(target: T, source: T): T {
     const result = { ...target };
@@ -366,7 +366,7 @@ export abstract class BaseAdapter implements IAdapter {
             source[key] as Record<string, unknown>
           ) as T[Extract<keyof T, string>];
         } else if (Array.isArray(source[key]) && Array.isArray(target[key])) {
-          // 数组采用连接策略
+          // Arrays use concatenation strategy
           result[key] = [...(target[key] as unknown[]), ...(source[key] as unknown[])] as T[Extract<keyof T, string>];
         } else {
           result[key] = source[key];
@@ -378,7 +378,7 @@ export abstract class BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成唯一 ID
+   * Generate unique ID
    */
   protected generateId(): string {
     return `${this.toolMeta.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

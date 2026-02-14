@@ -1,14 +1,14 @@
 /**
  * Claude Code Adapter
  *
- * Claude Code 配置格式:
- * - CLAUDE.md - 主要规则文件 (Markdown)
- * - .claude/settings.json / settings.local.json - 设置
- * - .mcp.json - MCP 服务器配置
- * - .claude/commands/*.md - 自定义命令
+ * Claude Code configuration format:
+ * - CLAUDE.md - Main rule file (Markdown)
+ * - .claude/settings.json / settings.local.json - Settings
+ * - .mcp.json - MCP server configuration
+ * - .claude/commands/*.md - Custom commands
  *
- * CLAUDE.md 可以引用其他文件:
- * - 使用 @file.md 语法引用其他规则文件
+ * CLAUDE.md can reference other files:
+ * - Use @file.md syntax to reference other rule files
  */
 
 import { promises as fs } from 'fs';
@@ -39,7 +39,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Claude Code 设置格式
+ * Claude Code settings format
  */
 interface ClaudeCodeSettings {
   permissions?: {
@@ -52,7 +52,7 @@ interface ClaudeCodeSettings {
 }
 
 /**
- * MCP JSON 格式
+ * MCP JSON format
  */
 interface MCPJsonConfig {
   mcpServers: Record<string, {
@@ -66,7 +66,7 @@ interface MCPJsonConfig {
 }
 
 /**
- * Claude Code 适配器
+ * Claude Code adapter
  */
 export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -79,14 +79,14 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.claudeCode();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -130,7 +130,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Claude Code 配置
+   * Parse Claude Code configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -141,7 +141,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     let settings: ToolSettings | undefined;
     const commands: CommandConfig[] = [];
 
-    // 1. 解析主规则文件 CLAUDE.md
+    // 1. Parse main rule file CLAUDE.md
     const claudeMdPath = path.join(projectRoot, 'CLAUDE.md');
     if (await this.fileExists(claudeMdPath)) {
       sourceFiles.push({
@@ -158,7 +158,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析模块化规则文件
+    // 2. Parse modular rule files
     const ruleFiles = await this.discoverRuleFiles(projectRoot);
     for (const fileInfo of ruleFiles) {
       sourceFiles.push(fileInfo);
@@ -171,7 +171,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 3. 解析 MCP 配置
+    // 3. Parse MCP configuration
     const mcpPath = path.join(projectRoot, '.mcp.json');
     if (await this.fileExists(mcpPath)) {
       sourceFiles.push({
@@ -188,7 +188,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 4. 解析设置
+    // 4. Parse settings
     const settingsPaths = [
       path.join(projectRoot, '.claude/settings.json'),
       path.join(projectRoot, '.claude/settings.local.json'),
@@ -211,7 +211,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 5. 解析命令
+    // 5. Parse commands
     const commandFiles = await this.discoverCommandFiles(projectRoot);
     for (const fileInfo of commandFiles) {
       sourceFiles.push(fileInfo);
@@ -224,7 +224,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.CLAUDE_CODE,
@@ -246,12 +246,12 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Claude Code 配置
+   * Generate Claude Code configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. 生成 CLAUDE.md
+    // 1. Generate CLAUDE.md
     if (config.rules && config.rules.length > 0) {
       const content = this.generateClaudeMd(config.rules);
       files.push({
@@ -262,7 +262,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 2. 生成 MCP 配置
+    // 2. Generate MCP configuration
     if (config.mcp?.servers?.length && this.hasCapability(ConfigCapability.MCP_SERVERS)) {
       const mcpContent = this.generateMCPContent(config.mcp);
       files.push({
@@ -273,7 +273,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 3. 生成设置
+    // 3. Generate settings
     if (config.settings && this.hasCapability(ConfigCapability.SETTINGS)) {
       const settingsContent = this.generateSettingsContent(config.settings);
       files.push({
@@ -284,7 +284,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 4. 生成命令
+    // 4. Generate commands
     if (config.commands?.length && this.hasCapability(ConfigCapability.COMMANDS)) {
       for (const command of config.commands) {
         const content = this.generateCommandContent(command);
@@ -304,7 +304,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     const fileName = path.basename(filePath);
@@ -383,7 +383,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - CLAUDE.md 解析
+  // Private methods - CLAUDE.md parsing
   // ============================================
 
   private async parseClaudeMd(filePath: string): Promise<{
@@ -413,10 +413,10 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     const fileName = path.basename(filePath, '.md');
 
-    // 解析 @ 引用
+    // Parse @ references
     const references = this.extractReferences(content);
 
-    // 创建主规则
+    // Create main rule
     const rule: RuleConfig = {
       id: this.generateRuleId(fileName),
       name: fileName === 'CLAUDE' ? 'Project Instructions' : fileName,
@@ -433,7 +433,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   private extractReferences(content: string): string[] {
-    // 匹配 @file.md 或 @path/to/file.md 格式
+    // Match @file.md or @path/to/file.md format
     const refPattern = /@([a-zA-Z0-9_\-./]+\.md)/g;
     const references: string[] = [];
     let match;
@@ -448,12 +448,12 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   private generateClaudeMd(rules: RuleConfig[]): string {
     const sections: string[] = [];
 
-    // 如果只有一个规则，直接输出内容
+    // If there's only one rule, output its content directly
     if (rules.length === 1) {
       return rules[0].content;
     }
 
-    // 多个规则合并为一个文档
+    // Multiple rules: combine into a single document
     for (const rule of rules) {
       if (rule.enabled !== false) {
         sections.push(`## ${rule.name || rule.id}\n\n${rule.content}`);
@@ -464,7 +464,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则文件
+  // Private methods - Rule files
   // ============================================
 
   private async discoverRuleFiles(projectRoot: string): Promise<FileInfo[]> {
@@ -520,7 +520,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - MCP 解析
+  // Private methods - MCP parsing
   // ============================================
 
   private async parseMCPFile(filePath: string): Promise<{
@@ -596,7 +596,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 设置解析
+  // Private methods - Settings parsing
   // ============================================
 
   private async parseSettingsFile(filePath: string): Promise<{
@@ -671,7 +671,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       env: settings.toolSpecific?.env as Record<string, string>,
     };
 
-    // 移除 undefined 值
+    // Remove undefined values
     const cleaned = Object.fromEntries(
       Object.entries(claudeSettings).filter(([_, v]) => v !== undefined)
     );
@@ -680,7 +680,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 命令解析
+  // Private methods - Commands parsing
   // ============================================
 
   private async discoverCommandFiles(projectRoot: string): Promise<FileInfo[]> {
@@ -707,7 +707,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       const content = await fs.readFile(filePath, 'utf-8');
       const fileName = path.basename(filePath, '.md');
 
-      // 简单的命令解析 - 第一行作为描述，其余作为模板
+      // Simple command parsing - first line as description, rest as template
       const lines = content.split('\n');
       let description: string | undefined;
       let templateStart = 0;
@@ -715,7 +715,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       if (lines[0]?.startsWith('# ')) {
         description = lines[0].slice(2).trim();
         templateStart = 1;
-        // 跳过空行
+        // Skip empty lines
         while (templateStart < lines.length && lines[templateStart].trim() === '') {
           templateStart++;
         }
@@ -757,7 +757,7 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -770,5 +770,5 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const claudeCodeAdapter = new ClaudeCodeAdapter();

@@ -1,6 +1,6 @@
 /**
  * Converter - Exporter
- * 配置导出转换器
+ * Configuration export converter
  */
 
 import { promises as fs } from 'fs';
@@ -19,32 +19,32 @@ import type {
 import { adapterRegistry } from '../adapters/registry';
 
 /**
- * 导出选项
+ * Export options
  */
 export interface ExportOptions extends ConvertOptions {
   /**
-   * 目标工具 ID
+   * Target tool ID
    */
   targetTool: ToolId;
 
   /**
-   * 输出目录 (默认为项目根目录)
+   * Output directory (defaults to project root)
    */
   outputDir?: string;
 
   /**
-   * 创建备份
+   * Create backup
    */
   createBackup?: boolean;
 
   /**
-   * 备份目录
+   * Backup directory
    */
   backupDir?: string;
 }
 
 /**
- * 导出结果
+ * Export result
  */
 export interface ExportResult {
   success: boolean;
@@ -79,11 +79,11 @@ export interface ExportWarning {
 }
 
 /**
- * 配置导出器
+ * Configuration exporter
  */
 export class Exporter {
   /**
-   * 导出配置到指定工具格式
+   * Export configuration to specified tool format
    */
   async export(
     config: UnifiedConfig,
@@ -95,7 +95,7 @@ export class Exporter {
     const warnings: ExportWarning[] = [];
     const exportedFiles: ExportedFile[] = [];
 
-    // 获取目标适配器
+    // Get target adapter
     const adapter = adapterRegistry.get(options.targetTool);
     if (!adapter) {
       return this.createErrorResult([{
@@ -104,7 +104,7 @@ export class Exporter {
       }]);
     }
 
-    // 验证配置
+    // Validate configuration
     const validation = await adapter.validate(config);
     if (!validation.valid) {
       for (const err of validation.errors) {
@@ -130,11 +130,11 @@ export class Exporter {
       }
     }
 
-    // 检查能力支持
+    // Check capability support
     const capabilityWarnings = this.checkCapabilities(config, adapter);
     warnings.push(...capabilityWarnings);
 
-    // 生成配置文件
+    // Generate configuration file
     const outputDir = options.outputDir ?? projectRoot;
     const generateResult = await adapter.generate(config, options);
 
@@ -153,22 +153,22 @@ export class Exporter {
       };
     }
 
-    // 创建备份
+    // Create backup
     let backupCreated = false;
     if (options.createBackup && !options.dryRun) {
       backupCreated = await this.createBackup(projectRoot, generateResult.files, options);
     }
 
-    // 写入文件
+    // Write files
     if (!options.dryRun) {
       for (const file of generateResult.files) {
         const absolutePath = path.join(outputDir, file.path);
 
         try {
-          // 确保目录存在
+          // Ensure directory exists
           await fs.mkdir(path.dirname(absolutePath), { recursive: true });
 
-          // 写入文件
+          // Write file
           const content = typeof file.content === 'string'
             ? file.content
             : Buffer.from(file.content);
@@ -191,7 +191,7 @@ export class Exporter {
         }
       }
     } else {
-      // 试运行模式，不实际写入
+      // Dry-run mode, don't actually write
       for (const file of generateResult.files) {
         exportedFiles.push({
           path: file.path,
@@ -202,7 +202,7 @@ export class Exporter {
       }
     }
 
-    // 添加生成器的警告
+    // Add warnings from generator
     if (generateResult.warnings) {
       for (const warn of generateResult.warnings) {
         warnings.push({
@@ -227,7 +227,7 @@ export class Exporter {
   }
 
   /**
-   * 导出配置到多个工具
+   * Export configuration to multiple tools
    */
   async exportMultiple(
     config: UnifiedConfig,
@@ -251,7 +251,7 @@ export class Exporter {
   }
 
   /**
-   * 预览导出结果 (不写入文件)
+   * Preview export results (don't write files)
    */
   async preview(
     config: UnifiedConfig,
@@ -274,13 +274,13 @@ export class Exporter {
   }
 
   // ============================================
-  // 私有方法
+  // Private methods
   // ============================================
 
   private checkCapabilities(config: UnifiedConfig, adapter: IAdapter): ExportWarning[] {
     const warnings: ExportWarning[] = [];
 
-    // 检查规则
+    // Check rules
     if (config.rules?.length && !adapter.hasCapability('rules' as any)) {
       warnings.push({
         code: 'CAPABILITY_NOT_SUPPORTED',
@@ -289,7 +289,7 @@ export class Exporter {
       });
     }
 
-    // 检查 MCP
+    // Check MCP
     if (config.mcp?.servers?.length && !adapter.hasCapability('mcp_servers' as any)) {
       warnings.push({
         code: 'CAPABILITY_NOT_SUPPORTED',
@@ -298,7 +298,7 @@ export class Exporter {
       });
     }
 
-    // 检查命令
+    // Check commands
     if (config.commands?.length && !adapter.hasCapability('commands' as any)) {
       warnings.push({
         code: 'CAPABILITY_NOT_SUPPORTED',
@@ -361,5 +361,5 @@ export class Exporter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const exporter = new Exporter();

@@ -1,12 +1,12 @@
 /**
  * File Pattern Definitions
- * 各工具的文件模式常量
+ * File pattern constants for each tool
  */
 
 import { ToolId, ConfigCapability, type FilePattern } from '../core/types';
 
 /**
- * Cursor 文件模式
+ * Cursor file patterns
  */
 export const CURSOR_PATTERNS: FilePattern[] = [
   {
@@ -30,7 +30,7 @@ export const CURSOR_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Claude Code 文件模式
+ * Claude Code file patterns
  */
 export const CLAUDE_CODE_PATTERNS: FilePattern[] = [
   {
@@ -72,7 +72,7 @@ export const CLAUDE_CODE_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * OpenAI Codex 文件模式
+ * OpenAI Codex file patterns
  */
 export const CODEX_PATTERNS: FilePattern[] = [
   {
@@ -96,7 +96,7 @@ export const CODEX_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * GitHub Copilot 文件模式
+ * GitHub Copilot file patterns
  */
 export const COPILOT_PATTERNS: FilePattern[] = [
   {
@@ -108,7 +108,7 @@ export const COPILOT_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Windsurf 文件模式
+ * Windsurf file patterns
  */
 export const WINDSURF_PATTERNS: FilePattern[] = [
   {
@@ -126,7 +126,7 @@ export const WINDSURF_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Cline 文件模式
+ * Cline file patterns
  */
 export const CLINE_PATTERNS: FilePattern[] = [
   {
@@ -150,7 +150,7 @@ export const CLINE_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Aider 文件模式
+ * Aider file patterns
  */
 export const AIDER_PATTERNS: FilePattern[] = [
   {
@@ -168,7 +168,7 @@ export const AIDER_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Continue.dev 文件模式
+ * Continue.dev file patterns
  */
 export const CONTINUE_PATTERNS: FilePattern[] = [
   {
@@ -192,7 +192,7 @@ export const CONTINUE_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * 所有工具的文件模式映射
+ * File pattern mapping for all tools
  */
 export const TOOL_PATTERNS: Record<ToolId, FilePattern[]> = {
   [ToolId.CURSOR]: CURSOR_PATTERNS,
@@ -206,7 +206,7 @@ export const TOOL_PATTERNS: Record<ToolId, FilePattern[]> = {
 };
 
 /**
- * 所有配置文件的联合模式
+ * Union pattern for all config files
  */
 export const ALL_CONFIG_PATTERNS: string[] = [
   // Cursor

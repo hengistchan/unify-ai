@@ -1,6 +1,6 @@
 /**
  * Converter - Importer
- * 配置导入转换器
+ * Configuration import converter
  */
 
 import type { IAdapter } from '../adapters/base/IAdapter';
@@ -14,22 +14,22 @@ import type {
 import { adapterRegistry } from '../adapters/registry';
 
 /**
- * 导入选项
+ * Import options
  */
 export interface ImportOptions extends ConvertOptions {
   /**
-   * 源工具 ID (如果不指定，自动检测)
+   * Source tool ID (auto-detect if not specified)
    */
   sourceTool?: ToolId;
 
   /**
-   * 合并多个工具的配置
+   * Merge configurations from multiple tools
    */
   mergeMultiple?: boolean;
 }
 
 /**
- * 导入结果
+ * Import result
  */
 export interface ImportResult {
   success: boolean;
@@ -58,11 +58,11 @@ export interface ImportWarning {
 }
 
 /**
- * 配置导入器
+ * Configuration importer
  */
 export class Importer {
   /**
-   * 从项目导入配置
+   * Import configuration from project
    */
   async import(projectRoot: string, options?: ImportOptions): Promise<ImportResult> {
     const startTime = Date.now();
@@ -71,7 +71,7 @@ export class Importer {
     const sourceTools: ToolId[] = [];
     const sourceFiles: string[] = [];
 
-    // 确定要使用的适配器
+    // Determine which adapter to use
     let adapters: IAdapter[];
     if (options?.sourceTool) {
       const adapter = adapterRegistry.get(options.sourceTool);
@@ -83,7 +83,7 @@ export class Importer {
       }
       adapters = [adapter];
     } else {
-      // 自动检测
+      // Auto-detect
       adapters = await adapterRegistry.detectForProject(projectRoot);
       if (adapters.length === 0) {
         return this.createErrorResult([{
@@ -93,7 +93,7 @@ export class Importer {
       }
     }
 
-    // 解析配置
+    // Parse configuration
     const configs: UnifiedConfig[] = [];
 
     for (const adapter of adapters) {
@@ -129,7 +129,7 @@ export class Importer {
       }
     }
 
-    // 合并配置
+    // Merge configurations
     let finalConfig: UnifiedConfig | undefined;
     if (configs.length === 1) {
       finalConfig = configs[0];
@@ -137,7 +137,7 @@ export class Importer {
       if (options?.mergeMultiple) {
         finalConfig = this.mergeConfigs(configs);
       } else {
-        // 使用第一个成功解析的配置
+        // Use the first successfully parsed configuration
         finalConfig = configs[0];
         warnings.push({
           code: 'MULTIPLE_CONFIGS',
@@ -161,7 +161,7 @@ export class Importer {
   }
 
   /**
-   * 从特定工具导入
+   * Import from specific tool
    */
   async importFrom(
     projectRoot: string,
@@ -172,7 +172,7 @@ export class Importer {
   }
 
   /**
-   * 从文件导入
+   * Import from file
    */
   async importFile(
     filePath: string,
@@ -212,7 +212,7 @@ export class Importer {
   }
 
   // ============================================
-  // 私有方法
+  // Private methods
   // ============================================
 
   private mergeConfigs(configs: UnifiedConfig[]): UnifiedConfig {
@@ -225,7 +225,7 @@ export class Importer {
     const seenServerNames = new Set<string>();
 
     for (const config of configs) {
-      // 合并规则 (去重)
+      // Merge rules (deduplicate)
       if (config.rules) {
         for (const rule of config.rules) {
           if (!seenRuleIds.has(rule.id)) {
@@ -235,7 +235,7 @@ export class Importer {
         }
       }
 
-      // 合并 MCP
+      // Merge MCP
       if (config.mcp?.servers) {
         if (!merged.mcp) {
           merged.mcp = { servers: [] };
@@ -248,12 +248,12 @@ export class Importer {
         }
       }
 
-      // 合并设置
+      // Merge settings
       if (config.settings) {
         merged.settings = this.mergeSettings(merged.settings, config.settings);
       }
 
-      // 合并命令
+      // Merge commands
       if (config.commands) {
         if (!merged.commands) {
           merged.commands = [];
@@ -261,7 +261,7 @@ export class Importer {
         merged.commands.push(...config.commands);
       }
 
-      // 合并提示词
+      // Merge prompts
       if (config.prompts) {
         if (!merged.prompts) {
           merged.prompts = [];
@@ -269,7 +269,7 @@ export class Importer {
         merged.prompts.push(...config.prompts);
       }
 
-      // 合并上下文文件
+      // Merge context files
       if (config.contextFiles) {
         if (!merged.contextFiles) {
           merged.contextFiles = [];
@@ -281,7 +281,7 @@ export class Importer {
         }
       }
 
-      // 合并环境变量
+      // Merge environment variables
       if (config.envVars) {
         if (!merged.envVars) {
           merged.envVars = {};
@@ -289,7 +289,7 @@ export class Importer {
         Object.assign(merged.envVars, config.envVars);
       }
 
-      // 合并忽略模式
+      // Merge ignore patterns
       if (config.ignorePatterns) {
         if (!merged.ignorePatterns) {
           merged.ignorePatterns = [];
@@ -341,5 +341,5 @@ export class Importer {
   }
 }
 
-// 导出单例
+// Export singleton
 export const importer = new Importer();

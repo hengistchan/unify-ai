@@ -1,12 +1,12 @@
 /**
  * Cursor Adapter
  *
- * Cursor 配置格式:
- * - .cursor/rules/*.md - 规则文件 (Markdown + frontmatter)
- * - .cursor/mcp.json - MCP 服务器配置
- * - .cursor/settings - 设置
+ * Cursor configuration format:
+ * - .cursor/rules/*.md - Rule files (Markdown + frontmatter)
+ * - .cursor/mcp.json - MCP server configuration
+ * - .cursor/settings - Settings
  *
- * 规则文件 Frontmatter 格式:
+ * Rule file Frontmatter format:
  * ---
  * name: Rule Name
  * globs: ["<glob pattern>"]
@@ -42,7 +42,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Cursor 规则 Frontmatter
+ * Cursor rule frontmatter
  */
 interface CursorRuleFrontmatter {
   name?: string;
@@ -52,7 +52,7 @@ interface CursorRuleFrontmatter {
 }
 
 /**
- * Cursor MCP 配置格式
+ * Cursor MCP configuration format
  */
 interface CursorMCPConfig {
   mcpServers: Record<string, {
@@ -66,7 +66,7 @@ interface CursorMCPConfig {
 }
 
 /**
- * Cursor 适配器
+ * Cursor adapter
  */
 export class CursorAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -80,14 +80,14 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.cursor();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -113,7 +113,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Cursor 配置
+   * Parse Cursor configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -122,7 +122,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     let mcp: MCPConfig | undefined;
 
-    // 1. 解析规则文件
+    // 1. Parse rule files
     const ruleFiles = await this.discoverRuleFiles(projectRoot);
     for (const fileInfo of ruleFiles) {
       sourceFiles.push(fileInfo);
@@ -135,7 +135,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析 MCP 配置
+    // 2. Parse MCP configuration
     const mcpPath = path.join(projectRoot, '.cursor/mcp.json');
     const mcpExists = await this.fileExists(mcpPath);
     if (mcpExists) {
@@ -153,7 +153,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.CURSOR,
@@ -173,12 +173,12 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Cursor 配置
+   * Generate Cursor configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. 生成规则文件
+    // 1. Generate rule files
     if (config.rules && this.hasCapability(ConfigCapability.RULES)) {
       for (const rule of config.rules) {
         if (rule.enabled !== false) {
@@ -194,7 +194,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 生成 MCP 配置
+    // 2. Generate MCP configuration
     if (config.mcp?.servers?.length && this.hasCapability(ConfigCapability.MCP_SERVERS)) {
       const mcpContent = this.generateMCPContent(config.mcp);
       files.push({
@@ -212,10 +212,10 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
-    // 判断文件类型
+    // Determine file type
     if (filePath.endsWith('.md')) {
       const result = await this.parseRuleContent(content, filePath);
       return {
@@ -268,7 +268,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则解析
+  // Private methods - Rule parsing
   // ============================================
 
   private async discoverRuleFiles(projectRoot: string): Promise<FileInfo[]> {
@@ -314,7 +314,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
     const errors: ParseError[] = [];
     const rules: RuleConfig[] = [];
 
-    // 解析 frontmatter
+    // Parse frontmatter
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
 
     let frontmatter: CursorRuleFrontmatter = {};
@@ -334,7 +334,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建规则配置
+    // Build rule configuration
     const ruleName = path.basename(filePath, '.md');
     const rule: RuleConfig = {
       id: this.generateRuleId(ruleName),
@@ -362,7 +362,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       alwaysApply: rule.alwaysApply,
     };
 
-    // 过滤空值
+    // Filter out undefined values
     const filtered: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(frontmatter)) {
       if (value !== undefined) {
@@ -378,9 +378,9 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   private getRuleFileName(rule: RuleConfig): string {
-    // 使用规则名称或 ID 生成文件名
+    // Use rule name or ID to generate filename
     const baseName = rule.name || rule.id;
-    // 清理文件名，移除特殊字符
+    // Sanitize filename, remove special characters
     const safeName = baseName
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '-')
@@ -396,14 +396,14 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   private normalizeGlobs(globs?: string | string[]): string[] | undefined {
     if (!globs) return undefined;
     if (typeof globs === 'string') {
-      // 支持逗号分隔的字符串
+      // Support comma-separated string
       return globs.split(',').map(g => g.trim()).filter(Boolean);
     }
     return globs;
   }
 
   // ============================================
-  // 私有方法 - MCP 解析
+  // Private methods - MCP parsing
   // ============================================
 
   private async parseMCPFile(filePath: string): Promise<{
@@ -481,7 +481,7 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -494,5 +494,5 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const cursorAdapter = new CursorAdapter();

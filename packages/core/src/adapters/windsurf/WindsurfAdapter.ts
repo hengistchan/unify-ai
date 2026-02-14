@@ -1,11 +1,11 @@
 /**
  * Windsurf Adapter
  *
- * Windsurf 配置格式:
- * - .windsurfrules - 规则文件 (纯 Markdown，无 frontmatter)
- * - .windsurf/mcp.json - MCP 服务器配置 (与 Cursor 相同格式)
+ * Windsurf configuration format:
+ * - .windsurfrules - Rule file (pure Markdown, no frontmatter)
+ * - .windsurf/mcp.json - MCP server configuration (same format as Cursor)
  *
- * Windsurf 是基于 Codeium 的 AI 代码编辑器
+ * Windsurf is an AI code editor based on Codeium
  */
 
 import { promises as fs } from 'fs';
@@ -34,7 +34,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Windsurf MCP 配置格式 (与 Cursor 相同)
+ * Windsurf MCP configuration format (same as Cursor)
  */
 interface WindsurfMCPConfig {
   mcpServers: Record<string, {
@@ -48,7 +48,7 @@ interface WindsurfMCPConfig {
 }
 
 /**
- * Windsurf 适配器
+ * Windsurf adapter
  */
 export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -62,14 +62,14 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.windsurf();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -89,7 +89,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Windsurf 配置
+   * Parse Windsurf configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -98,7 +98,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     let mcp: MCPConfig | undefined;
 
-    // 1. 解析规则文件
+    // 1. Parse rule file
     const rulePath = path.join(projectRoot, '.windsurfrules');
     const ruleExists = await this.fileExists(rulePath);
 
@@ -121,7 +121,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析 MCP 配置
+    // 2. Parse MCP configuration
     const mcpPath = path.join(projectRoot, '.windsurf/mcp.json');
     const mcpExists = await this.fileExists(mcpPath);
 
@@ -140,7 +140,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.WINDSURF,
@@ -160,14 +160,14 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Windsurf 配置
+   * Generate Windsurf configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. 生成规则文件
+    // 1. Generate rule file
     if (config.rules && config.rules.length > 0 && this.hasCapability(ConfigCapability.RULES)) {
-      // 将所有规则合并为一个 .windsurfrules 文件
+      // Merge all rules into a single .windsurfrules file
       const content = this.generateRuleContent(config.rules);
       files.push({
         path: '.windsurfrules',
@@ -177,7 +177,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 2. 生成 MCP 配置
+    // 2. Generate MCP configuration
     if (config.mcp?.servers?.length && this.hasCapability(ConfigCapability.MCP_SERVERS)) {
       const mcpContent = this.generateMCPContent(config.mcp);
       files.push({
@@ -195,10 +195,10 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
-    // 判断文件类型
+    // Determine file type
     if (filePath === '.windsurfrules' || filePath.endsWith('.windsurfrules')) {
       const result = await this.parseRuleContent(content, filePath);
       return {
@@ -251,7 +251,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则解析
+  // Private methods - Rule parsing
   // ============================================
 
   private async parseRuleFile(filePath: string): Promise<{
@@ -281,8 +281,8 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
     const errors: ParseError[] = [];
     const rules: RuleConfig[] = [];
 
-    // Windsurf 规则文件是纯 Markdown，没有 frontmatter
-    // 整个文件内容作为规则内容
+    // Windsurf rule files are pure Markdown without frontmatter
+    // The entire file content becomes the rule content
     const ruleName = path.basename(filePath, '.windsurfrules') || 'default';
 
     const rule: RuleConfig = {
@@ -301,9 +301,9 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   private generateRuleContent(rules: RuleConfig[]): string {
-    // Windsurf 使用单个 .windsurfrules 文件
-    // 可以将多个规则用分隔符连接，或者只取第一个规则
-    // 这里我们将所有规则内容连接起来
+    // Windsurf uses a single .windsurfrules file
+    // Multiple rules can be joined with separators, or only the first rule used
+    // Here we concatenate all rule contents
     return rules
       .filter(rule => rule.enabled !== false)
       .map(rule => rule.content)
@@ -315,7 +315,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - MCP 解析
+  // Private methods - MCP parsing
   // ============================================
 
   private async parseMCPFile(filePath: string): Promise<{
@@ -393,7 +393,7 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -406,5 +406,5 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const windsurfAdapter = new WindsurfAdapter();

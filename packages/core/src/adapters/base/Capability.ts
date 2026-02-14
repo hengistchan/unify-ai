@@ -1,6 +1,6 @@
 /**
  * Capability Utilities
- * 能力声明工具函数和常量
+ * Capability declaration utility functions and constants
  */
 
 import {
@@ -10,7 +10,7 @@ import {
 } from '../../core/types';
 
 /**
- * 创建能力声明
+ * Create capability declaration
  */
 export function declareCapability(
   capability: ConfigCapability,
@@ -21,70 +21,70 @@ export function declareCapability(
 }
 
 /**
- * 预定义的能力声明集合
+ * Predefined capability declaration collections
  */
 export const Capabilities = {
-  // 完全支持规则
+  // Full rules support
   fullRules: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.RULES, CapabilityLevel.FULL),
 
-  // 部分支持规则
+  // Partial rules support
   partialRules: (notes?: string): CapabilityDeclaration =>
     declareCapability(ConfigCapability.RULES, CapabilityLevel.PARTIAL, notes),
 
-  // 完全支持 MCP
+  // Full MCP support
   fullMCP: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.MCP_SERVERS, CapabilityLevel.FULL),
 
-  // 部分支持 MCP
+  // Partial MCP support
   partialMCP: (notes?: string): CapabilityDeclaration =>
     declareCapability(ConfigCapability.MCP_SERVERS, CapabilityLevel.PARTIAL, notes),
 
-  // 只读 MCP
+  // Read-only MCP
   readOnlyMCP: (notes?: string): CapabilityDeclaration =>
     declareCapability(ConfigCapability.MCP_SERVERS, CapabilityLevel.READ_ONLY, notes),
 
-  // 不支持 MCP
+  // No MCP support
   noMCP: (notes?: string): CapabilityDeclaration =>
     declareCapability(ConfigCapability.MCP_SERVERS, CapabilityLevel.NONE, notes),
 
-  // 完全支持设置
+  // Full settings support
   fullSettings: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.SETTINGS, CapabilityLevel.FULL),
 
-  // 部分支持设置
+  // Partial settings support
   partialSettings: (notes?: string): CapabilityDeclaration =>
     declareCapability(ConfigCapability.SETTINGS, CapabilityLevel.PARTIAL, notes),
 
-  // 完全支持命令
+  // Full commands support
   fullCommands: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.COMMANDS, CapabilityLevel.FULL),
 
-  // 完全支持提示词
+  // Full prompts support
   fullPrompts: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.PROMPTS, CapabilityLevel.FULL),
 
-  // 完全支持上下文
+  // Full context support
   fullContext: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.CONTEXT, CapabilityLevel.FULL),
 
-  // 完全支持环境变量
+  // Full env vars support
   fullEnvVars: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.ENV_VARS, CapabilityLevel.FULL),
 
-  // 完全支持忽略模式
+  // Full ignore patterns support
   fullIgnore: (): CapabilityDeclaration =>
     declareCapability(ConfigCapability.IGNORE_PATTERNS, CapabilityLevel.FULL),
 };
 
 /**
- * 各工具的典型能力配置
+ * Typical capability configurations for each tool
  */
 export const ToolCapabilities = {
   /**
-   * Cursor 能力
-   * - 规则: Markdown + frontmatter
-   * - MCP: 通过 .cursor/mcp.json 或配置
+   * Cursor capabilities
+   * - Rules: Markdown + frontmatter
+   * - MCP: via .cursor/mcp.json or config
    */
   cursor: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -93,10 +93,10 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * Claude Code 能力
-   * - 规则: CLAUDE.md
+   * Claude Code capabilities
+   * - Rules: CLAUDE.md
    * - MCP: .mcp.json
-   * - 设置: settings.json
+   * - Settings: settings.json
    */
   claudeCode: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -106,8 +106,8 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * OpenAI Codex 能力
-   * - 规则: AGENTS.md
+   * OpenAI Codex capabilities
+   * - Rules: AGENTS.md
    * - MCP: .codex/config.toml
    */
   codex: (): CapabilityDeclaration[] => [
@@ -117,9 +117,9 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * GitHub Copilot 能力
-   * - 规则: .github/copilot-instructions.md
-   * - 无 MCP 支持
+   * GitHub Copilot capabilities
+   * - Rules: .github/copilot-instructions.md
+   * - No MCP support
    */
   copilot: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -128,9 +128,9 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * Windsurf 能力
-   * - 规则: .windsurfrules
-   * - MCP: 通过配置文件
+   * Windsurf capabilities
+   * - Rules: .windsurfrules
+   * - MCP: via config file
    */
   windsurf: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -139,9 +139,9 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * Cline 能力
-   * - 规则: .clinerules/
-   * - MCP: globalState.json 或配置
+   * Cline capabilities
+   * - Rules: .clinerules/
+   * - MCP: globalState.json or config
    */
   cline: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -150,9 +150,9 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * Aider 能力
-   * - 规则: .aider.conf.yml
-   * - 无原生 MCP 支持
+   * Aider capabilities
+   * - Rules: .aider.conf.yml
+   * - No native MCP support
    */
   aider: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -161,9 +161,9 @@ export const ToolCapabilities = {
   ],
 
   /**
-   * Continue.dev 能力
-   * - 规则: config.yaml 中的 rules
-   * - MCP: config.yaml 中的 mcpServers
+   * Continue.dev capabilities
+   * - Rules: rules in config.yaml
+   * - MCP: mcpServers in config.yaml
    */
   continue: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
@@ -174,7 +174,7 @@ export const ToolCapabilities = {
 };
 
 /**
- * 检查能力是否可用
+ * Check if capability is available
  */
 export function isCapabilityAvailable(
   declaration: CapabilityDeclaration
@@ -183,7 +183,7 @@ export function isCapabilityAvailable(
 }
 
 /**
- * 检查能力是否支持导出
+ * Check if capability supports export
  */
 export function canExportCapability(
   declaration: CapabilityDeclaration
@@ -193,7 +193,7 @@ export function canExportCapability(
 }
 
 /**
- * 检查能力是否支持导入
+ * Check if capability supports import
  */
 export function canImportCapability(
   declaration: CapabilityDeclaration
@@ -202,7 +202,7 @@ export function canImportCapability(
 }
 
 /**
- * 获取能力的兼容性说明
+ * Get compatibility notes for capabilities
  */
 export function getCompatibilityNotes(
   declarations: CapabilityDeclaration[]

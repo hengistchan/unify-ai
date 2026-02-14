@@ -1,8 +1,8 @@
 /**
  * Unify-AI
- * 统一的 AI Agent 工具配置管理库
+ * Unified AI Agent tool configuration management library
  *
- * 支持的工具有:
+ * Supported tools:
  * - Cursor
  * - Claude Code
  * - OpenAI Codex
@@ -16,10 +16,10 @@
  * ```typescript
  * import { importer, exporter, adapterRegistry } from 'unify-ai';
  *
- * // 导入配置
+ * // Import configuration
  * const result = await importer.import('/path/to/project');
  *
- * // 导出配置
+ * // Export configuration
  * await exporter.export(result.config, '/path/to/project', {
  *   targetTool: 'claude-code',
  * });
@@ -38,7 +38,7 @@ export * from './discovery';
 // Converter
 export * from './converter';
 
-// 便捷导出
+// Convenience exports
 import { adapterRegistry } from './adapters/registry';
 import { importer } from './converter/Importer';
 import { exporter } from './converter/Exporter';
@@ -46,34 +46,34 @@ import { fileDiscovery } from './discovery/FileDiscovery';
 
 export const unify = {
   /**
-   * 适配器注册表
+   * Adapter registry
    */
   registry: adapterRegistry,
 
   /**
-   * 配置导入器
+   * Configuration importer
    */
   importer,
 
   /**
-   * 配置导出器
+   * Configuration exporter
    */
   exporter,
 
   /**
-   * 文件发现器
+   * File discoverer
    */
   discovery: fileDiscovery,
 
   /**
-   * 快速导入配置
+   * Quick import configuration
    */
   async importConfig(projectRoot: string) {
     return importer.import(projectRoot);
   },
 
   /**
-   * 快速导出配置
+   * Quick export configuration
    */
   async exportConfig(
     config: import('./core/types').UnifiedConfig,
@@ -84,7 +84,7 @@ export const unify = {
   },
 
   /**
-   * 检测项目使用的工具
+   * Detect tools used in project
    */
   async detectTools(projectRoot: string) {
     return fileDiscovery.detectTools(projectRoot);

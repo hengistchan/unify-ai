@@ -1,12 +1,12 @@
 /**
  * Adapter Registry
- * 适配器注册表 - 管理所有可用的适配器
+ * Manages all available adapters
  */
 
 import type { IAdapter } from '../adapters/base/IAdapter';
 import type { ToolId, ConfigCapability, AdapterInfo } from '../core/types';
 
-// 导入所有适配器
+// Import all adapters
 import { CursorAdapter, cursorAdapter } from '../adapters/cursor';
 import { ClaudeCodeAdapter, claudeCodeAdapter } from '../adapters/claude-code';
 import { CopilotAdapter, copilotAdapter } from '../adapters/copilot';
@@ -17,19 +17,19 @@ import { AiderAdapter, aiderAdapter } from '../adapters/aider';
 import { ContinueAdapter, continueAdapter } from '../adapters/continue';
 
 /**
- * 适配器注册表
+ * Adapter registry
  */
 export class AdapterRegistry {
   private adapters: Map<ToolId, IAdapter> = new Map();
   private initialized = false;
 
   /**
-   * 初始化注册表
+   * Initialize registry
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // 注册内置适配器
+    // Register built-in adapters
     this.register(cursorAdapter);
     this.register(claudeCodeAdapter);
     this.register(copilotAdapter);
@@ -39,7 +39,7 @@ export class AdapterRegistry {
     this.register(aiderAdapter);
     this.register(continueAdapter);
 
-    // 调用适配器的初始化方法
+    // Call each adapter's initialize method
     for (const adapter of this.adapters.values()) {
       if (adapter.initialize) {
         await adapter.initialize();
@@ -50,49 +50,49 @@ export class AdapterRegistry {
   }
 
   /**
-   * 注册适配器
+   * Register adapter
    */
   register(adapter: IAdapter): void {
     this.adapters.set(adapter.toolMeta.id, adapter);
   }
 
   /**
-   * 注销适配器
+   * Unregister adapter
    */
   unregister(toolId: ToolId): boolean {
     return this.adapters.delete(toolId);
   }
 
   /**
-   * 获取适配器
+   * Get adapter
    */
   get(toolId: ToolId): IAdapter | undefined {
     return this.adapters.get(toolId);
   }
 
   /**
-   * 获取所有适配器
+   * Get all adapters
    */
   getAll(): IAdapter[] {
     return Array.from(this.adapters.values());
   }
 
   /**
-   * 获取所有适配器信息
+   * Get all adapter information
    */
   getAllInfo(): AdapterInfo[] {
     return this.getAll().map(adapter => adapter.getInfo());
   }
 
   /**
-   * 根据能力查找适配器
+   * Find adapters by capability
    */
   findByCapability(capability: ConfigCapability): IAdapter[] {
     return this.getAll().filter(adapter => adapter.hasCapability(capability));
   }
 
   /**
-   * 根据项目检测适配器
+   * Detect adapters for a project
    */
   async detectForProject(projectRoot: string): Promise<IAdapter[]> {
     const detected: IAdapter[] = [];
@@ -107,14 +107,14 @@ export class AdapterRegistry {
   }
 
   /**
-   * 检查适配器是否存在
+   * Check if adapter exists
    */
   has(toolId: ToolId): boolean {
     return this.adapters.has(toolId);
   }
 
   /**
-   * 清理资源
+   * Cleanup resources
    */
   async dispose(): Promise<void> {
     for (const adapter of this.adapters.values()) {
@@ -127,10 +127,10 @@ export class AdapterRegistry {
   }
 }
 
-// 导出单例
+// Export singleton
 export const adapterRegistry: AdapterRegistry = new AdapterRegistry();
 
-// 导出类型
+// Export types
 export {
   CursorAdapter,
   ClaudeCodeAdapter,

@@ -1,6 +1,6 @@
 /**
  * Converter - DiffEngine
- * 差异检测引擎 - 比较 unified 配置与工具配置之间的差异
+ * Diff detection engine - compares differences between unified config and tool config
  */
 
 import { promises as fs } from 'fs';
@@ -13,11 +13,11 @@ import type {
 import { adapterRegistry } from '../adapters/registry';
 
 // ============================================
-// 类型定义
+// Type definitions
 // ============================================
 
 /**
- * 差异类型
+ * Diff type
  */
 export enum DiffType {
   ADDED = 'added',
@@ -27,84 +27,84 @@ export enum DiffType {
 }
 
 /**
- * 差异条目
+ * Diff entry
  */
 export interface DiffEntry {
-  /** 差异类型 */
+  /** Diff type */
   type: DiffType;
-  /** 配置路径 (JSON Path) */
+  /** Configuration path (JSON Path) */
   path: string;
-  /** 差异来源 */
+  /** Diff source */
   source: 'unified' | 'tool' | 'both';
-  /** Unified 配置中的值 */
+  /** Value in Unified config */
   unifiedValue?: unknown;
-  /** 工具配置中的值 */
+  /** Value in tool config */
   toolValue?: unknown;
-  /** 差异检测时间 */
+  /** Diff detection time */
   timestamp: string;
-  /** 工具 ID */
+  /** Tool ID */
   toolId?: string;
-  /** 工具名称 */
+  /** Tool name */
   toolName?: string;
 }
 
 /**
- * 差异结果
+ * Diff result
  */
 export interface DiffResult {
-  /** 工具 ID */
+  /** Tool ID */
   toolId: string;
-  /** 工具名称 */
+  /** Tool name */
   toolName: string;
-  /** 配置文件路径 */
+  /** Configuration file path */
   configPath: string;
-  /** 差异条目列表 */
+  /** Diff entry list */
   entries: DiffEntry[];
-  /** 是否存在冲突 */
+  /** Whether there are conflicts */
   hasConflicts: boolean;
-  /** 差异摘要 */
+  /** Diff summary */
   summary: DiffSummary;
 }
 
 /**
- * 差异摘要
+ * Diff summary
  */
 export interface DiffSummary {
-  /** 新增数量 */
+  /** Number added */
   added: number;
-  /** 删除数量 */
+  /** Number removed */
   removed: number;
-  /** 修改数量 */
+  /** Number modified */
   modified: number;
-  /** 冲突数量 */
+  /** Number of conflicts */
   conflicts: number;
 }
 
 /**
- * 计算所有差异的选项
+ * Options for computing all diffs
  */
 export interface ComputeDiffOptions {
-  /** 项目根目录 */
+  /** Project root directory */
   projectRoot: string;
-  /** 是否包含未检测到的工具配置 */
+  /** Whether to include undetected tool configurations */
   includeUndetected?: boolean;
 }
 
 // ============================================
-// DiffEngine 类
+// DiffEngine class
 // ============================================
 
 /**
- * 差异检测引擎
- * 用于比较 unified 配置与工具配置之间的差异
+ * Diff detection engine
+ * Used to compare differences between unified config and tool config
  */
 export class DiffEngine {
   /**
-   * 深度比较两个配置对象
-   * @param unified Unified 配置
-   * @param generated 工具配置
-   * @param path 当前路径 (可选)
-   * @returns 差异条目数组
+   * Deep compare two configuration objects
+   * @param unified Unified config
+   * @param generated tool config
+   * @param path Current path (optional)
+   * @returns Diff entry array
    */
   deepDiff(
     unified: unknown,
@@ -115,12 +115,12 @@ export class DiffEngine {
     const currentPath = path ?? '';
     const timestamp = new Date().toISOString();
 
-    // 处理 null 和 undefined
+    // Handle null and undefined
     if (unified === undefined && generated === undefined) {
       return diffs;
     }
 
-    // 处理一边为 undefined/null 的情况
+    // Handle case where one side is undefined/null
     if (unified === undefined || unified === null) {
       if (generated !== undefined && generated !== null) {
         diffs.push({
@@ -145,18 +145,18 @@ export class DiffEngine {
       return diffs;
     }
 
-    // 获取所有键
+    // Get all keys
     const unifiedKeys = this.isObject(unified) ? Object.keys(unified as object) : [];
     const generatedKeys = this.isObject(generated) ? Object.keys(generated as object) : [];
     const allKeys = new Set([...unifiedKeys, ...generatedKeys]);
 
-    // 遍历所有键进行比较
+    // Iterate through all keys to compare
     for (const key of allKeys) {
       const keyPath = currentPath ? `${currentPath}.${key}` : key;
       const unifiedVal = (unified as Record<string, unknown>)[key];
       const generatedVal = (generated as Record<string, unknown>)[key];
 
-      // 工具配置中有，但 unified 中没有 (新增)
+      // Tool config has but unified doesn't have (added)
       if (!(key in (unified as object))) {
         diffs.push({
           type: DiffType.ADDED,
@@ -166,7 +166,7 @@ export class DiffEngine {
           timestamp,
         });
       }
-      // Unified 中有，但工具配置中没有 (删除)
+      // Unified has but tool config doesn't have (removed)
       else if (!(key in (generated as object))) {
         diffs.push({
           type: DiffType.REMOVED,
@@ -176,12 +176,12 @@ export class DiffEngine {
           timestamp,
         });
       }
-      // 两者都是对象，递归比较
+      // Both are objects, recursively compare
       else if (this.isObject(unifiedVal) && this.isObject(generatedVal)) {
         const nestedDiffs = this.deepDiff(unifiedVal, generatedVal, keyPath);
         diffs.push(...nestedDiffs);
       }
-      // 值不相等 (修改)
+      // Values not equal (modified)
       else if (!this.isEqual(unifiedVal, generatedVal)) {
         diffs.push({
           type: DiffType.MODIFIED,
@@ -198,12 +198,12 @@ export class DiffEngine {
   }
 
   /**
-   * 比较数组类型的配置
-   * @param unified Unified 配置中的数组
-   * @param generated 工具配置中的数组
-   * @param path 当前路径
-   * @param idField 用于识别相同元素的字段名
-   * @returns 差异条目数组
+   * Compare array-type configurations
+   * @param unified Array in Unified config
+   * @param generated Array in tool config
+   * @param path Current path
+   * @param idField Field name for identifying same elements
+   * @returns Diff entry array
    */
   diffArrays(
     unified: unknown[],
@@ -214,7 +214,7 @@ export class DiffEngine {
     const diffs: DiffEntry[] = [];
     const timestamp = new Date().toISOString();
 
-    // 创建 ID 到元素的映射
+    // Create ID to element mapping
     const unifiedMap = new Map<string, unknown>();
     const generatedMap = new Map<string, unknown>();
 
@@ -230,7 +230,7 @@ export class DiffEngine {
       }
     }
 
-    // 找出新增的元素 (在 generated 中但不在 unified 中)
+    // Find added elements (in generated but not in unified)
     for (const [id, value] of generatedMap) {
       if (!unifiedMap.has(id)) {
         diffs.push({
@@ -243,7 +243,7 @@ export class DiffEngine {
       }
     }
 
-    // 找出删除的元素 (在 unified 中但不在 generated 中)
+    // Find removed elements (in unified but not in generated)
     for (const [id, value] of unifiedMap) {
       if (!generatedMap.has(id)) {
         diffs.push({
@@ -256,7 +256,7 @@ export class DiffEngine {
       }
     }
 
-    // 找出修改的元素
+    // Find modified elements
     for (const [id, unifiedItem] of unifiedMap) {
       const generatedItem = generatedMap.get(id);
       if (generatedItem) {
@@ -270,10 +270,10 @@ export class DiffEngine {
   }
 
   /**
-   * 计算所有工具的差异
-   * @param unified Unified 配置
-   * @param toolId 特定工具 ID (可选，不指定则计算所有工具)
-   * @returns 差异结果数组
+   * Compute diffs for all tools
+   * @param unified Unified config
+   * @param toolId Specific tool ID (optional, if not specified compute all tools)
+   * @returns Diff result array
    */
   async computeAllDiffs(
     unified: UnifiedConfig,
@@ -287,7 +287,7 @@ export class DiffEngine {
         const diffResult = await this.computeDiffForTool(unified, adapter);
         results.push(diffResult);
       } catch (error) {
-        // 即使出错也添加一个结果，只是标记为错误
+        // Even if error, add a result, just mark as error
         results.push({
           toolId: adapter.toolMeta.id,
           toolName: adapter.toolMeta.name,
@@ -308,10 +308,10 @@ export class DiffEngine {
   }
 
   /**
-   * 计算特定工具的差异
-   * @param unified Unified 配置
-   * @param adapter 工具适配器
-   * @returns 差异结果
+   * Compute diff for specific tool
+   * @param unified Unified config
+   * @param adapter Tool adapter
+   * @returns Diff result
    */
   async computeDiffForTool(
     unified: UnifiedConfig,
@@ -321,28 +321,28 @@ export class DiffEngine {
     const toolName = adapter.toolMeta.name;
     const timestamp = new Date().toISOString();
 
-    // 获取工具的配置文件路径
+    // Get tool's configuration file paths
     const filePatterns = adapter.getFilePatterns();
     const configPaths = filePatterns.map(p => p.pattern);
 
-    // 尝试读取工具配置
+    // Try to read tool config
     let toolConfig: unknown = null;
     let configPath = '';
 
     for (const pattern of configPaths) {
       try {
-        const absolutePath = pattern; // 假设 pattern 是绝对路径或相对于当前工作目录
+        const absolutePath = pattern; // Assume pattern is absolute or relative to current working directory
         const content = await fs.readFile(absolutePath, 'utf-8');
         toolConfig = JSON.parse(content);
         configPath = absolutePath;
         break;
       } catch {
-        // 文件不存在或无法读取，继续尝试下一个模式
+        // File doesn't exist or can't be read, continue trying next pattern
         continue;
       }
     }
 
-    // 如果没有找到配置文件，返回空差异
+    // If no config file found, return empty diff
     if (toolConfig === null) {
       return {
         toolId,
@@ -359,24 +359,24 @@ export class DiffEngine {
       };
     }
 
-    // 生成期望的工具配置
+    // Generate expected tool config
     const generateResult = await adapter.generate(unified, { dryRun: true });
     const expectedConfig = this.extractGeneratedConfig(generateResult);
 
-    // 比较实际配置与期望配置
+    // Compare actual config with expected config
     let entries = this.deepDiff(expectedConfig, toolConfig);
 
-    // 特别处理数组类型的配置 (如 rules, mcp.servers)
+    // Specially handle array-type configs (like rules, mcp.servers)
     const arrayDiffs = this.compareArrayConfigs(unified, toolConfig, adapter);
     entries = [...entries, ...arrayDiffs];
 
-    // 计算摘要
+    // Compute summary
     const summary = this.computeSummary(entries);
 
-    // 检测冲突 (MODIFIED 类型且 source 为 'both' 视为潜在冲突)
+    // Detect conflicts (MODIFIED type with source 'both' is considered potential conflict)
     const hasConflicts = summary.modified > 0;
 
-    // 添加工具信息到每个差异条目
+    // Add tool info to each diff entry
     for (const entry of entries) {
       entry.toolId = toolId;
       entry.toolName = toolName;
@@ -394,10 +394,10 @@ export class DiffEngine {
   }
 
   /**
-   * 比较两个 UnifiedConfig 的差异
-   * @param unified1 第一个 Unified 配置
-   * @param unified2 第二个 Unified 配置
-   * @returns 差异条目数组
+   * Compare differences between two UnifiedConfig
+   * @param unified1 First Unified config
+   * @param unified2 Second Unified config
+   * @returns Array of diff entries
    */
   compareUnified(
     unified1: UnifiedConfig,
@@ -407,11 +407,11 @@ export class DiffEngine {
   }
 
   // ============================================
-  // 私有方法
+  // Private methods
   // ============================================
 
   /**
-   * 获取要比较的适配器列表
+   * Get list of adapters to compare
    */
   private getAdaptersToCompare(toolId?: string): IAdapter[] {
     if (toolId) {
@@ -422,7 +422,7 @@ export class DiffEngine {
   }
 
   /**
-   * 从生成结果中提取配置
+   * Extract config from generation result
    */
   private extractGeneratedConfig(generateResult: { files: { content: string | Buffer }[] }): unknown {
     if (generateResult.files.length === 0) {
@@ -441,7 +441,7 @@ export class DiffEngine {
   }
 
   /**
-   * 比较数组类型的配置
+   * Compare array-type configurations
    */
   private compareArrayConfigs(
     unified: UnifiedConfig,
@@ -451,7 +451,7 @@ export class DiffEngine {
     const diffs: DiffEntry[] = [];
     const timestamp = new Date().toISOString();
 
-    // 比较 rules
+    // Compare rules
     if (unified.rules?.length) {
       const toolRules = (toolConfig as Record<string, unknown>)?.rules;
       if (Array.isArray(toolRules)) {
@@ -465,7 +465,7 @@ export class DiffEngine {
       }
     }
 
-    // 比较 MCP servers
+    // Compare MCP servers
     if (unified.mcp?.servers?.length) {
       const toolMcp = (toolConfig as Record<string, unknown>)?.mcp;
       if (toolMcp && typeof toolMcp === 'object') {
@@ -486,7 +486,7 @@ export class DiffEngine {
   }
 
   /**
-   * 计算差异摘要
+   * Compute diff summary
    */
   private computeSummary(entries: DiffEntry[]): DiffSummary {
     const summary: DiffSummary = {
@@ -506,7 +506,7 @@ export class DiffEngine {
           break;
         case DiffType.MODIFIED:
           summary.modified++;
-          // 如果 source 是 'both'，则视为冲突
+          // If source is 'both', consider as conflict
           if (entry.source === 'both') {
             summary.conflicts++;
           }
@@ -521,37 +521,37 @@ export class DiffEngine {
   }
 
   /**
-   * 检查值是否为对象
+   * Check if value is object
    */
   private isObject(value: unknown): value is Record<string, unknown> {
     return value !== null && typeof value === 'object' && !Array.isArray(value);
   }
 
   /**
-   * 检查两个值是否相等
+   * Check if two values are equal
    */
   private isEqual(a: unknown, b: unknown): boolean {
-    // 基本类型比较
+    // Basic type comparison
     if (a === b) {
       return true;
     }
 
-    // 处理 null 和 undefined
+    // Handle null and undefined
     if (a === null || a === undefined || b === null || b === undefined) {
       return a === b;
     }
 
-    // 如果类型不同，不相等
+    // If types different, not equal
     if (typeof a !== typeof b) {
       return false;
     }
 
-    // 处理日期
+    // Handle dates
     if (a instanceof Date && b instanceof Date) {
       return a.getTime() === b.getTime();
     }
 
-    // 处理数组
+    // Handle arrays
     if (Array.isArray(a) && Array.isArray(b)) {
       if (a.length !== b.length) {
         return false;
@@ -564,7 +564,7 @@ export class DiffEngine {
       return true;
     }
 
-    // 处理对象
+    // Handle objects
     if (typeof a === 'object' && typeof b === 'object') {
       const aKeys = Object.keys(a as object);
       const bKeys = Object.keys(b as object);
@@ -587,10 +587,10 @@ export class DiffEngine {
 }
 
 // ============================================
-// 导出单例
+// Export singleton
 // ============================================
 
 /**
- * DiffEngine 单例实例
+ * DiffEngine singleton instance
  */
 export const diffEngine: DiffEngine = new DiffEngine();

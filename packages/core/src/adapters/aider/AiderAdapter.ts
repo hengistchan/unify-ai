@@ -1,14 +1,14 @@
 /**
  * Aider Adapter
  *
- * Aider 配置格式:
- * - .aider.conf.yml - 主配置文件 (YAML 格式)
+ * Aider configuration format:
+ * - .aider.conf.yml - Main configuration file (YAML format)
  *
- * Aider 规则可以通过 YAML 中的 rules 字段定义:
- * - 引用外部文件: rules: [{file: path/to/rule.md}]
- * - 内联内容: rules: [{content: "Rule content here"}]
+ * Aider rules can be defined via the rules field in YAML:
+ * - External file reference: rules: [{file: path/to/rule.md}]
+ * - Inline content: rules: [{content: "Rule content here"}]
  *
- * 不支持 MCP。
+ * MCP is not supported.
  */
 
 import { promises as fs } from 'fs';
@@ -37,7 +37,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Aider 配置文件格式
+ * Aider configuration file format
  */
 interface AiderConfig {
   rules?: AiderRule[];
@@ -45,8 +45,8 @@ interface AiderConfig {
 }
 
 /**
- * Aider 规则定义
- * 可以是文件引用或内联内容
+ * Aider rule definition
+ * Can be a file reference or inline content
  */
 interface AiderRule {
   file?: string;
@@ -54,7 +54,7 @@ interface AiderRule {
 }
 
 /**
- * Aider 适配器
+ * Aider adapter
  */
 export class AiderAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -68,14 +68,14 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.aider();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -95,7 +95,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Aider 配置
+   * Parse Aider configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -104,7 +104,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     let settings: ToolSettings | undefined;
 
-    // 1. 解析主配置文件
+    // 1. Parse main configuration file
     const configPath = path.join(projectRoot, '.aider.conf.yml');
     const configExists = await this.fileExists(configPath);
 
@@ -127,7 +127,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析规则目录中的规则文件
+    // 2. Parse rule files from rules directory
     const ruleFiles = await this.discoverRuleFiles(projectRoot);
     for (const fileInfo of ruleFiles) {
       sourceFiles.push(fileInfo);
@@ -140,7 +140,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.AIDER,
@@ -160,26 +160,26 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Aider 配置
+   * Generate Aider configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 生成主配置文件
+    // Generate main configuration file
     const aiderConfig: AiderConfig = {};
 
-    // 1. 生成规则
+    // 1. Generate rules
     if (config.rules && config.rules.length > 0 && this.hasCapability(ConfigCapability.RULES)) {
       const aiderRules: AiderRule[] = [];
 
       for (const rule of config.rules) {
         if (rule.enabled === false) continue;
 
-        // 如果规则引用外部文件，保留引用
+        // If rule references external file, keep the reference
         if (rule.metadata?.externalFile) {
           aiderRules.push({ file: rule.metadata.externalFile as string });
         } else {
-          // 否则作为内联规则
+          // Otherwise as inline rule
           aiderRules.push({ content: rule.content });
         }
       }
@@ -189,16 +189,16 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 生成设置
+    // 2. Generate settings
     if (config.settings && this.hasCapability(ConfigCapability.SETTINGS)) {
-      // 将设置添加到配置中
+      // Add settings to configuration
       for (const [key, value] of Object.entries(config.settings)) {
         if (key !== 'permissions' && key !== 'toolSpecific' && value !== undefined) {
           aiderConfig[key] = value;
         }
       }
 
-      // 处理 toolSpecific 设置
+      // Handle toolSpecific settings
       if (config.settings.toolSpecific) {
         for (const [key, value] of Object.entries(config.settings.toolSpecific)) {
           if (value !== undefined) {
@@ -208,7 +208,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 生成 YAML 内容
+    // Generate YAML content
     const configContent = yaml.stringify(aiderConfig, { lineWidth: 0 });
 
     files.push({
@@ -218,12 +218,12 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       overwrite: true,
     });
 
-    // 3. 生成外部规则文件（如果需要）
+    // 3. Generate external rule files (if needed)
     if (config.rules && config.rules.length > 0) {
       for (const rule of config.rules) {
         if (rule.enabled === false) continue;
         if (rule.metadata?.externalFile) {
-          // 外部规则文件
+          // External rule file
           const externalRulePath = path.join(
             '.',
             rule.metadata.externalFile as string
@@ -245,7 +245,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     const fileName = path.basename(filePath);
@@ -272,7 +272,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       };
     }
 
-    // 规则文件
+    // Rule files
     if (filePath.includes('.aider.rules/') || filePath.endsWith('.md')) {
       const result = await this.parseRuleContent(content, filePath);
       return {
@@ -303,7 +303,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 配置文件解析
+  // Private methods - Configuration file parsing
   // ============================================
 
   private async parseConfigFile(filePath: string): Promise<{
@@ -338,13 +338,13 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
     try {
       const aiderConfig = yaml.parse(content) as AiderConfig;
 
-      // 解析规则
+      // Parse rules
       if (aiderConfig.rules) {
         for (let i = 0; i < aiderConfig.rules.length; i++) {
           const ruleDef = aiderConfig.rules[i];
 
           if (ruleDef.file) {
-            // 文件引用
+            // File reference
             const rule: RuleConfig = {
               id: this.generateRuleId(ruleDef.file),
               name: path.basename(ruleDef.file, '.md'),
@@ -357,7 +357,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
             };
             rules.push(rule);
           } else if (ruleDef.content) {
-            // 内联规则
+            // Inline rule
             const rule: RuleConfig = {
               id: this.generateRuleId(`inline-${i}`),
               name: `Rule ${i + 1}`,
@@ -372,7 +372,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
         }
       }
 
-      // 解析其他设置
+      // Parse other settings
       for (const [key, value] of Object.entries(aiderConfig)) {
         if (key !== 'rules' && value !== undefined) {
           (settings as Record<string, unknown>)[key] = value;
@@ -393,7 +393,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则文件解析
+  // Private methods - Rule file parsing
   // ============================================
 
   private async discoverRuleFiles(projectRoot: string): Promise<FileInfo[]> {
@@ -405,7 +405,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
         return [];
       }
     } catch {
-      // 目录不存在
+      // Directory does not exist
       return [];
     }
 
@@ -470,7 +470,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -483,5 +483,5 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const aiderAdapter = new AiderAdapter();

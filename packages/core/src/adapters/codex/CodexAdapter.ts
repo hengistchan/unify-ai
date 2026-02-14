@@ -1,10 +1,10 @@
 /**
  * Codex Adapter
  *
- * Codex 配置格式:
- * - AGENTS.md - 主要规则文件 (Markdown)
- * - .codex/config.toml - Codex 配置文件 (TOML)
- * - .codex/mcp.toml - MCP 服务器配置 (TOML)
+ * Codex configuration format:
+ * - AGENTS.md - Main rule file (Markdown)
+ * - .codex/config.toml - Codex configuration file (TOML)
+ * - .codex/mcp.toml - MCP server configuration (TOML)
  */
 
 import { promises as fs } from 'fs';
@@ -34,7 +34,7 @@ import {
 import { ToolCapabilities } from '../base/Capability';
 
 /**
- * Codex MCP 配置格式 (TOML)
+ * Codex MCP configuration format (TOML)
  */
 interface CodexMCPConfig {
   mcpServers: Record<string, {
@@ -47,7 +47,7 @@ interface CodexMCPConfig {
 }
 
 /**
- * Codex 适配器
+ * Codex adapter
  */
 export class CodexAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
@@ -60,14 +60,14 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   readonly version = '1.0.0';
 
   /**
-   * 获取能力声明
+   * Get capability declarations
    */
   getCapabilities(): CapabilityDeclaration[] {
     return ToolCapabilities.codex();
   }
 
   /**
-   * 获取文件模式
+   * Get file patterns
    */
   getFilePatterns(): FilePattern[] {
     return [
@@ -93,7 +93,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 解析 Codex 配置
+   * Parse Codex configuration
    */
   async parse(projectRoot: string, options?: ConvertOptions): Promise<ParseResult> {
     const startTime = Date.now();
@@ -103,7 +103,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
     let mcp: MCPConfig | undefined;
     let settings: ToolSettings | undefined;
 
-    // 1. 解析规则文件 AGENTS.md
+    // 1. Parse rule file AGENTS.md
     const agentsMdPath = path.join(projectRoot, 'AGENTS.md');
     if (await this.fileExists(agentsMdPath)) {
       sourceFiles.push({
@@ -120,7 +120,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 2. 解析 MCP 配置
+    // 2. Parse MCP configuration
     const mcpPath = path.join(projectRoot, '.codex/mcp.toml');
     if (await this.fileExists(mcpPath)) {
       sourceFiles.push({
@@ -137,7 +137,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 3. 解析设置
+    // 3. Parse settings
     const configPath = path.join(projectRoot, '.codex/config.toml');
     if (await this.fileExists(configPath)) {
       sourceFiles.push({
@@ -154,7 +154,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    // 构建统一配置
+    // Build unified configuration
     const config: UnifiedConfig = {
       version: '1.0',
       sourceTool: ToolId.CODEX,
@@ -175,12 +175,12 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成 Codex 配置
+   * Generate Codex configuration
    */
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. 生成 AGENTS.md
+    // 1. Generate AGENTS.md
     if (config.rules && config.rules.length > 0) {
       const content = this.generateAgentsMd(config.rules);
       files.push({
@@ -191,7 +191,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 2. 生成 MCP 配置
+    // 2. Generate MCP configuration
     if (config.mcp?.servers?.length && this.hasCapability(ConfigCapability.MCP_SERVERS)) {
       const mcpContent = this.generateMCPContent(config.mcp);
       files.push({
@@ -202,7 +202,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       });
     }
 
-    // 3. 生成设置
+    // 3. Generate settings
     if (config.settings && this.hasCapability(ConfigCapability.SETTINGS)) {
       const settingsContent = this.generateSettingsContent(config.settings);
       files.push({
@@ -220,7 +220,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 从内容解析
+   * Parse from content
    */
   async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
     const fileName = path.basename(filePath);
@@ -299,7 +299,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 规则解析
+  // Private methods - Rule parsing
   // ============================================
 
   private async parseAgentsMd(filePath: string): Promise<{
@@ -329,7 +329,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
     const rules: RuleConfig[] = [];
     const fileName = path.basename(filePath, '.md');
 
-    // 创建主规则 - Codex 的规则文件是纯 Markdown
+    // Create main rule - Codex rule files are pure Markdown
     const rule: RuleConfig = {
       id: this.generateRuleId(fileName),
       name: fileName === 'AGENTS' ? 'Project Instructions' : fileName,
@@ -347,12 +347,12 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   private generateAgentsMd(rules: RuleConfig[]): string {
     const sections: string[] = [];
 
-    // 如果只有一个规则，直接输出内容
+    // If there's only one rule, output its content directly
     if (rules.length === 1) {
       return rules[0].content;
     }
 
-    // 多个规则合并为一个文档
+    // Multiple rules: combine into a single document
     for (const rule of rules) {
       if (rule.enabled !== false) {
         sections.push(`## ${rule.name || rule.id}\n\n${rule.content}`);
@@ -367,12 +367,12 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - TOML 解析
+  // Private methods - TOML parsing
   // ============================================
 
   /**
-   * 简单的 TOML 解析器
-   * 支持: 字符串、数字、布尔值、数组、表
+   * Simple TOML parser
+   * Supports: strings, numbers, booleans, arrays, tables
    */
   private parseTOML(content: string): Record<string, unknown> {
     const result: Record<string, unknown> = {};
@@ -383,18 +383,18 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      // 跳过空行和注释
+      // Skip empty lines and comments
       if (!line || line.startsWith('#')) {
         continue;
       }
 
-      // 表头 [table.name]
+      // Table header [table.name]
       const tableMatch = line.match(/^\[([^\]]+)\]$/);
       if (tableMatch) {
         const tablePath = tableMatch[1].split('.');
         currentTablePath = tablePath;
 
-        // 创建嵌套对象
+        // Create nested object
         let obj = result;
         for (const key of tablePath) {
           if (!obj[key]) {
@@ -406,7 +406,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
         continue;
       }
 
-      // 键值对 key = value
+      // Key-value pair key = value
       const keyValueMatch = line.match(/^([a-zA-Z0-9_\-]+)\s*=\s*(.*)$/);
       if (keyValueMatch) {
         const key = keyValueMatch[1];
@@ -421,7 +421,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   private parseTOMLValue(valueStr: string): unknown {
     valueStr = valueStr.trim();
 
-    // 字符串
+    // Strings
     if (valueStr.startsWith('"') && valueStr.endsWith('"')) {
       return valueStr.slice(1, -1);
     }
@@ -429,21 +429,21 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       return valueStr.slice(1, -1);
     }
 
-    // 布尔值
+    // Booleans
     if (valueStr === 'true') return true;
     if (valueStr === 'false') return false;
 
-    // 数字
+    // Numbers
     const num = Number(valueStr);
     if (!isNaN(num)) return num;
 
-    // 数组
+    // Arrays
     if (valueStr.startsWith('[') && valueStr.endsWith(']')) {
       const arrayStr = valueStr.slice(1, -1).trim();
       if (!arrayStr) return [];
 
       const items: unknown[] = [];
-      // 简单解析 - 按逗号分割
+      // Simple parsing - split by comma
       const parts = this.splitTOMLArray(arrayStr);
       for (const part of parts) {
         items.push(this.parseTOMLValue(part));
@@ -486,7 +486,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   /**
-   * 生成简单的 TOML
+   * Generate simple TOML
    */
   private generateTOML(obj: Record<string, unknown>, prefix = ''): string {
     const lines: string[] = [];
@@ -531,7 +531,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - MCP 解析
+  // Private methods - MCP parsing
   // ============================================
 
   private async parseMCPFile(filePath: string): Promise<{
@@ -611,7 +611,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 私有方法 - 设置解析
+  // Private methods - Settings parsing
   // ============================================
 
   private async parseSettingsFile(filePath: string): Promise<{
@@ -644,7 +644,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
         toolSpecific: {},
       };
 
-      // Codex 可能有的配置项
+      // Codex-specific configuration items
       if (toml.model) {
         (settings.toolSpecific as Record<string, unknown>).model = toml.model;
       }
@@ -673,7 +673,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   private generateSettingsContent(settings: ToolSettings): string {
     const tomlObj: Record<string, unknown> = {};
 
-    // 添加工具特定设置
+    // Add tool-specific settings
     if (settings.toolSpecific) {
       for (const [key, value] of Object.entries(settings.toolSpecific)) {
         if (value !== undefined) {
@@ -686,7 +686,7 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 
   // ============================================
-  // 辅助方法
+  // Helper methods
   // ============================================
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -699,5 +699,5 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }
 }
 
-// 导出单例
+// Export singleton
 export const codexAdapter = new CodexAdapter();

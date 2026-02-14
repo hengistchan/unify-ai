@@ -1,6 +1,6 @@
 /**
  * File Discovery
- * 配置文件发现服务
+ * Configuration file discovery service
  */
 
 import { promises as fs } from 'fs';
@@ -16,77 +16,77 @@ import type {
 import { adapterRegistry } from '../adapters/registry';
 
 /**
- * 发现选项
+ * Discovery options
  */
 export interface DiscoveryOptions {
   /**
-   * 要扫描的目录
+   * Directories to scan
    */
   scanDirs?: string[];
 
   /**
-   * 排除的模式
+   * Patterns to exclude
    */
   exclude?: string[];
 
   /**
-   * 最大深度
+   * Maximum depth
    */
   maxDepth?: number;
 
   /**
-   * 只发现特定能力
+   * Only discover specific capabilities
    */
   capabilities?: ConfigCapability[];
 
   /**
-   * 只使用特定适配器
+   * Only use specific adapters
    */
   adapters?: IAdapter[];
 }
 
 /**
- * 发现结果
+ * Discovery result
  */
 export interface DiscoveryResult {
   /**
-   * 发现的文件
+   * Discovered files
    */
   files: DiscoveredFile[];
 
   /**
-   * 检测到的工具
+   * Detected tools
    */
   detectedTools: IAdapter[];
 
   /**
-   * 扫描耗时 (ms)
+   * Scan time (ms)
    */
   scanTime: number;
 }
 
 /**
- * 发现的文件
+ * Discovered file
  */
 export interface DiscoveredFile extends FileInfo {
   /**
-   * 关联的适配器
+   * Associated adapter
    */
   adapter: IAdapter;
 
   /**
-   * 关联的能力
+   * Associated capability
    */
   capability: ConfigCapability;
 
   /**
-   * 匹配的模式
+   * Matched pattern
    */
   matchedPattern: FilePattern;
 }
 
 /**
- * 文件发现器
+ * File discoverer
  */
 export class FileDiscovery {
   private defaultExclude = [
@@ -101,17 +101,17 @@ export class FileDiscovery {
   ];
 
   /**
-   * 发现项目中的 AI 工具配置文件
+   * Discover AI tool configuration files in project
    */
   async discover(projectRoot: string, options?: DiscoveryOptions): Promise<DiscoveryResult> {
     const startTime = Date.now();
     const files: DiscoveredFile[] = [];
     const detectedTools = new Set<IAdapter>();
 
-    // 获取要使用的适配器
+    // Get adapters to use
     const adapters = options?.adapters ?? adapterRegistry.getAll();
 
-    // 并行扫描所有适配器的文件模式
+    // Scan all adapter file patterns in parallel
     const scanPromises = adapters.map(async (adapter) => {
       const patterns = this.filterPatterns(adapter.getFilePatterns(), options?.capabilities);
       const adapterFiles: DiscoveredFile[] = [];
@@ -145,7 +145,7 @@ export class FileDiscovery {
   }
 
   /**
-   * 发现特定能力的配置文件
+   * Discover config files for specific capability
    */
   async discoverByCapability(
     projectRoot: string,
@@ -160,7 +160,7 @@ export class FileDiscovery {
   }
 
   /**
-   * 检测项目使用的 AI 工具
+   * Detect AI tools used in project
    */
   async detectTools(projectRoot: string): Promise<IAdapter[]> {
     const adapters = adapterRegistry.getAll();
@@ -178,7 +178,7 @@ export class FileDiscovery {
   }
 
   /**
-   * 检查特定配置文件是否存在
+   * Check if specific config file exists
    */
   async checkFile(projectRoot: string, relativePath: string): Promise<FileInfo> {
     const absolutePath = path.join(projectRoot, relativePath);
@@ -203,7 +203,7 @@ export class FileDiscovery {
   }
 
   /**
-   * 扫描多个路径
+   * Scan multiple paths
    */
   async scanPaths(
     projectRoot: string,
@@ -221,7 +221,7 @@ export class FileDiscovery {
   }
 
   // ============================================
-  // 私有方法
+  // Private methods
   // ============================================
 
   private filterPatterns(
@@ -289,5 +289,5 @@ export class FileDiscovery {
   }
 }
 
-// 导出单例
+// Export singleton
 export const fileDiscovery = new FileDiscovery();

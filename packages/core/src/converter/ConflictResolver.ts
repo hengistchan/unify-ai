@@ -1,13 +1,13 @@
 /**
  * Conflict Resolver
- * 配置冲突解决器
+ * Configuration conflict resolver
  */
 
 import type { UnifiedConfig, RuleConfig, MCPServerConfig } from '../core/types';
 import type { ToolId } from '../core/types';
 
 /**
- * 冲突类型
+ * Conflict type
  */
 export enum ConflictType {
   RULE_DUPLICATE = 'rule_duplicate',
@@ -18,7 +18,7 @@ export enum ConflictType {
 }
 
 /**
- * 冲突信息
+ * Conflict information
  */
 export interface Conflict {
   type: ConflictType;
@@ -32,12 +32,12 @@ export interface Conflict {
 }
 
 /**
- * 冲突解决策略
+ * Conflict resolution strategy
  */
 export type ConflictStrategy = 'skip' | 'overwrite' | 'merge' | 'ask';
 
 /**
- * 冲突解决结果
+ * Conflict resolution result
  */
 export interface ConflictResolution {
   action: 'keep_existing' | 'use_incoming' | 'merge' | 'skip';
@@ -45,7 +45,7 @@ export interface ConflictResolution {
 }
 
 /**
- * 冲突解决器
+ * Conflict resolver
  */
 export class ConflictResolver {
   private strategy: ConflictStrategy;
@@ -60,7 +60,7 @@ export class ConflictResolver {
   }
 
   /**
-   * 解决规则冲突
+   * Resolve rule conflicts
    */
   resolveRuleConflicts(
     existing: RuleConfig[],
@@ -75,12 +75,12 @@ export class ConflictResolver {
       const existingRule = existingIds.get(rule.id);
 
       if (!existingRule) {
-        // 无冲突，直接添加
+        // No conflict, add directly
         result.push(rule);
         continue;
       }
 
-      // 检测冲突
+      // Detect conflict
       if (this.isRuleContentDifferent(existingRule, rule)) {
         const conflict: Conflict = {
           type: ConflictType.RULE_CONTENT_DIFF,
@@ -109,7 +109,7 @@ export class ConflictResolver {
             result[index] = merged;
           }
         }
-        // 'keep_existing' 和 'skip' 不做任何操作
+        // 'keep_existing' and 'skip' do nothing
       }
     }
 
@@ -117,7 +117,7 @@ export class ConflictResolver {
   }
 
   /**
-   * 解决 MCP 服务器冲突
+   * Resolve MCP server conflicts
    */
   resolveMCPConflicts(
     existing: MCPServerConfig[],
@@ -171,7 +171,7 @@ export class ConflictResolver {
   }
 
   /**
-   * 解决配置冲突
+   * Resolve configuration conflicts
    */
   resolveConfigConflicts(
     existing: UnifiedConfig,
@@ -180,7 +180,7 @@ export class ConflictResolver {
   ): { config: UnifiedConfig; conflicts: Conflict[] } {
     const allConflicts: Conflict[] = [];
 
-    // 解决规则冲突
+    // Resolve rule conflicts
     const ruleResult = this.resolveRuleConflicts(
       existing.rules,
       incoming.rules,
@@ -188,7 +188,7 @@ export class ConflictResolver {
     );
     allConflicts.push(...ruleResult.conflicts);
 
-    // 解决 MCP 冲突
+    // Resolve MCP conflicts
     let mcpConfig = existing.mcp;
     if (incoming.mcp?.servers?.length) {
       const mcpResult = this.resolveMCPConflicts(
@@ -206,7 +206,7 @@ export class ConflictResolver {
       mcp: mcpConfig,
     };
 
-    // 合并其他字段
+    // Merge other fields
     if (incoming.settings) {
       mergedConfig.settings = this.mergeSettings(existing.settings, incoming.settings);
     }
@@ -223,16 +223,16 @@ export class ConflictResolver {
   }
 
   // ============================================
-  // 私有方法
+  // Private methods
   // ============================================
 
   private resolveConflict(conflict: Conflict): ConflictResolution {
-    // 如果有自定义解决器，优先使用
+    // If custom resolver exists, use it first
     if (this.customResolver) {
       return this.customResolver(conflict);
     }
 
-    // 根据策略决定
+    // Decide based on strategy
     switch (this.strategy) {
       case 'skip':
         return { action: 'skip' };
@@ -244,8 +244,8 @@ export class ConflictResolver {
         return { action: 'merge' };
 
       case 'ask':
-        // 在实际应用中，这里应该调用交互式 UI
-        // 这里默认使用 merge 策略
+        // In real application, should call interactive UI
+        // Here default to merge strategy
         return { action: 'merge' };
 
       default:
@@ -268,11 +268,11 @@ export class ConflictResolver {
   private mergeRules(a: RuleConfig, b: RuleConfig): RuleConfig {
     return {
       ...a,
-      // 使用较新的内容
+      // Use newer content
       content: b.content.length > a.content.length ? b.content : a.content,
-      // 合并 globs
+      // Merge globs
       globs: [...new Set([...(a.globs ?? []), ...(b.globs ?? [])])],
-      // 保留更多信息的字段
+      // Keep fields with more information
       name: b.name || a.name,
       description: b.description || a.description,
     };
@@ -282,9 +282,9 @@ export class ConflictResolver {
     return {
       ...a,
       ...b,
-      // 合并环境变量
+      // Merge environment variables
       env: { ...a.env, ...b.env },
-      // 合并参数
+      // Merge arguments
       args: [...(a.args ?? []), ...(b.args ?? [])],
     };
   }
@@ -308,7 +308,7 @@ export class ConflictResolver {
   }
 }
 
-// 导出工厂函数
+// Export factory function
 export function createConflictResolver(
   strategy: ConflictStrategy = 'merge',
   customResolver?: (conflict: Conflict) => ConflictResolution

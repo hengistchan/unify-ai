@@ -1,0 +1,32 @@
+{
+  "name": "@unify-ai/core",
+  "version": "0.1.0",
+  "description": "Core library for unify-ai",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "glob": "^13.0.3",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

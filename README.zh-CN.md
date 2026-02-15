@@ -1,40 +1,46 @@
 # unify-ai
 
+<div align="center">
+
+[![npm 版本](https://img.shields.io/npm/v/unify-ai.svg)](https://www.npmjs.com/package/unify-ai)
+[![许可: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js 版本](https://img.shields.io/node/v/unify-ai)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9+-3178c6.svg)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-10+-f69220.svg)](https://pnpm.io/)
+
 AI 编码助手的统一配置管理工具。
+
+</div>
 
 ## 概述
 
-unify-ai 是一个用于统一管理多种 AI 编码助手配置的工具。支持从各种 AI 工具导入、导出、同步配置，以及检测配置冲突。
+unify-ai 是一个用于统一管理多种 AI 编码助手配置的工具。支持从各种 AI 工具导入、导出，同步配置，以及检测配置冲突。
 
 ## 支持的工具
 
 | 工具 | 规则 | MCP | 设置 | 配置格式 |
 |------|------|-----|------|----------|
-| Cursor | 完整 | 部分 | 部分 | Markdown + JSON |
-| Claude Code | 完整 | 完整 | 完整 | Markdown + JSON |
-| Codex | 完整 | 完整 | 完整 | TOML + Markdown |
-| Copilot | 完整 | 无 | 无 | Markdown |
-| Windsurf | 完整 | 部分 | 部分 | 纯文本 |
-| Cline | 完整 | 完整 | 部分 | Markdown + JSON |
-| Aider | 完整 | 无 | 完整 | YAML |
-| Continue | 完整 | 部分 | 完整 | YAML |
+| Cursor | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | Markdown + JSON |
+| Claude Code | ✅ 完整 | ✅ 完整 | ✅ 完整 | Markdown + JSON |
+| Codex | ✅ 完整 | ✅ 完整 | ✅ 完整 | TOML + Markdown |
+| Copilot | ✅ 完整 | ❌ 无 | ❌ 无 | Markdown |
+| Windsurf | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | 纯文本 |
+| Cline | ✅ 完整 | ✅ 完整 | ⚠️ 部分 | Markdown + JSON |
+| Aider | ✅ 完整 | ❌ 无 | ✅ 完整 | YAML |
+| Continue | ✅ 完整 | ⚠️ 部分 | ✅ 完整 | YAML |
 
 ## 功能特性
 
-- **导入/导出**：在不同 AI 工具配置之间转换
-- **双向同步**：保持各工具配置同步
-- **差异检测**：检测配置之间的差异
-- **冲突解决**：智能处理配置冲突
-- **命令行工具**：便于自动化操作
-- **图形界面**：可视化配置管理（即将推出）
+- 🔄 **导入/导出**：在不同 AI 工具配置之间转换
+- 🔀 **双向同步**：保持各工具配置同步
+- 📊 **差异检测**：检测配置之间的差异
+- ⚔️ **冲突解决**：智能处理配置冲突
+- 💻 **命令行工具**：便于自动化操作
+- 🖥️ **图形界面**：可视化配置管理（即将推出）
 
-## 安装
+## 快速开始
 
 ```bash
-# 克隆仓库
-git clone https://github.com/your-repo/unify-ai.git
-cd unify-ai
-
 # 安装依赖
 pnpm install
 
@@ -42,9 +48,7 @@ pnpm install
 pnpm build
 ```
 
-## 使用方法
-
-### 命令行
+### 命令行使用
 
 ```bash
 # 检测项目中的 AI 工具
@@ -66,7 +70,7 @@ unify-ai sync /path/to/project
 unify-ai watch /path/to/project
 ```
 
-### 作为库使用
+### 库使用
 
 ```typescript
 import { adapterRegistry, Importer, Exporter } from '@unify-ai/core';
@@ -87,9 +91,9 @@ await exporter.exportTo('claude-code', config, '/path/to/project');
 
 这是一个 pnpm monorepo 项目，包含三个包：
 
-- `@unify-ai/core` - 核心库，包含适配器和转换器
-- `@unify-ai/cli` - 命令行工具
-- `@unify-ai/gui` - Electron + React 图形界面（即将推出）
+- 📦 `@unify-ai/core` - 核心库，包含适配器和转换器
+- 💻 `@unify-ai/cli` - 命令行工具
+- 🖥️ `@unify-ai/gui` - Electron + React 图形界面（即将推出）
 
 核心库使用**适配器模式**，每个 AI 工具都有独立的适配器实现 `IAdapter` 接口。
 
@@ -123,8 +127,8 @@ pnpm gui         # 图形界面
 
 ## 许可证
 
-MIT 许可证 - 详见 LICENSE 文件。
+MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
 ## 贡献
 
-欢迎贡献代码！请提交 Pull Request。
+欢迎贡献代码！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解贡献指南。

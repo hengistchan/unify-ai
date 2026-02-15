@@ -1,6 +1,16 @@
 # unify-ai
 
+<div align="center">
+
+[![npm version](https://img.shields.io/npm/v/unify-ai.svg)](https://www.npmjs.com/package/unify-ai)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/node/v/unify-ai)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9+-3178c6.svg)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-10+-f69220.svg)](https://pnpm.io/)
+
 Unified configuration management for AI coding assistants.
+
+</div>
 
 ## Overview
 
@@ -10,31 +20,27 @@ unify-ai is a tool that unifies configuration management across multiple AI codi
 
 | Tool | Rules | MCP | Settings | Config Format |
 |------|-------|-----|----------|---------------|
-| Cursor | Full | Partial | Partial | Markdown + JSON |
-| Claude Code | Full | Full | Full | Markdown + JSON |
-| Codex | Full | Full | Full | TOML + Markdown |
-| Copilot | Full | None | None | Markdown |
-| Windsurf | Full | Partial | Partial | Text |
-| Cline | Full | Full | Partial | Markdown + JSON |
-| Aider | Full | None | Full | YAML |
-| Continue | Full | Partial | Full | YAML |
+| Cursor | ✅ Full | ⚠️ Partial | ⚠️ Partial | Markdown + JSON |
+| Claude Code | ✅ Full | ✅ Full | ✅ Full | Markdown + JSON |
+| Codex | ✅ Full | ✅ Full | ✅ Full | TOML + Markdown |
+| Copilot | ✅ Full | ❌ None | ❌ None | Markdown |
+| Windsurf | ✅ Full | ⚠️ Partial | ⚠️ Partial | Text |
+| Cline | ✅ Full | ✅ Full | ⚠️ Partial | Markdown + JSON |
+| Aider | ✅ Full | ❌ None | ✅ Full | YAML |
+| Continue | ✅ Full | ⚠️ Partial | ✅ Full | YAML |
 
 ## Features
 
-- **Import/Export**: Convert configurations between different AI tools
-- **Bidirectional Sync**: Keep configurations synchronized across tools
-- **Diff Detection**: Detect differences between configurations
-- **Conflict Resolution**: Handle configuration conflicts intelligently
-- **CLI Interface**: Command-line tool for easy automation
-- **GUI Application**: Desktop application for visual management (coming soon)
+- 🔄 **Import/Export**: Convert configurations between different AI tools
+- 🔀 **Bidirectional Sync**: Keep configurations synchronized across tools
+- 📊 **Diff Detection**: Detect differences between configurations
+- ⚔️ **Conflict Resolution**: Handle configuration conflicts intelligently
+- 💻 **CLI Interface**: Command-line tool for easy automation
+- 🖥️ **GUI Application**: Desktop application for visual management (coming soon)
 
-## Installation
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-repo/unify-ai.git
-cd unify-ai
-
 # Install dependencies
 pnpm install
 
@@ -42,9 +48,7 @@ pnpm install
 pnpm build
 ```
 
-## Usage
-
-### CLI
+### CLI Usage
 
 ```bash
 # Detect AI tools in a project
@@ -66,7 +70,7 @@ unify-ai sync /path/to/project
 unify-ai watch /path/to/project
 ```
 
-### Library
+### Library Usage
 
 ```typescript
 import { adapterRegistry, Importer, Exporter } from '@unify-ai/core';
@@ -87,9 +91,9 @@ await exporter.exportTo('claude-code', config, '/path/to/project');
 
 This is a pnpm monorepo with three packages:
 
-- `@unify-ai/core` - Core library with adapters and converters
-- `@unify-ai/cli` - Command-line interface
-- `@unify-ai/gui` - Electron + React GUI (coming soon)
+- 📦 `@unify-ai/core` - Core library with adapters and converters
+- 💻 `@unify-ai/cli` - Command-line interface
+- 🖥️ `@unify-ai/gui` - Electron + React GUI (coming soon)
 
 The core library uses an **adapter pattern** where each AI tool has its own adapter implementing the `IAdapter` interface.
 
@@ -123,8 +127,8 @@ Configuration schemas are available in the `schemas/` directory:
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

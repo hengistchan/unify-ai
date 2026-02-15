@@ -10,6 +10,8 @@
 
 AI 编码助手的统一配置管理工具。
 
+[English](./README.md) | [中文](./README.zh-CN.md)
+
 </div>
 
 ## 概述

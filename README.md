@@ -10,6 +10,8 @@
 
 Unified configuration management for AI coding assistants.
 
+[English](./README.md) | [中文](./README.zh-CN.md)
+
 </div>
 
 ## Overview

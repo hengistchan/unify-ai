@@ -1,0 +1,22 @@
+appId: com.unify-ai.gui
+productName: Unify AI
+directories:
+  buildResources: build
+  output: release
+files:
+  - dist/**/*
+  - package.json
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.developer-tools
+win:
+  target:
+    - nsis
+    - portable
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development

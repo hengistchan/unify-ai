@@ -39,3 +39,23 @@ export {
   type ConflictResolution,
   ConflictType,
 } from './ConflictResolver';
+
+export {
+  ChangeTracker,
+  getChangeTracker,
+  createChangeTracker,
+  type ChangeSource,
+  type ChangeSourceType,
+  type ChangeEvent,
+  type ChangeRecord,
+  type PropertyChange,
+  type HistoryOptions,
+} from './ChangeTracker';
+
+export {
+  FingerprintManager,
+  getFingerprintManager,
+  createFingerprintManager,
+  type FileFingerprint,
+  type FingerprintVerification,
+} from './FingerprintManager';

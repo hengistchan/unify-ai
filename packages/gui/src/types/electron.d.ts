@@ -9,7 +9,22 @@ export interface ElectronAPI {
   getToolConfig: (folderPath: string, toolId: string) => Promise<ToolConfigResult>;
   importConfig: (folderPath: string, options?: ImportOptions) => Promise<ToolConfigResult>;
   exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) => Promise<ExportResult>;
+  saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) => Promise<SaveResult>;
+  loadUnifiedConfig: (folderPath: string) => Promise<LoadResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
+}
+
+export interface SaveResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
+export interface LoadResult {
+  success: boolean;
+  config?: UnifiedConfig;
+  path?: string;
+  error?: string;
 }
 
 export interface ImportOptions {

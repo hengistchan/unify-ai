@@ -15,7 +15,22 @@ export interface ElectronAPI {
   getToolConfig: (folderPath: string, toolId: string) => Promise<ToolConfigResult>;
   importConfig: (folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => Promise<ToolConfigResult>;
   exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) => Promise<ExportResult>;
+  saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) => Promise<SaveResult>;
+  loadUnifiedConfig: (folderPath: string) => Promise<LoadResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
+}
+
+export interface SaveResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
+export interface LoadResult {
+  success: boolean;
+  config?: UnifiedConfig;
+  path?: string;
+  error?: string;
 }
 
 export interface ExportResult {
@@ -169,6 +184,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Export configuration to target tools
   exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) =>
     ipcRenderer.invoke(IPC_CHANNELS.EXPORT_CONFIG, config, folderPath, targetTools, options),
+
+  // Save unified config to file
+  saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) =>
+    ipcRenderer.invoke(IPC_CHANNELS.SAVE_UNIFIED_CONFIG, folderPath, config),
+
+  // Load unified config from file
+  loadUnifiedConfig: (folderPath: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.LOAD_UNIFIED_CONFIG, folderPath),
 
   // Listen for folder selection from menu
   onFolderSelected: (callback: (folderPath: string) => void) => {

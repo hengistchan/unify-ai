@@ -194,6 +194,8 @@ interface AppState {
   exportLoading: boolean;
   importConfig: (options?: ImportExportOptions) => Promise<ImportResult>;
   exportConfig: (targetTools: string[], options?: ImportExportOptions) => Promise<ExportResult>;
+  loadSavedConfig: () => Promise<void>;
+  saveConfig: () => Promise<void>;
 
   // UI
   sidebarCollapsed: boolean;
@@ -235,8 +237,12 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // Project
       currentProject: null,
-      setProject: (path) => set({ currentProject: path }),
-      clearProject: () => set({ currentProject: null, detectedTools: [] }),
+      setProject: (path) => {
+        set({ currentProject: path });
+        // Auto-load saved config when project is set
+        get().loadSavedConfig();
+      },
+      clearProject: () => set({ currentProject: null, detectedTools: [], unifiedConfig: null }),
 
       // Tools
       detectedTools: [],
@@ -451,6 +457,8 @@ export const useAppStore = create<AppState>()(
 
           if (result.success && result.config) {
             set({ unifiedConfig: result.config as UnifiedConfig, importLoading: false });
+            // Auto-save to unified.json
+            await window.electronAPI.saveUnifiedConfig(currentProject, result.config as UnifiedConfig);
             get().addToast({
               type: 'success',
               title: 'Import Complete',
@@ -556,6 +564,37 @@ export const useAppStore = create<AppState>()(
             message: error instanceof Error ? error.message : 'Unknown error occurred',
           });
           return result;
+        }
+      },
+
+      loadSavedConfig: async () => {
+        const { currentProject } = get();
+        if (!currentProject) {
+          return;
+        }
+
+        try {
+          const result = await window.electronAPI.loadUnifiedConfig(currentProject);
+          if (result.success && result.config) {
+            set({ unifiedConfig: result.config as UnifiedConfig });
+            console.log('[Store] Loaded saved config from unified.json');
+          }
+        } catch (error) {
+          console.error('[Store] Failed to load saved config:', error);
+        }
+      },
+
+      saveConfig: async () => {
+        const { currentProject, unifiedConfig } = get();
+        if (!currentProject || !unifiedConfig) {
+          return;
+        }
+
+        try {
+          await window.electronAPI.saveUnifiedConfig(currentProject, unifiedConfig);
+          console.log('[Store] Saved config to unified.json');
+        } catch (error) {
+          console.error('[Store] Failed to save config:', error);
         }
       },
 

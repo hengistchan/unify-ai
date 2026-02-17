@@ -7,6 +7,7 @@ import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
 import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig, previewExport } from './sync';
+import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
 
 /**
  * Register all IPC handlers
@@ -79,6 +80,28 @@ export function registerIpcHandlers(): void {
       console.log('[IPC] Exporting config:', { folderPath, targetTools, options });
       const result = await exportConfig(config as any, folderPath, targetTools, options);
       console.log('[IPC] Export result:', result.success ? 'success' : 'failed', `- ${result.exportedTools.length} tools`);
+      return result;
+    }
+  );
+
+  // Save unified config to file
+  ipcMain.handle(
+    IPC_CHANNELS.SAVE_UNIFIED_CONFIG,
+    async (_event, folderPath: string, config: unknown) => {
+      console.log('[IPC] Saving unified config to:', folderPath);
+      const result = await saveUnifiedConfig(folderPath, config);
+      console.log('[IPC] Save result:', result.success ? 'success' : 'failed');
+      return result;
+    }
+  );
+
+  // Load unified config from file
+  ipcMain.handle(
+    IPC_CHANNELS.LOAD_UNIFIED_CONFIG,
+    async (_event, folderPath: string) => {
+      console.log('[IPC] Loading unified config from:', folderPath);
+      const result = await loadUnifiedConfig(folderPath);
+      console.log('[IPC] Load result:', result.success ? 'success' : 'no config found');
       return result;
     }
   );

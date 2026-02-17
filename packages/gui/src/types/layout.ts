@@ -89,10 +89,3 @@ export interface ToolbarProps {
 export interface StatusBarProps {
   status: StatusBarInfo;
 }
-
-/**
- * MainLayout props
- */
-export interface MainLayoutProps {
-  children?: React.ReactNode;
-}

@@ -13,8 +13,8 @@ import { persist } from 'zustand/middleware';
 export interface DetectedTool {
   id: string;
   name: string;
+  configPath: string;
   detected: boolean;
-  configPath?: string;
   hasRules: boolean;
   hasMcp: boolean;
   hasSettings: boolean;
@@ -40,6 +40,96 @@ export interface AppSettings {
   animationsEnabled: boolean;
 }
 
+export interface FileChange {
+  path: string;
+  action: 'create' | 'update' | 'delete';
+  linesAdded: number;
+  linesRemoved: number;
+}
+
+export interface Conflict {
+  path: string;
+  description: string;
+}
+
+export interface SyncPreview {
+  sourceTool: string;
+  targetTools: string[];
+  changes: FileChange[];
+  conflicts: Conflict[];
+}
+
+// UnifiedConfig type definition for GUI use
+// This mirrors the core UnifiedConfig structure
+export interface UnifiedConfig {
+  version: string;
+  rules?: RuleConfig[];
+  mcp?: MCPConfig;
+  settings?: ToolSettings;
+  commands?: CommandConfig[];
+  prompts?: PromptTemplate[];
+  contextFiles?: string[];
+  envVars?: Record<string, string>;
+  ignorePatterns?: string[];
+}
+
+export interface RuleConfig {
+  id: string;
+  name?: string;
+  description?: string;
+  content: string;
+  globs?: string[];
+  alwaysApply?: boolean;
+  priority?: number;
+  enabled?: boolean;
+}
+
+export interface MCPConfig {
+  servers: MCPServerConfig[];
+  globalEnv?: Record<string, string>;
+}
+
+export interface MCPServerConfig {
+  name: string;
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  cwd?: string;
+  disabled?: boolean;
+}
+
+export interface ToolSettings {
+  model?: {
+    default?: string;
+    available?: string[];
+  };
+  permissions?: {
+    allow?: string[];
+    deny?: string[];
+  };
+  behavior?: {
+    autoSave?: boolean;
+    verbose?: boolean;
+    timeout?: number;
+  };
+  toolSpecific?: Record<string, unknown>;
+}
+
+export interface CommandConfig {
+  id: string;
+  name: string;
+  description?: string;
+  template: string;
+  enabled?: boolean;
+}
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  template: string;
+}
+
 // ============================================
 // Store Interface
 // ============================================
@@ -59,6 +149,16 @@ interface AppState {
   lastSyncTime: string | null;
   setSyncStatus: (status: 'idle' | 'syncing' | 'error' | 'success') => void;
   setLastSyncTime: (time: string) => void;
+
+  // Sync Preview & Execution
+  unifiedConfig: UnifiedConfig | null;
+  syncPreview: SyncPreview | null;
+  syncLoading: boolean;
+  selectedSourceTool: string | null;
+  previewSync: (sourceTool: string, targetTools: string[]) => Promise<void>;
+  executeSync: () => Promise<void>;
+  loadToolConfig: (toolId: string) => Promise<void>;
+  clearSyncPreview: () => void;
 
   // UI
   sidebarCollapsed: boolean;
@@ -93,7 +193,7 @@ const generateId = (): string => {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Project
       currentProject: null,
       setProject: (path) => set({ currentProject: path }),
@@ -108,6 +208,154 @@ export const useAppStore = create<AppState>()(
       lastSyncTime: null,
       setSyncStatus: (status) => set({ syncStatus: status }),
       setLastSyncTime: (time) => set({ lastSyncTime: time }),
+
+      // Sync Preview & Execution
+      unifiedConfig: null,
+      syncPreview: null,
+      syncLoading: false,
+      selectedSourceTool: null,
+
+      previewSync: async (sourceTool: string, targetTools: string[]) => {
+        const { currentProject } = get();
+        if (!currentProject) {
+          get().addToast({
+            type: 'error',
+            title: 'No Project',
+            message: 'Please select a project folder first',
+          });
+          return;
+        }
+
+        set({ syncLoading: true, selectedSourceTool: sourceTool });
+        try {
+          // Call IPC for preview mode sync
+          const results = await window.electronAPI.previewSync(currentProject, targetTools);
+
+          // Aggregate results into a preview
+          const allChanges: FileChange[] = [];
+          const allConflicts: Conflict[] = [];
+
+          for (const result of results) {
+            if (result.success) {
+              for (const file of result.files) {
+                allChanges.push({
+                  path: file.path,
+                  action: 'create' as const,
+                  linesAdded: file.content.split('\n').length,
+                  linesRemoved: 0,
+                });
+              }
+            }
+            if (result.warnings) {
+              for (const warning of result.warnings) {
+                allConflicts.push({
+                  path: result.toolId,
+                  description: warning,
+                });
+              }
+            }
+          }
+
+          const preview: SyncPreview = {
+            sourceTool,
+            targetTools,
+            changes: allChanges,
+            conflicts: allConflicts,
+          };
+
+          set({ syncPreview: preview, syncLoading: false });
+        } catch (error) {
+          set({ syncLoading: false });
+          get().addToast({
+            type: 'error',
+            title: 'Preview Failed',
+            message: error instanceof Error ? error.message : 'Failed to generate sync preview',
+          });
+        }
+      },
+
+      executeSync: async () => {
+        const { syncPreview, selectedSourceTool, currentProject } = get();
+        if (!syncPreview || !selectedSourceTool || !currentProject) {
+          get().addToast({
+            type: 'warning',
+            title: 'No Preview',
+            message: 'Please preview sync changes first',
+          });
+          return;
+        }
+
+        set({ syncLoading: true, syncStatus: 'syncing' });
+        try {
+          const result = await window.electronAPI.syncConfig(
+            currentProject,
+            syncPreview.targetTools,
+            { createBackup: true, overwrite: true }
+          );
+
+          if (result.success) {
+            set({
+              syncPreview: null,
+              selectedSourceTool: null,
+              syncLoading: false,
+              syncStatus: 'success',
+              lastSyncTime: new Date().toISOString(),
+            });
+            get().addToast({
+              type: 'success',
+              title: 'Sync Complete',
+              message: result.message,
+            });
+          } else {
+            set({ syncLoading: false, syncStatus: 'error' });
+            get().addToast({
+              type: 'error',
+              title: 'Sync Failed',
+              message: result.errors?.join(', ') || 'Failed to execute sync',
+            });
+          }
+        } catch (error) {
+          set({ syncLoading: false, syncStatus: 'error' });
+          get().addToast({
+            type: 'error',
+            title: 'Sync Error',
+            message: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+        }
+      },
+
+      loadToolConfig: async (toolId: string) => {
+        const { currentProject } = get();
+        if (!currentProject) {
+          get().addToast({
+            type: 'error',
+            title: 'No Project',
+            message: 'Please select a project folder first',
+          });
+          return;
+        }
+
+        try {
+          const result = await window.electronAPI.getToolConfig(currentProject, toolId);
+          if (result.success && result.config) {
+            set({ unifiedConfig: result.config as UnifiedConfig });
+          } else {
+            get().addToast({
+              type: 'error',
+              title: 'Load Config Failed',
+              message: result.errors?.join(', ') || 'Failed to load tool config',
+            });
+          }
+        } catch (error) {
+          get().addToast({
+            type: 'error',
+            title: 'Load Config Failed',
+            message: error instanceof Error ? error.message : 'Failed to load tool config',
+          });
+        }
+      },
+
+      clearSyncPreview: () => set({ syncPreview: null, selectedSourceTool: null }),
 
       // UI
       sidebarCollapsed: false,
@@ -182,3 +430,7 @@ export const selectSyncStatus = (state: AppState) => state.syncStatus;
 export const selectToasts = (state: AppState) => state.toasts;
 export const selectRecentProjects = (state: AppState) => state.recentProjects;
 export const selectSettings = (state: AppState) => state.settings;
+export const selectSyncPreview = (state: AppState) => state.syncPreview;
+export const selectSyncLoading = (state: AppState) => state.syncLoading;
+export const selectSelectedSourceTool = (state: AppState) => state.selectedSourceTool;
+export const selectUnifiedConfig = (state: AppState) => state.unifiedConfig;

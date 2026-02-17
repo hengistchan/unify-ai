@@ -11,35 +11,63 @@ import {
   Clock,
   ArrowRight,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
-import { useAppStore, selectRecentProjects } from '@/stores/appStore';
+import {
+  useAppStore,
+  selectRecentProjects,
+  selectCurrentProject,
+  selectDetectedTools,
+} from '@/stores/appStore';
 import { formatRelativeTime } from '@/lib/utils';
 
 export function Home() {
   const navigate = useNavigate();
   const recentProjects = useAppStore(selectRecentProjects);
-  const { setProject, addRecentProject, addToast } = useAppStore();
+  const currentProject = useAppStore(selectCurrentProject);
+  const detectedTools = useAppStore(selectDetectedTools);
+  const {
+    setProject,
+    setDetectedTools,
+    addRecentProject,
+    addToast,
+    previewSync,
+  } = useAppStore();
 
   const handleOpenProject = async () => {
-    // In a real Electron app, this would use the dialog API
-    // For now, simulate with a mock path
-    const mockPath = '/Users/example/my-project';
+    try {
+      // Use Electron's dialog API
+      const path = await window.electronAPI.openFolder();
+      if (path) {
+        setProject(path);
+        addRecentProject({
+          path,
+          name: path.split('/').pop() ?? path,
+          lastOpened: new Date().toISOString(),
+        });
 
-    // Simulate file selection
-    const path = prompt('Enter project path:', mockPath);
-    if (path) {
-      setProject(path);
-      addRecentProject({
-        path,
-        name: path.split('/').pop() ?? path,
-        lastOpened: new Date().toISOString(),
-      });
+        // Detect tools in the selected folder
+        try {
+          const tools = await window.electronAPI.detectTools(path);
+          setDetectedTools(tools);
+        } catch (detectError) {
+          console.error('Failed to detect tools:', detectError);
+          // Continue even if detection fails
+        }
+
+        addToast({
+          type: 'success',
+          title: 'Project opened',
+          message: path,
+        });
+        navigate('/project');
+      }
+    } catch (error) {
       addToast({
-        type: 'success',
-        title: 'Project opened',
-        message: path,
+        type: 'error',
+        title: 'Failed to open folder',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
-      navigate('/project');
     }
   };
 
@@ -59,15 +87,54 @@ export function Home() {
     });
   };
 
-  const handleOpenRecent = (path: string) => {
+  const handleOpenRecent = async (path: string) => {
     setProject(path);
     addRecentProject({
       path,
       name: path.split('/').pop() ?? path,
       lastOpened: new Date().toISOString(),
     });
+
+    // Detect tools in the selected folder
+    try {
+      const tools = await window.electronAPI.detectTools(path);
+      setDetectedTools(tools);
+    } catch (detectError) {
+      console.error('Failed to detect tools:', detectError);
+    }
+
     navigate('/project');
   };
+
+  const handleQuickSync = async () => {
+    if (!currentProject || detectedTools.length < 2) {
+      addToast({
+        type: 'warning',
+        title: 'Cannot sync',
+        message: 'Open a project with at least 2 detected tools to sync',
+      });
+      return;
+    }
+
+    const detectedList = detectedTools.filter((t) => t.detected);
+    if (detectedList.length < 2) {
+      addToast({
+        type: 'info',
+        title: 'Need more tools',
+        message: 'At least 2 detected tools are needed for sync',
+      });
+      return;
+    }
+
+    const sourceTool = detectedList[0].id;
+    const targetTools = detectedList.slice(1).map((t) => t.id);
+    await previewSync(sourceTool, targetTools);
+    navigate('/project');
+  };
+
+  // Calculate project status
+  const hasCurrentProject = !!currentProject;
+  const detectedCount = detectedTools.filter((t) => t.detected).length;
 
   return (
     <div className="max-w-4xl mx-auto p-8 animate-fade-in">
@@ -125,6 +192,43 @@ export function Home() {
           <ArrowRight className="w-5 h-5 text-text-tertiary group-hover:text-success transition-colors" />
         </button>
       </div>
+
+      {/* Current Project Status */}
+      {hasCurrentProject && (
+        <div className="mb-8 p-4 bg-bg-secondary border border-border rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FolderOpen className="w-5 h-5 text-primary" />
+              <div>
+                <p className="text-sm font-medium text-text-primary">Current Project</p>
+                <p className="text-xs text-text-tertiary font-mono truncate max-w-[300px]">
+                  {currentProject}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm text-text-secondary">{detectedCount} tools detected</p>
+              </div>
+              {detectedCount >= 2 && (
+                <button
+                  onClick={handleQuickSync}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary-hover transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Sync
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/project')}
+                className="text-sm text-primary hover:text-primary-hover transition-colors"
+              >
+                View Project
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Import from Tool */}
       <div className="mb-12">

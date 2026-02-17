@@ -13,6 +13,10 @@ export const IPC_CHANNELS = {
 
   // Configuration sync
   SYNC_CONFIG: 'sync-config',
+  PREVIEW_SYNC: 'preview-sync',
+
+  // Tool configuration
+  GET_TOOL_CONFIG: 'get-tool-config',
 
   // Import/Export
   IMPORT_CONFIG: 'import-config',

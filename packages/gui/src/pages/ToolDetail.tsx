@@ -3,6 +3,7 @@
  * Detailed view of a specific AI tool configuration
  */
 
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,9 +13,16 @@ import {
   Edit,
   Eye,
   ExternalLink,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { Button, Badge, Card } from '@/components/common';
-import { useAppStore } from '@/stores/appStore';
+import {
+  useAppStore,
+  selectUnifiedConfig,
+  selectDetectedTools,
+} from '@/stores/appStore';
+import type { RuleConfig, MCPServerConfig, ToolSettings } from '@/stores/appStore';
 
 // Tool information map
 const toolInfo: Record<string, { name: string; description: string; emoji: string }> = {
@@ -60,37 +68,86 @@ const toolInfo: Record<string, { name: string; description: string; emoji: strin
   },
 };
 
-// Mock data for demonstration
-const mockRules = [
-  { id: '1', name: 'CLAUDE.md', path: '.claude/CLAUDE.md', enabled: true, lastModified: '2024-01-15' },
-  { id: '2', name: 'plans.md', path: '.claude/rules/plans.md', enabled: true, lastModified: '2024-01-14' },
-  { id: '3', name: 'typescript.md', path: '.claude/rules/typescript.md', enabled: false, lastModified: '2024-01-10' },
-];
-
-const mockMCPServers = [
-  { id: '1', name: 'filesystem', command: 'mcp-filesystem', enabled: true },
-  { id: '2', name: 'github', command: 'mcp-github', enabled: true },
-  { id: '3', name: 'postgres', command: 'mcp-postgres', enabled: false },
-];
-
-const mockSettings = [
-  { key: 'defaultModel', value: 'claude-3-5-sonnet', type: 'string' },
-  { key: 'autoSave', value: 'true', type: 'boolean' },
-  { key: 'timeout', value: '30000', type: 'number' },
-];
-
 export function ToolDetail() {
   const { toolId } = useParams<{ toolId: string }>();
   const navigate = useNavigate();
-  const { addToast } = useAppStore();
+  const unifiedConfig = useAppStore(selectUnifiedConfig);
+  const detectedTools = useAppStore(selectDetectedTools);
+  const { loadToolConfig, addToast } = useAppStore();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const info = toolInfo[toolId ?? ''];
+  const tool = detectedTools.find((t) => t.id === toolId);
+
+  // Load tool config on mount
+  useEffect(() => {
+    if (toolId && tool?.detected) {
+      setIsLoading(true);
+      setError(null);
+      loadToolConfig(toolId)
+        .then(() => setIsLoading(false))
+        .catch((err) => {
+          setIsLoading(false);
+          setError(err instanceof Error ? err.message : 'Failed to load config');
+        });
+    }
+  }, [toolId, tool?.detected, loadToolConfig]);
+
+  // Extract data from unified config
+  const rules: RuleConfig[] = unifiedConfig?.rules ?? [];
+  const mcpServers: MCPServerConfig[] = unifiedConfig?.mcp?.servers ?? [];
+  const settings: ToolSettings = unifiedConfig?.settings ?? {};
+
+  // Flatten settings for display
+  const settingsEntries: { key: string; value: string; type: string }[] = [];
+  if (settings.model?.default) {
+    settingsEntries.push({ key: 'model.default', value: settings.model.default, type: 'string' });
+  }
+  if (settings.model?.available?.length) {
+    settingsEntries.push({ key: 'model.available', value: settings.model.available.join(', '), type: 'array' });
+  }
+  if (settings.permissions?.allow?.length) {
+    settingsEntries.push({ key: 'permissions.allow', value: settings.permissions.allow.join(', '), type: 'array' });
+  }
+  if (settings.permissions?.deny?.length) {
+    settingsEntries.push({ key: 'permissions.deny', value: settings.permissions.deny.join(', '), type: 'array' });
+  }
+  if (settings.behavior?.autoSave !== undefined) {
+    settingsEntries.push({ key: 'behavior.autoSave', value: String(settings.behavior.autoSave), type: 'boolean' });
+  }
+  if (settings.behavior?.verbose !== undefined) {
+    settingsEntries.push({ key: 'behavior.verbose', value: String(settings.behavior.verbose), type: 'boolean' });
+  }
+  if (settings.behavior?.timeout !== undefined) {
+    settingsEntries.push({ key: 'behavior.timeout', value: String(settings.behavior.timeout), type: 'number' });
+  }
+  // Add tool-specific settings
+  if (settings.toolSpecific) {
+    for (const [key, value] of Object.entries(settings.toolSpecific)) {
+      settingsEntries.push({ key: `toolSpecific.${key}`, value: JSON.stringify(value), type: 'object' });
+    }
+  }
 
   if (!info) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <h2 className="text-xl font-semibold text-text-secondary mb-2">Tool not found</h2>
         <p className="text-text-tertiary mb-4">The tool "{toolId}" was not found.</p>
+        <Button onClick={() => navigate('/project')}>
+          Back to Project
+        </Button>
+      </div>
+    );
+  }
+
+  if (!tool?.detected) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <AlertCircle className="w-12 h-12 text-warning mb-4" />
+        <h2 className="text-xl font-semibold text-text-secondary mb-2">Tool not detected</h2>
+        <p className="text-text-tertiary mb-4">The tool "{info.name}" was not detected in this project.</p>
         <Button onClick={() => navigate('/project')}>
           Back to Project
         </Button>
@@ -113,6 +170,68 @@ export function ToolDetail() {
       message: `View ${item} in ${section} feature is in development`,
     });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="p-6 animate-fade-in">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => navigate('/project')}
+            className="p-2 rounded-lg bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center">
+              <span className="text-2xl">{info.emoji}</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-text-primary">{info.name}</h1>
+              <p className="text-text-tertiary">{info.description}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+          <p className="text-text-secondary">Loading configuration...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 animate-fade-in">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => navigate('/project')}
+            className="p-2 rounded-lg bg-bg-tertiary text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center">
+              <span className="text-2xl">{info.emoji}</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-text-primary">{info.name}</h1>
+              <p className="text-text-tertiary">{info.description}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16">
+          <AlertCircle className="w-12 h-12 text-error mb-4" />
+          <h2 className="text-xl font-semibold text-text-secondary mb-2">Failed to load configuration</h2>
+          <p className="text-text-tertiary mb-4">{error}</p>
+          <Button onClick={() => toolId && loadToolConfig(toolId)}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 animate-fade-in">
@@ -142,9 +261,9 @@ export function ToolDetail() {
       <Card className="mb-6">
         <Card.Header
           title="Rules"
-          subtitle={`${mockRules.length} rule files configured`}
+          subtitle={rules.length > 0 ? `${rules.length} rule files configured` : 'No rules configured'}
           icon={<FileText className="w-5 h-5" />}
-          badge={{ text: 'Full Support', variant: 'success' }}
+          badge={{ text: tool.hasRules ? 'Full Support' : 'Not Available', variant: tool.hasRules ? 'success' : 'default' }}
           action={
             <Button variant="secondary" size="sm" onClick={() => handleEdit('rules')}>
               <Edit className="w-4 h-4 mr-1" />
@@ -153,8 +272,14 @@ export function ToolDetail() {
           }
         />
         <Card.Body className="p-0">
+          {rules.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-text-tertiary">
+              <FileText className="w-8 h-8 mb-2 opacity-50" />
+              <p className="text-sm">No rules configured</p>
+            </div>
+          ) : (
           <div className="divide-y divide-border">
-            {mockRules.map((rule) => (
+            {rules.map((rule) => (
               <div
                 key={rule.id}
                 className="flex items-center justify-between p-4 hover:bg-bg-hover/50 transition-colors"
@@ -162,19 +287,21 @@ export function ToolDetail() {
                 <div className="flex items-center gap-3">
                   <FileText className="w-5 h-5 text-text-tertiary" />
                   <div>
-                    <p className="text-sm font-medium text-text-secondary">{rule.name}</p>
-                    <p className="text-xs text-text-tertiary font-mono">{rule.path}</p>
+                    <p className="text-sm font-medium text-text-secondary">{rule.name || rule.id}</p>
+                    <p className="text-xs text-text-tertiary truncate max-w-[300px]">{rule.description || rule.content.slice(0, 50)}...</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {rule.enabled ? (
+                  {rule.enabled !== false ? (
                     <Badge variant="success">Enabled</Badge>
                   ) : (
                     <Badge variant="default">Disabled</Badge>
                   )}
-                  <span className="text-xs text-text-tertiary">{rule.lastModified}</span>
+                  {rule.globs && rule.globs.length > 0 && (
+                    <span className="text-xs text-text-tertiary">{rule.globs.join(', ')}</span>
+                  )}
                   <button
-                    onClick={() => handleView('rules', rule.name)}
+                    onClick={() => handleView('rules', rule.name || rule.id)}
                     className="p-1.5 rounded-md text-text-tertiary hover:text-text-primary hover:bg-bg-hover transition-colors"
                   >
                     <Eye className="w-4 h-4" />
@@ -183,6 +310,7 @@ export function ToolDetail() {
               </div>
             ))}
           </div>
+          )}
         </Card.Body>
       </Card>
 
@@ -190,9 +318,9 @@ export function ToolDetail() {
       <Card className="mb-6">
         <Card.Header
           title="MCP Servers"
-          subtitle={`${mockMCPServers.filter((s) => s.enabled).length} of ${mockMCPServers.length} servers enabled`}
+          subtitle={mcpServers.length > 0 ? `${mcpServers.filter((s) => !s.disabled).length} of ${mcpServers.length} servers enabled` : 'No MCP servers configured'}
           icon={<Server className="w-5 h-5" />}
-          badge={{ text: 'Full Support', variant: 'success' }}
+          badge={{ text: tool.hasMcp ? 'Full Support' : 'Not Available', variant: tool.hasMcp ? 'success' : 'default' }}
           action={
             <Button variant="secondary" size="sm" onClick={() => handleEdit('MCP servers')}>
               <Edit className="w-4 h-4 mr-1" />
@@ -201,21 +329,27 @@ export function ToolDetail() {
           }
         />
         <Card.Body className="p-0">
+          {mcpServers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-text-tertiary">
+              <Server className="w-8 h-8 mb-2 opacity-50" />
+              <p className="text-sm">No MCP servers configured</p>
+            </div>
+          ) : (
           <div className="divide-y divide-border">
-            {mockMCPServers.map((server) => (
+            {mcpServers.map((server) => (
               <div
-                key={server.id}
+                key={server.name}
                 className="flex items-center justify-between p-4 hover:bg-bg-hover/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Server className="w-5 h-5 text-text-tertiary" />
                   <div>
                     <p className="text-sm font-medium text-text-secondary">{server.name}</p>
-                    <p className="text-xs text-text-tertiary font-mono">{server.command}</p>
+                    <p className="text-xs text-text-tertiary font-mono">{server.command} {server.args?.join(' ')}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {server.enabled ? (
+                  {!server.disabled ? (
                     <Badge variant="success">Enabled</Badge>
                   ) : (
                     <Badge variant="default">Disabled</Badge>
@@ -230,6 +364,7 @@ export function ToolDetail() {
               </div>
             ))}
           </div>
+          )}
         </Card.Body>
       </Card>
 
@@ -237,9 +372,9 @@ export function ToolDetail() {
       <Card>
         <Card.Header
           title="Settings"
-          subtitle={`${mockSettings.length} settings configured`}
+          subtitle={settingsEntries.length > 0 ? `${settingsEntries.length} settings configured` : 'No settings configured'}
           icon={<Settings className="w-5 h-5" />}
-          badge={{ text: 'Full Support', variant: 'success' }}
+          badge={{ text: tool.hasSettings ? 'Full Support' : 'Not Available', variant: tool.hasSettings ? 'success' : 'default' }}
           action={
             <Button variant="secondary" size="sm" onClick={() => handleEdit('settings')}>
               <Edit className="w-4 h-4 mr-1" />
@@ -248,8 +383,14 @@ export function ToolDetail() {
           }
         />
         <Card.Body className="p-0">
+          {settingsEntries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-text-tertiary">
+              <Settings className="w-8 h-8 mb-2 opacity-50" />
+              <p className="text-sm">No settings configured</p>
+            </div>
+          ) : (
           <div className="divide-y divide-border">
-            {mockSettings.map((setting, index) => (
+            {settingsEntries.map((setting, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between p-4 hover:bg-bg-hover/50 transition-colors"
@@ -260,11 +401,12 @@ export function ToolDetail() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant="info">{setting.type}</Badge>
-                  <span className="text-sm text-text-tertiary font-mono">{setting.value}</span>
+                  <span className="text-sm text-text-tertiary font-mono truncate max-w-[200px]">{setting.value}</span>
                 </div>
               </div>
             ))}
           </div>
+          )}
         </Card.Body>
       </Card>
 

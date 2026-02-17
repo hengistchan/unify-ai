@@ -3,6 +3,7 @@
  * Project overview with detected tools and configuration summary
  */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FolderOpen,
@@ -15,73 +16,78 @@ import {
   Server,
   Settings,
   ChevronRight,
+  Eye,
+  Loader2,
 } from 'lucide-react';
 import { Button, Badge } from '@/components/common';
-import { useAppStore, selectCurrentProject, selectDetectedTools, selectSyncStatus } from '@/stores/appStore';
+import {
+  useAppStore,
+  selectCurrentProject,
+  selectDetectedTools,
+  selectSyncStatus,
+  selectSyncPreview,
+  selectSyncLoading,
+  selectUnifiedConfig,
+} from '@/stores/appStore';
+import { SyncPreviewDialog } from '@/components/SyncPreviewDialog';
 import { cn } from '@/lib/utils';
-
-// Mock detected tools for demonstration
-const mockDetectedTools = [
-  {
-    id: 'claude-code',
-    name: 'Claude Code',
-    detected: true,
-    configPath: '.claude/',
-    hasRules: true,
-    hasMcp: true,
-    hasSettings: true,
-  },
-  {
-    id: 'cursor',
-    name: 'Cursor',
-    detected: true,
-    configPath: '.cursor/',
-    hasRules: true,
-    hasMcp: false,
-    hasSettings: true,
-  },
-  {
-    id: 'copilot',
-    name: 'GitHub Copilot',
-    detected: true,
-    configPath: '.github/copilot-instructions.md',
-    hasRules: true,
-    hasMcp: false,
-    hasSettings: false,
-  },
-  {
-    id: 'windsurf',
-    name: 'Windsurf',
-    detected: false,
-    hasRules: false,
-    hasMcp: false,
-    hasSettings: false,
-  },
-];
 
 export function Project() {
   const navigate = useNavigate();
   const currentProject = useAppStore(selectCurrentProject);
   const detectedTools = useAppStore(selectDetectedTools);
   const syncStatus = useAppStore(selectSyncStatus);
-  const { setSyncStatus, setLastSyncTime, addToast, lastSyncTime } = useAppStore();
+  const syncPreview = useAppStore(selectSyncPreview);
+  const syncLoading = useAppStore(selectSyncLoading);
+  const unifiedConfig = useAppStore(selectUnifiedConfig);
+  const {
+    previewSync,
+    executeSync,
+    clearSyncPreview,
+    addToast,
+    lastSyncTime,
+  } = useAppStore();
 
-  // Use mock data if no tools detected
-  const tools = detectedTools.length > 0 ? detectedTools : mockDetectedTools;
+  const [showSyncDialog, setShowSyncDialog] = useState(false);
 
-  const handleSync = async () => {
-    setSyncStatus('syncing');
-    // Simulate sync
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setSyncStatus('success');
-    setLastSyncTime(new Date().toISOString());
-    addToast({
-      type: 'success',
-      title: 'Sync complete',
-      message: 'All configurations have been synchronized',
-    });
-    // Reset to idle after showing success
-    setTimeout(() => setSyncStatus('idle'), 3000);
+  // Preview sync button handler
+  const handlePreviewSync = async () => {
+    if (detectedTools.length === 0) {
+      addToast({
+        type: 'warning',
+        title: 'No Tools',
+        message: 'No tools detected to sync',
+      });
+      return;
+    }
+
+    // Use first detected tool as source, others as targets
+    const detectedList = detectedTools.filter((t) => t.detected);
+    if (detectedList.length < 2) {
+      addToast({
+        type: 'info',
+        title: 'Need Multiple Tools',
+        message: 'At least 2 detected tools are needed for sync',
+      });
+      return;
+    }
+
+    const sourceTool = detectedList[0].id;
+    const targetTools = detectedList.slice(1).map((t) => t.id);
+
+    await previewSync(sourceTool, targetTools);
+    setShowSyncDialog(true);
+  };
+
+  // Execute sync after preview confirmation
+  const handleConfirmSync = async () => {
+    await executeSync();
+    setShowSyncDialog(false);
+  };
+
+  const handleCloseDialog = () => {
+    setShowSyncDialog(false);
+    clearSyncPreview();
   };
 
   const handleImport = () => {
@@ -118,10 +124,29 @@ export function Project() {
     );
   }
 
-  const detectedCount = tools.filter((t) => t.detected).length;
+  const detectedCount = detectedTools.filter((t) => t.detected).length;
+
+  // Calculate stats from unified config
+  const rulesCount = unifiedConfig?.rules?.length ?? 0;
+  const mcpServersCount = unifiedConfig?.mcp?.servers?.length ?? 0;
+  const configFilesCount = detectedTools.filter((t) => t.detected).reduce((acc, t) => {
+    if (t.hasRules) acc++;
+    if (t.hasMcp) acc++;
+    if (t.hasSettings) acc++;
+    return acc;
+  }, 0);
 
   return (
     <div className="p-6 animate-fade-in">
+      {/* Sync Preview Dialog */}
+      <SyncPreviewDialog
+        open={showSyncDialog}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmSync}
+        preview={syncPreview}
+        loading={syncLoading}
+      />
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -151,11 +176,15 @@ export function Project() {
           <Button
             variant="primary"
             size="sm"
-            onClick={handleSync}
-            disabled={syncStatus === 'syncing'}
+            onClick={handlePreviewSync}
+            disabled={syncLoading || detectedCount < 2}
           >
-            <RefreshCw className={cn('w-4 h-4 mr-1', syncStatus === 'syncing' && 'animate-spin')} />
-            {syncStatus === 'syncing' ? 'Syncing...' : 'Sync'}
+            {syncLoading ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Eye className="w-4 h-4 mr-1" />
+            )}
+            {syncLoading ? 'Previewing...' : 'Preview Sync'}
           </Button>
         </div>
       </div>
@@ -190,19 +219,25 @@ export function Project() {
         </div>
         <div className="bg-bg-secondary border border-border rounded-lg p-4">
           <p className="text-text-tertiary text-sm mb-1">Config Files</p>
-          <p className="text-2xl font-bold text-text-primary">12</p>
+          <p className="text-2xl font-bold text-text-primary">{configFilesCount || '-'}</p>
         </div>
         <div className="bg-bg-secondary border border-border rounded-lg p-4">
           <p className="text-text-tertiary text-sm mb-1">MCP Servers</p>
-          <p className="text-2xl font-bold text-text-primary">5</p>
+          <p className="text-2xl font-bold text-text-primary">{mcpServersCount || '-'}</p>
         </div>
       </div>
 
       {/* Tools Grid */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-text-primary mb-4">Detected Tools</h2>
+        {detectedTools.length === 0 ? (
+          <div className="text-center py-8 text-text-tertiary">
+            <p>No AI tools detected in this project</p>
+            <p className="text-sm mt-1">Open a project with AI tool configurations to get started</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tools.map((tool) => (
+          {detectedTools.map((tool) => (
             <button
               key={tool.id}
               onClick={() => tool.detected && handleToolClick(tool.id)}
@@ -267,6 +302,7 @@ export function Project() {
             </button>
           ))}
         </div>
+        )}
       </div>
 
       {/* Config Summary */}
@@ -278,21 +314,21 @@ export function Project() {
               <FileText className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">Rules Files</span>
             </div>
-            <span className="text-text-tertiary">8 files</span>
+            <span className="text-text-tertiary">{rulesCount > 0 ? `${rulesCount} files` : '-'}</span>
           </div>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Server className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">MCP Servers</span>
             </div>
-            <span className="text-text-tertiary">5 servers</span>
+            <span className="text-text-tertiary">{mcpServersCount > 0 ? `${mcpServersCount} servers` : '-'}</span>
           </div>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Settings className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">Settings</span>
             </div>
-            <span className="text-text-tertiary">3 tools configured</span>
+            <span className="text-text-tertiary">{detectedCount > 0 ? `${detectedCount} tools configured` : '-'}</span>
           </div>
         </div>
       </div>

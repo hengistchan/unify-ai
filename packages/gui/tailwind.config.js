@@ -4,10 +4,11 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Background colors
+        // Dark theme colors (default)
         'bg-primary': '#000000',
         'bg-secondary': '#121212',
         'bg-tertiary': '#1E1E1E',

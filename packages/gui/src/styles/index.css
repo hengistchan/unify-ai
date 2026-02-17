@@ -7,14 +7,18 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+/* Dark theme (default) */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -22,32 +26,115 @@ body {
   color: #ffffff;
 }
 
-/* Scrollbar styles */
-::-webkit-scrollbar {
+/* Light theme */
+.light {
+  color-scheme: light;
+}
+
+.light body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #FAFAFA;
+  color: #18181B;
+}
+
+/* Light theme color overrides */
+.light {
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F4F4F5;
+  --bg-tertiary: #E4E4E7;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #D4D4D8;
+
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-tertiary: #71717A;
+  --text-disabled: #A1A1AA;
+
+  --border-color: #E4E4E7;
+  --border-hover: #D4D4D8;
+  --border-focus: #10B981;
+
+  --primary-muted: rgba(16, 185, 129, 0.1);
+}
+
+/* Dark theme color variables */
+.dark {
+  --bg-primary: #000000;
+  --bg-secondary: #121212;
+  --bg-tertiary: #1E1E1E;
+  --bg-elevated: #252525;
+  --bg-hover: #2A2A2A;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #71717A;
+  --text-disabled: #52525B;
+
+  --border-color: #27272A;
+  --border-hover: #3F3F46;
+  --border-focus: #10B981;
+
+  --primary-muted: rgba(16, 185, 129, 0.15);
+}
+
+/* Scrollbar styles - Dark */
+.dark ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-::-webkit-scrollbar-track {
+.dark ::-webkit-scrollbar-track {
   background: #121212;
 }
 
-::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: #3f3f46;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.dark ::-webkit-scrollbar-thumb:hover {
   background: #52525b;
 }
 
-/* Selection styles */
-::selection {
+/* Scrollbar styles - Light */
+.light ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #F4F4F5;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #D4D4D8;
+  border-radius: 4px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #A1A1AA;
+}
+
+/* Selection styles - Dark */
+.dark ::selection {
   background-color: rgba(16, 185, 129, 0.3);
 }
 
-/* Focus styles */
-*:focus-visible {
+/* Selection styles - Light */
+.light ::selection {
+  background-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Focus styles - Dark */
+.dark *:focus-visible {
+  outline: 2px solid #10B981;
+  outline-offset: 2px;
+}
+
+/* Focus styles - Light */
+.light *:focus-visible {
   outline: 2px solid #10B981;
   outline-offset: 2px;
 }

@@ -1,13 +1,21 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home, Project, ToolDetail, Settings } from './pages';
 import { useAppStore } from './stores/appStore';
+import { useThemeStore } from './stores/themeStore';
 import type { Toast as ToastType } from './stores/appStore';
 import { Toast } from './components/common';
 
 function App() {
   const toasts = useAppStore((state) => state.toasts);
   const removeToast = useAppStore((state) => state.removeToast);
+  const { mode, setMode } = useThemeStore();
+
+  // Initialize theme on mount
+  useEffect(() => {
+    setMode(mode);
+  }, []);
 
   return (
     <>

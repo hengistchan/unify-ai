@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Button, Card } from '@/components/common';
+import { ThemeSwitcher } from '@/components/settings/ThemeSwitcher';
 import { useAppStore, selectSettings } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
 
@@ -143,28 +144,8 @@ export function Settings() {
           subtitle="Customize the look and feel"
           icon={<Moon className="w-5 h-5" />}
         />
-        <Card.Body className="p-0">
-          {/* Theme */}
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Moon className="w-5 h-5 text-text-tertiary" />
-              <div>
-                <p className="text-sm font-medium text-text-secondary">Theme</p>
-                <p className="text-xs text-text-tertiary">Select your preferred color theme</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className={cn(
-                  'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                  'bg-bg-tertiary text-text-secondary border border-border'
-                )}
-              >
-                <Moon className="w-4 h-4 inline mr-1" />
-                Dark
-              </button>
-            </div>
-          </div>
+        <Card.Body className="p-4">
+          <ThemeSwitcher />
         </Card.Body>
       </Card>
 

@@ -26,14 +26,14 @@ async function build() {
       },
     });
 
-    // Build preload script
+    // Build preload script (must be CommonJS)
     await esbuild.build({
       entryPoints: [path.join(__dirname, '../electron/preload.ts')],
       bundle: true,
       platform: 'node',
       target: 'node18',
       outfile: path.join(__dirname, '../dist/electron/preload.js'),
-      format: 'esm',
+      format: 'cjs', // CommonJS for preload
       sourcemap: true,
       external: ['electron'],
     });

@@ -114,7 +114,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
 }) => {
   return (
     <div
-      className="fixed top-16 right-4 z-[100] flex flex-col gap-2"
+      className="fixed top-24 right-4 z-[100] flex flex-col gap-2"
       aria-live="polite"
     >
       {toasts.map((toast) => (

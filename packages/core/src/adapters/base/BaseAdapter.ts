@@ -239,11 +239,16 @@ export abstract class BaseAdapter implements IAdapter {
             message: 'Rule ID is required',
           });
         }
-        if (!rule.content) {
-          errors.push({
+        // Skip empty content as warning, not error
+        if (!rule.content || rule.content.trim() === '') {
+          warnings.push({
             path: `rules[${i}].content`,
-            message: 'Rule content is required',
+            message: `Rule "${rule.id || i}" has empty content and will be skipped`,
+            suggestion: 'Add content to the rule or remove it from configuration',
           });
+          // Remove empty rule from config
+          config.rules.splice(i, 1);
+          i--; // Adjust index after removal
         }
       }
     }

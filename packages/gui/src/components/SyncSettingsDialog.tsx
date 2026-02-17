@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { X, ArrowRight, Check } from 'lucide-react';
+import { X, ArrowRight, Check, RefreshCw, Info } from 'lucide-react';
 import { Button } from '@/components/common';
 import type { DetectedTool } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
@@ -67,11 +67,12 @@ export function SyncSettingsDialog({
   const handleConfirm = () => {
     if (sourceTool && targetTools.size > 0) {
       onConfirm(sourceTool, Array.from(targetTools));
-      onClose();
     }
   };
 
   const canConfirm = sourceTool && targetTools.size > 0;
+
+  const sourceToolInfo = detectedList.find(t => t.id === sourceTool);
 
   if (!open) return null;
 
@@ -84,10 +85,13 @@ export function SyncSettingsDialog({
       />
 
       {/* Dialog */}
-      <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden animate-fade-in">
+      <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text-primary">Sync Settings</h2>
+          <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+            <RefreshCw className="w-5 h-5 text-primary" />
+            Sync Configuration
+          </h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-bg-hover rounded transition-colors"
@@ -97,16 +101,70 @@ export function SyncSettingsDialog({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto">
-          <p className="text-text-secondary mb-6">
-            Select the source tool to sync from and the target tools to sync to.
-          </p>
+        <div className="p-6 overflow-y-auto space-y-6">
+          {/* Explanation */}
+          <div className="bg-bg-tertiary border border-border rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <div className="space-y-2">
+                <p className="text-sm text-text-primary font-medium">How does sync work?</p>
+                <p className="text-sm text-text-secondary">
+                  Sync reads configuration (rules, MCP servers, settings) from the{' '}
+                  <strong className="text-text-primary">source tool</strong> and writes it to the{' '}
+                  <strong className="text-text-primary">target tools</strong>' config files.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Flow */}
+          <div className="flex items-center justify-center gap-4 py-4">
+            {/* Source */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-24 h-16 bg-primary-muted border-2 border-primary rounded-lg flex items-center justify-center">
+                <span className="text-2xl">
+                  {sourceToolInfo?.id === 'claude-code' && '🤖'}
+                  {sourceToolInfo?.id === 'cursor' && '⚡'}
+                  {sourceToolInfo?.id === 'copilot' && '🐙'}
+                  {sourceToolInfo?.id === 'windsurf' && '🌊'}
+                  {sourceToolInfo?.id === 'codex' && '📝'}
+                  {sourceToolInfo?.id === 'cline' && '📋'}
+                  {sourceToolInfo?.id === 'aider' && '🤝'}
+                  {sourceToolInfo?.id === 'continue' && '▶️'}
+                </span>
+              </div>
+              <span className="text-xs text-text-secondary">
+                {sourceToolInfo?.name || 'Select source'}
+              </span>
+              <span className="text-xs text-primary font-medium">Source</span>
+            </div>
+
+            {/* Arrow */}
+            <div className="flex items-center gap-1">
+              <ArrowRight className="w-6 h-6 text-primary" />
+              <RefreshCw className="w-5 h-5 text-text-tertiary" />
+              <ArrowRight className="w-6 h-6 text-primary" />
+            </div>
+
+            {/* Targets */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-24 h-16 bg-success-muted border-2 border-success rounded-lg flex items-center justify-center">
+                <span className="text-2xl">
+                  {targetTools.size > 0 ? '📁' : '?'}
+                </span>
+              </div>
+              <span className="text-xs text-text-secondary">
+                {targetTools.size > 0 ? `${targetTools.size} tool(s)` : 'Select targets'}
+              </span>
+              <span className="text-xs text-success font-medium">Targets</span>
+            </div>
+          </div>
 
           {/* Source Tool Selection */}
-          <div className="mb-6">
+          <div>
             <h3 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
-              <ArrowRight className="w-4 h-4 text-primary" />
-              Source Tool
+              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">1</span>
+              Select source tool (configuration origin)
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {detectedList.map((tool) => (
@@ -122,7 +180,7 @@ export function SyncSettingsDialog({
                 >
                   <div className="flex-1 text-left">
                     <div className="font-medium">{tool.name}</div>
-                    <div className="text-xs text-text-tertiary">{tool.configPath}</div>
+                    <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
                   </div>
                   {sourceTool === tool.id && (
                     <Check className="w-5 h-5 text-primary" />
@@ -135,8 +193,8 @@ export function SyncSettingsDialog({
           {/* Target Tools Selection */}
           <div>
             <h3 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
-              <ArrowRight className="w-4 h-4 text-primary" />
-              Target Tools
+              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">2</span>
+              Select target tools (will receive configuration)
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {detectedList.map((tool) => {
@@ -152,18 +210,18 @@ export function SyncSettingsDialog({
                       'flex items-center gap-3 p-3 rounded-lg border transition-all',
                       isSource && 'opacity-50 cursor-not-allowed',
                       isSelected && !isSource
-                        ? 'bg-primary-muted border-primary text-text-primary'
+                        ? 'bg-success-muted border-success text-text-primary'
                         : 'bg-bg-tertiary border-border hover:border-border-hover text-text-secondary'
                     )}
                   >
                     <div className="flex-1 text-left">
                       <div className="font-medium">{tool.name}</div>
                       <div className="text-xs text-text-tertiary">
-                        {isSource ? 'Source tool' : tool.configPath}
+                        {isSource ? '(Source tool)' : tool.configPath}
                       </div>
                     </div>
                     {isSelected && !isSource && (
-                      <Check className="w-5 h-5 text-primary" />
+                      <Check className="w-5 h-5 text-success" />
                     )}
                   </button>
                 );
@@ -171,12 +229,21 @@ export function SyncSettingsDialog({
             </div>
           </div>
 
-          {/* Info */}
+          {/* Summary */}
           {canConfirm && (
-            <div className="mt-6 p-3 bg-info-muted border border-info/20 rounded-lg">
-              <p className="text-sm text-info">
-                Configuration from <strong>{detectedList.find(t => t.id === sourceTool)?.name}</strong> will be synced to{' '}
-                <strong>{targetTools.size} tool{targetTools.size > 1 ? 's' : ''}</strong>
+            <div className="p-4 bg-success-muted border border-success/30 rounded-lg">
+              <p className="text-sm text-success font-medium mb-1">Ready to sync</p>
+              <p className="text-sm text-text-secondary">
+                Configuration from <strong className="text-text-primary">{sourceToolInfo?.name}</strong> will be synced to{' '}
+                <strong className="text-text-primary">{targetTools.size} tool(s)</strong>:{' '}
+                {Array.from(targetTools).map((id, i) => {
+                  const tool = detectedList.find(t => t.id === id);
+                  return (
+                    <span key={id}>
+                      {i > 0 && ', '}<strong>{tool?.name}</strong>
+                    </span>
+                  );
+                })}
               </p>
             </div>
           )}
@@ -192,7 +259,8 @@ export function SyncSettingsDialog({
             onClick={handleConfirm}
             disabled={!canConfirm}
           >
-            Apply Settings
+            <RefreshCw className="w-4 h-4 mr-1" />
+            Start Sync
           </Button>
         </div>
       </div>

@@ -1,5 +1,14 @@
 import React from 'react';
-import { AlertTriangle, FileText, ArrowRight } from 'lucide-react';
+import {
+  AlertTriangle,
+  FileText,
+  ArrowRight,
+  RefreshCw,
+  Server,
+  Settings,
+  FileCode,
+  CheckCircle2,
+} from 'lucide-react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
@@ -23,6 +32,13 @@ export interface SyncPreview {
   targetTools: string[];
   changes: FileChange[];
   conflicts: Conflict[];
+  // Detailed sync content
+  syncDetails?: {
+    rulesCount: number;
+    mcpServersCount: number;
+    hasSettings: boolean;
+    commandsCount: number;
+  };
 }
 
 export interface SyncPreviewDialogProps {
@@ -115,6 +131,30 @@ const FileChangeRow: React.FC<{ change: FileChange }> = ({ change }) => {
   );
 };
 
+// Sync Detail Item Component
+const SyncDetailItem: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  value: number | boolean;
+  color: string;
+}> = ({ icon, label, value, color }) => (
+  <div className="flex items-center gap-3 p-3 bg-bg-tertiary rounded-lg">
+    <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
+    <div className="flex-1">
+      <p className="text-sm text-text-secondary">{label}</p>
+      <p className="text-lg font-semibold text-text-primary">
+        {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+      </p>
+    </div>
+    {typeof value === 'number' && value > 0 && (
+      <CheckCircle2 className="w-5 h-5 text-success" />
+    )}
+    {typeof value === 'boolean' && value && (
+      <CheckCircle2 className="w-5 h-5 text-success" />
+    )}
+  </div>
+);
+
 // Conflicts Section Component
 const ConflictsSection: React.FC<{ conflicts: Conflict[] }> = ({ conflicts }) => {
   if (conflicts.length === 0) return null;
@@ -153,6 +193,18 @@ const ConflictsSection: React.FC<{ conflicts: Conflict[] }> = ({ conflicts }) =>
   );
 };
 
+// Tool name mapping
+const toolNames: Record<string, string> = {
+  'claude-code': 'Claude Code',
+  cursor: 'Cursor',
+  copilot: 'GitHub Copilot',
+  windsurf: 'Windsurf',
+  codex: 'Codex',
+  cline: 'Cline',
+  aider: 'Aider',
+  continue: 'Continue',
+};
+
 export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
   open,
   onClose,
@@ -180,7 +232,12 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
     <Modal
       isOpen={open}
       onClose={onClose}
-      title="Sync Preview"
+      title={
+        <div className="flex items-center gap-2">
+          <RefreshCw className="w-5 h-5 text-primary" />
+          Sync Preview
+        </div>
+      }
       size="lg"
       footer={
         <>
@@ -193,6 +250,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
             disabled={loading || !hasChanges}
             loading={loading}
           >
+            <RefreshCw className="w-4 h-4 mr-1" />
             Confirm Sync
           </Button>
         </>
@@ -203,68 +261,108 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
       ) : !preview ? (
         <EmptyState />
       ) : (
-        <div className="space-y-4">
-          {/* Source and Target Tools */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-text-tertiary uppercase tracking-wide">
-                Source:
-              </span>
-              <Badge variant="info">{preview.sourceTool}</Badge>
-            </div>
-            <ArrowRight size={16} className="text-text-tertiary" />
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-text-tertiary uppercase tracking-wide">
-                Targets:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {preview.targetTools.map((tool) => (
-                  <Badge key={tool} variant="default">
-                    {tool}
-                  </Badge>
-                ))}
+        <div className="space-y-6">
+          {/* Sync Direction */}
+          <div className="bg-bg-tertiary border border-border rounded-lg p-4">
+            <div className="flex items-center justify-center gap-4">
+              <div className="text-center">
+                <Badge variant="info" size="lg">
+                  {toolNames[preview.sourceTool] || preview.sourceTool}
+                </Badge>
+                <p className="text-xs text-text-tertiary mt-1">Source</p>
+              </div>
+              <ArrowRight size={24} className="text-primary" />
+              <div className="text-center">
+                <div className="flex flex-wrap gap-1.5 justify-center">
+                  {preview.targetTools.map((tool) => (
+                    <Badge key={tool} variant="success" size="lg">
+                      {toolNames[tool] || tool}
+                    </Badge>
+                  ))}
+                </div>
+                <p className="text-xs text-text-tertiary mt-1">
+                  {preview.targetTools.length} Target(s)
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Changes Summary */}
-          {hasChanges && (
-            <div className="flex items-center gap-4 text-sm text-text-secondary">
-              <span>{preview.changes.length} file(s) affected</span>
-              <span className="text-success">+{totalAdded}</span>
-              <span className="text-error">-{totalRemoved}</span>
+          {/* What will be synced */}
+          {preview.syncDetails && (
+            <div>
+              <h4 className="text-sm font-medium text-text-primary mb-3">
+                What will be synced:
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <SyncDetailItem
+                  icon={<FileCode className="w-4 h-4" />}
+                  label="Rules"
+                  value={preview.syncDetails.rulesCount}
+                  color="bg-primary-muted text-primary"
+                />
+                <SyncDetailItem
+                  icon={<Server className="w-4 h-4" />}
+                  label="MCP Servers"
+                  value={preview.syncDetails.mcpServersCount}
+                  color="bg-success-muted text-success"
+                />
+                <SyncDetailItem
+                  icon={<Settings className="w-4 h-4" />}
+                  label="Settings"
+                  value={preview.syncDetails.hasSettings}
+                  color="bg-info-muted text-info"
+                />
+                <SyncDetailItem
+                  icon={<FileText className="w-4 h-4" />}
+                  label="Commands"
+                  value={preview.syncDetails.commandsCount}
+                  color="bg-warning-muted text-warning"
+                />
+              </div>
             </div>
           )}
 
-          {/* File Changes Table */}
+          {/* Changes Summary */}
           {hasChanges && (
-            <Card hoverable={false}>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-bg-tertiary">
-                      <th className="text-left py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                        File
-                      </th>
-                      <th className="text-left py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                        Action
-                      </th>
-                      <th className="text-right py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                        Lines
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {preview.changes.map((change, index) => (
-                      <FileChangeRow
-                        key={`${change.path}-${index}`}
-                        change={change}
-                      />
-                    ))}
-                  </tbody>
-                </table>
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-medium text-text-primary">
+                  File Changes ({preview.changes.length} files)
+                </h4>
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="text-success">+{totalAdded} lines</span>
+                  <span className="text-error">-{totalRemoved} lines</span>
+                </div>
               </div>
-            </Card>
+
+              <Card hoverable={false}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-bg-tertiary">
+                        <th className="text-left py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
+                          File
+                        </th>
+                        <th className="text-left py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
+                          Action
+                        </th>
+                        <th className="text-right py-2 px-4 text-xs font-medium text-text-tertiary uppercase tracking-wide">
+                          Lines
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {preview.changes.map((change, index) => (
+                        <FileChangeRow
+                          key={`${change.path}-${index}`}
+                          change={change}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
           )}
 
           {/* No Changes Message */}

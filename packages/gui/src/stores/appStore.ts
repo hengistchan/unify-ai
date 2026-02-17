@@ -57,6 +57,12 @@ export interface SyncPreview {
   targetTools: string[];
   changes: FileChange[];
   conflicts: Conflict[];
+  syncDetails?: {
+    rulesCount: number;
+    mcpServersCount: number;
+    hasSettings: boolean;
+    commandsCount: number;
+  };
 }
 
 // UnifiedConfig type definition for GUI use
@@ -301,6 +307,11 @@ export const useAppStore = create<AppState>()(
 
         set({ syncLoading: true, selectedSourceTool: sourceTool });
         try {
+          // First, import to get the config details
+          const importResult = await window.electronAPI.importConfig(currentProject, {
+            sourceTool,
+          });
+
           // Call IPC for preview mode sync
           const results = await window.electronAPI.previewSync(currentProject, targetTools);
 
@@ -329,11 +340,20 @@ export const useAppStore = create<AppState>()(
             }
           }
 
+          // Build sync details from imported config
+          const syncDetails = importResult.success && importResult.config ? {
+            rulesCount: importResult.config.rules?.length || 0,
+            mcpServersCount: importResult.config.mcp?.servers?.length || 0,
+            hasSettings: !!importResult.config.settings,
+            commandsCount: importResult.config.commands?.length || 0,
+          } : undefined;
+
           const preview: SyncPreview = {
             sourceTool,
             targetTools,
             changes: allChanges,
             conflicts: allConflicts,
+            syncDetails,
           };
 
           set({ syncPreview: preview, syncLoading: false });

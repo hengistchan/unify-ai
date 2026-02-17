@@ -32,7 +32,7 @@ export function createWindow(): BrowserWindow {
     minWidth: WINDOW_CONFIG.minWidth,
     minHeight: WINDOW_CONFIG.minHeight,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'), // .cjs for CommonJS
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false, // Disable sandbox for development

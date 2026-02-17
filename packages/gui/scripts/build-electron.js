@@ -32,8 +32,7 @@ async function build() {
       bundle: true,
       platform: 'node',
       target: 'node18',
-      outfile: path.join(__dirname, '../dist/electron/preload.js'),
-      format: 'cjs', // CommonJS for preload
+      outfile: path.join(__dirname, '../dist/electron/preload.cjs'), // .cjs extension for CommonJS
       sourcemap: true,
       external: ['electron'],
     });

@@ -251,12 +251,32 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   async generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult> {
     const files: GeneratedFile[] = [];
 
-    // 1. Generate CLAUDE.md
+    // 1. Generate rules to .claude/rules/ and CLAUDE.md as entry point
     if (config.rules && config.rules.length > 0) {
-      const content = this.generateClaudeMd(config.rules);
+      // Generate individual rule files
+      const imports: string[] = [];
+
+      for (const rule of config.rules) {
+        if (rule.enabled !== false) {
+          const ruleFileName = this.getRuleFileName(rule);
+          const rulePath = `.claude/rules/${ruleFileName}`;
+          files.push({
+            path: rulePath,
+            content: rule.content,
+            encoding: 'utf-8',
+            overwrite: true,
+          });
+          imports.push(`@${rulePath}`);
+        }
+      }
+
+      // Generate CLAUDE.md as entry point with imports
+      const claudeMdContent = imports.length > 0
+        ? `# Project Rules\n\n${imports.join('\n')}\n`
+        : '';
       files.push({
         path: 'CLAUDE.md',
-        content,
+        content: claudeMdContent,
         encoding: 'utf-8',
         overwrite: true,
       });
@@ -301,6 +321,18 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       success: true,
       files,
     };
+  }
+
+  private getRuleFileName(rule: RuleConfig): string {
+    // Use rule name or id to create a filename
+    const baseName = rule.name || rule.id;
+    // Sanitize filename: replace spaces and special chars with dashes
+    const sanitized = baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `${sanitized}.md`;
   }
 
   /**
@@ -443,24 +475,6 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     }
 
     return references;
-  }
-
-  private generateClaudeMd(rules: RuleConfig[]): string {
-    const sections: string[] = [];
-
-    // If there's only one rule, output its content directly
-    if (rules.length === 1) {
-      return rules[0].content;
-    }
-
-    // Multiple rules: combine into a single document
-    for (const rule of rules) {
-      if (rule.enabled !== false) {
-        sections.push(`## ${rule.name || rule.id}\n\n${rule.content}`);
-      }
-    }
-
-    return sections.join('\n\n---\n\n');
   }
 
   // ============================================

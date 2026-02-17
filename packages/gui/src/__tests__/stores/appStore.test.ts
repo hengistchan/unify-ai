@@ -213,6 +213,11 @@ describe('AppStore', () => {
       it('should call electronAPI.previewSync with correct params', async () => {
         const { setProject, previewSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0' },
+        });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
           { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
         ]);
@@ -231,6 +236,11 @@ describe('AppStore', () => {
       it('should set syncPreview with aggregated results', async () => {
         const { setProject, previewSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0', rules: [], mcp: { servers: [] } },
+        });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
           { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'line1\nline2\nline3' }], warnings: [] },
           { success: true, toolId: 'copilot', files: [{ path: '.github/copilot-instructions.md', content: 'content' }], warnings: ['Warning 1'] },
@@ -256,6 +266,11 @@ describe('AppStore', () => {
       it('should set syncLoading to false on error', async () => {
         const { setProject, previewSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0' },
+        });
         mockElectronAPI.previewSync.mockRejectedValueOnce(new Error('Network error'));
 
         act(() => {
@@ -287,6 +302,11 @@ describe('AppStore', () => {
       it('should call electronAPI.syncConfig with correct params', async () => {
         const { setProject, previewSync, executeSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0' },
+        });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
           { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
         ]);
@@ -317,6 +337,11 @@ describe('AppStore', () => {
       it('should clear sync preview and show success toast on success', async () => {
         const { setProject, previewSync, executeSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0' },
+        });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
           { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
         ]);
@@ -351,6 +376,11 @@ describe('AppStore', () => {
       it('should show error toast on sync failure', async () => {
         const { setProject, previewSync, executeSync } = useAppStore.getState();
 
+        // Mock importConfig first (called by previewSync)
+        mockElectronAPI.importConfig.mockResolvedValueOnce({
+          success: true,
+          config: { version: '1.0.0' },
+        });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
           { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
         ]);

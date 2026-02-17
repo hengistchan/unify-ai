@@ -8,18 +8,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   FolderOpen,
   RefreshCw,
-  Upload,
-  Download,
   Check,
   AlertCircle,
   FileText,
   Server,
   Settings,
   ChevronRight,
-  Eye,
-  Loader2,
 } from 'lucide-react';
-import { Button, Badge } from '@/components/common';
+import { Button, Badge, ToolIcon } from '@/components/common';
 import {
   useAppStore,
   selectCurrentProject,
@@ -34,8 +30,8 @@ import {
 } from '@/stores/appStore';
 import { SyncPreviewDialog } from '@/components/SyncPreviewDialog';
 import { SyncSettingsDialog } from '@/components/SyncSettingsDialog';
-import { ImportDialog } from '@/components/ImportDialog';
-import { ExportDialog } from '@/components/ExportDialog';
+import { SyncModeDialog, type SyncMode } from '@/components/SyncModeDialog';
+import { UnifiedConfigDialog } from '@/components/UnifiedConfigDialog';
 import { cn } from '@/lib/utils';
 
 export function Project() {
@@ -53,7 +49,6 @@ export function Project() {
     previewSync,
     executeSync,
     clearSyncPreview,
-    addToast,
     lastSyncTime,
     refreshTools,
     updateSyncPreferences,
@@ -61,97 +56,49 @@ export function Project() {
     exportConfig,
   } = useAppStore();
 
-  const [showSyncDialog, setShowSyncDialog] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [showSyncModeDialog, setShowSyncModeDialog] = useState(false);
   const [showSyncSettings, setShowSyncSettings] = useState(false);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showSyncPreview, setShowSyncPreview] = useState(false);
+  const [showUnifiedConfigDialog, setShowUnifiedConfigDialog] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Preview sync button handler
-  const handlePreviewSync = async () => {
-    console.log('\n🔄 Preview Sync');
-    console.log('────────────────────────────────');
+  const detectedCount = detectedTools.filter((t) => t.detected).length;
 
-    if (detectedTools.length === 0) {
-      console.log('[Sync] No tools detected');
-      addToast({
-        type: 'warning',
-        title: 'No Tools',
-        message: 'No tools detected to sync',
-      });
-      return;
-    }
-
-    const detectedList = detectedTools.filter((t) => t.detected);
-    console.log('[Sync] Detected tools:', detectedList.map(t => t.id).join(', '));
-
-    if (detectedList.length < 2) {
-      console.log('[Sync] Need at least 2 tools for sync');
-      addToast({
-        type: 'info',
-        title: 'Need Multiple Tools',
-        message: 'At least 2 detected tools are needed for sync',
-      });
-      return;
-    }
-
-    // Check if we have saved preferences
-    if (syncPreferences.sourceTool && syncPreferences.targetTools.length > 0) {
-      // Verify that saved tools still exist
-      const sourceExists = detectedList.find(t => t.id === syncPreferences.sourceTool);
-      const validTargets = syncPreferences.targetTools.filter(tid =>
-        detectedList.find(t => t.id === tid)
-      );
-
-      if (sourceExists && validTargets.length > 0) {
-        // Use saved preferences
-        console.log('[Sync] Using saved preferences:');
-        console.log('  Source:', syncPreferences.sourceTool);
-        console.log('  Targets:', validTargets.join(', '));
-        console.log('────────────────────────────────\n');
-        await previewSync(syncPreferences.sourceTool, validTargets);
-        setShowSyncDialog(true);
-        return;
+  // Handle sync mode selection
+  const handleSyncModeSelect = (mode: SyncMode) => {
+    setShowSyncModeDialog(false);
+    if (mode === 'direct-sync') {
+      // Check if we have saved preferences
+      const detectedList = detectedTools.filter((t) => t.detected);
+      if (syncPreferences.sourceTool && syncPreferences.targetTools.length > 0) {
+        const sourceExists = detectedList.find(t => t.id === syncPreferences.sourceTool);
+        const validTargets = syncPreferences.targetTools.filter(tid =>
+          detectedList.find(t => t.id === tid)
+        );
+        if (sourceExists && validTargets.length > 0) {
+          // Use saved preferences
+          previewSync(syncPreferences.sourceTool, validTargets);
+          setShowSyncPreview(true);
+          return;
+        }
       }
+      // No saved preferences, show settings dialog
+      setShowSyncSettings(true);
+    } else {
+      // Unified config mode
+      setShowUnifiedConfigDialog(true);
     }
-
-    // No valid saved preferences, show settings dialog
-    console.log('[Sync] No saved preferences, showing settings dialog');
-    console.log('────────────────────────────────\n');
-    setShowSyncSettings(true);
   };
 
   // Execute sync after preview confirmation
   const handleConfirmSync = async () => {
     await executeSync();
-    setShowSyncDialog(false);
+    setShowSyncPreview(false);
   };
 
-  const handleCloseDialog = () => {
-    setShowSyncDialog(false);
+  const handleCloseSyncPreview = () => {
+    setShowSyncPreview(false);
     clearSyncPreview();
-  };
-
-  const handleImport = () => {
-    setShowImportDialog(true);
-  };
-
-  const handleExport = () => {
-    setShowExportDialog(true);
-  };
-
-  const handleImportConfirm = async (options: { mergeMultiple: boolean; sourceTool?: string }) => {
-    const result = await importConfig(options);
-    if (result.success) {
-      setShowImportDialog(false);
-    }
-  };
-
-  const handleExportConfirm = async (targetTools: string[], options: { createBackup: boolean }) => {
-    const result = await exportConfig(targetTools, options);
-    if (result.success) {
-      setShowExportDialog(false);
-    }
   };
 
   const handleRefresh = async () => {
@@ -161,12 +108,20 @@ export function Project() {
   };
 
   const handleSyncSettingsConfirm = async (sourceTool: string, targetTools: string[]) => {
-    // Save preferences
     updateSyncPreferences({ sourceTool, targetTools });
-
-    // Execute preview sync
     await previewSync(sourceTool, targetTools);
-    setShowSyncDialog(true);
+    setShowSyncSettings(false);
+    setShowSyncPreview(true);
+  };
+
+  const handleImportConfirm = async (options: { mergeMultiple: boolean; sourceTool?: string }) => {
+    const result = await importConfig(options);
+    return result;
+  };
+
+  const handleExportConfirm = async (targetTools: string[], options: { createBackup: boolean }) => {
+    const result = await exportConfig(targetTools, options);
+    return result;
   };
 
   const handleToolClick = (toolId: string) => {
@@ -187,8 +142,6 @@ export function Project() {
     );
   }
 
-  const detectedCount = detectedTools.filter((t) => t.detected).length;
-
   // Calculate stats from unified config
   const rulesCount = unifiedConfig?.rules?.length ?? 0;
   const mcpServersCount = unifiedConfig?.mcp?.servers?.length ?? 0;
@@ -201,26 +154,16 @@ export function Project() {
 
   return (
     <div className="p-6 animate-fade-in">
-      {/* Import Dialog */}
-      <ImportDialog
-        open={showImportDialog}
-        onClose={() => setShowImportDialog(false)}
-        onConfirm={handleImportConfirm}
-        detectedTools={detectedTools}
-        loading={importLoading}
+      {/* Sync Mode Dialog */}
+      <SyncModeDialog
+        open={showSyncModeDialog}
+        onClose={() => setShowSyncModeDialog(false)}
+        onSelectMode={handleSyncModeSelect}
+        hasUnifiedConfig={!!unifiedConfig}
+        detectedToolsCount={detectedCount}
       />
 
-      {/* Export Dialog */}
-      <ExportDialog
-        open={showExportDialog}
-        onClose={() => setShowExportDialog(false)}
-        onConfirm={handleExportConfirm}
-        detectedTools={detectedTools}
-        unifiedConfig={unifiedConfig}
-        loading={exportLoading}
-      />
-
-      {/* Sync Settings Dialog */}
+      {/* Sync Settings Dialog (for direct sync mode) */}
       <SyncSettingsDialog
         open={showSyncSettings}
         onClose={() => setShowSyncSettings(false)}
@@ -232,11 +175,23 @@ export function Project() {
 
       {/* Sync Preview Dialog */}
       <SyncPreviewDialog
-        open={showSyncDialog}
-        onClose={handleCloseDialog}
+        open={showSyncPreview}
+        onClose={handleCloseSyncPreview}
         onConfirm={handleConfirmSync}
         preview={syncPreview}
         loading={syncLoading}
+      />
+
+      {/* Unified Config Dialog */}
+      <UnifiedConfigDialog
+        open={showUnifiedConfigDialog}
+        onClose={() => setShowUnifiedConfigDialog(false)}
+        detectedTools={detectedTools}
+        unifiedConfig={unifiedConfig}
+        onImport={handleImportConfirm}
+        onExport={handleExportConfirm}
+        importLoading={importLoading}
+        exportLoading={exportLoading}
       />
 
       {/* Header */}
@@ -259,42 +214,13 @@ export function Project() {
             Refresh
           </Button>
           <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowSyncSettings(true)}
-            disabled={detectedCount < 2}
-          >
-            <Settings className="w-4 h-4 mr-1" />
-            Sync Settings
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleImport}
-          >
-            <Upload className="w-4 h-4 mr-1" />
-            Import
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleExport}
-          >
-            <Download className="w-4 h-4 mr-1" />
-            Export
-          </Button>
-          <Button
             variant="primary"
             size="sm"
-            onClick={handlePreviewSync}
-            disabled={syncLoading || detectedCount < 2}
+            onClick={() => setShowSyncModeDialog(true)}
+            disabled={detectedCount < 2}
           >
-            {syncLoading ? (
-              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-            ) : (
-              <Eye className="w-4 h-4 mr-1" />
-            )}
-            {syncLoading ? 'Previewing...' : 'Preview Sync'}
+            <RefreshCw className="w-4 h-4 mr-1" />
+            Sync Config
           </Button>
         </div>
       </div>
@@ -363,16 +289,7 @@ export function Project() {
                 'w-10 h-10 rounded-lg flex items-center justify-center',
                 tool.detected ? 'bg-primary-muted' : 'bg-bg-tertiary'
               )}>
-                <span className="text-lg">
-                  {tool.id === 'claude-code' && '🤖'}
-                  {tool.id === 'cursor' && '⚡'}
-                  {tool.id === 'copilot' && '🐙'}
-                  {tool.id === 'windsurf' && '🌊'}
-                  {tool.id === 'codex' && '📝'}
-                  {tool.id === 'cline' && '📋'}
-                  {tool.id === 'aider' && '🤝'}
-                  {tool.id === 'continue' && '▶️'}
-                </span>
+                <ToolIcon toolId={tool.id} size="sm" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">

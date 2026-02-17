@@ -379,7 +379,7 @@ describe('BaseAdapter', () => {
       expect(result.errors.some(e => e.path === 'rules[0].id')).toBe(true);
     });
 
-    it('should error on rule missing content', async () => {
+    it('should warn on rule missing content', async () => {
       const config: UnifiedConfig = {
         version: '1.0',
         rules: [{ id: 'rule1' } as any],
@@ -387,8 +387,9 @@ describe('BaseAdapter', () => {
 
       const result = await adapter.validate(config);
 
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.path === 'rules[0].content')).toBe(true);
+      // Empty content is now a warning, not an error
+      expect(result.valid).toBe(true);
+      expect(result.warnings.some(e => e.path === 'rules[0].content')).toBe(true);
     });
 
     it('should validate MCP server configuration', async () => {

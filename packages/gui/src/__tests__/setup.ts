@@ -3,11 +3,15 @@ import { vi } from 'vitest';
 
 // Mock Electron API
 const mockElectronAPI = {
-  openFolder: vi.fn(),
-  detectTools: vi.fn(),
-  syncConfig: vi.fn(),
-  previewSync: vi.fn(),
-  getToolConfig: vi.fn(),
+  openFolder: vi.fn().mockResolvedValue(null),
+  detectTools: vi.fn().mockResolvedValue([]),
+  syncConfig: vi.fn().mockResolvedValue({ success: true, message: 'OK', syncedTools: [] }),
+  previewSync: vi.fn().mockResolvedValue([]),
+  getToolConfig: vi.fn().mockResolvedValue({ success: true }),
+  importConfig: vi.fn().mockResolvedValue({ success: true }),
+  exportConfig: vi.fn().mockResolvedValue({ success: true, message: 'OK', exportedTools: [] }),
+  saveUnifiedConfig: vi.fn().mockResolvedValue({ success: true }),
+  loadUnifiedConfig: vi.fn().mockResolvedValue({ success: false, error: 'Not found' }),
   onFolderSelected: vi.fn(() => () => {}),
 };
 

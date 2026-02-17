@@ -13,6 +13,7 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { Badge, BadgeVariant } from '@/components/common/Badge';
+import { getToolName } from '@/components/common/ToolIcon';
 
 // Types
 export interface FileChange {
@@ -193,18 +194,6 @@ const ConflictsSection: React.FC<{ conflicts: Conflict[] }> = ({ conflicts }) =>
   );
 };
 
-// Tool name mapping
-const toolNames: Record<string, string> = {
-  'claude-code': 'Claude Code',
-  cursor: 'Cursor',
-  copilot: 'GitHub Copilot',
-  windsurf: 'Windsurf',
-  codex: 'Codex',
-  cline: 'Cline',
-  aider: 'Aider',
-  continue: 'Continue',
-};
-
 export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
   open,
   onClose,
@@ -267,7 +256,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
             <div className="flex items-center justify-center gap-4">
               <div className="text-center">
                 <Badge variant="info" size="lg">
-                  {toolNames[preview.sourceTool] || preview.sourceTool}
+                  {getToolName(preview.sourceTool)}
                 </Badge>
                 <p className="text-xs text-text-tertiary mt-1">Source</p>
               </div>
@@ -276,7 +265,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
                 <div className="flex flex-wrap gap-1.5 justify-center">
                   {preview.targetTools.map((tool) => (
                     <Badge key={tool} variant="success" size="lg">
-                      {toolNames[tool] || tool}
+                      {getToolName(tool)}
                     </Badge>
                   ))}
                 </div>

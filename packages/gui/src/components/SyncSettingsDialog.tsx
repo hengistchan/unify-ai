@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, ArrowRight, Check, RefreshCw, Info } from 'lucide-react';
-import { Button } from '@/components/common';
+import { Button, ToolIcon } from '@/components/common';
 import type { DetectedTool } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
 
@@ -122,16 +122,11 @@ export function SyncSettingsDialog({
             {/* Source */}
             <div className="flex flex-col items-center gap-2">
               <div className="w-24 h-16 bg-primary-muted border-2 border-primary rounded-lg flex items-center justify-center">
-                <span className="text-2xl">
-                  {sourceToolInfo?.id === 'claude-code' && '🤖'}
-                  {sourceToolInfo?.id === 'cursor' && '⚡'}
-                  {sourceToolInfo?.id === 'copilot' && '🐙'}
-                  {sourceToolInfo?.id === 'windsurf' && '🌊'}
-                  {sourceToolInfo?.id === 'codex' && '📝'}
-                  {sourceToolInfo?.id === 'cline' && '📋'}
-                  {sourceToolInfo?.id === 'aider' && '🤝'}
-                  {sourceToolInfo?.id === 'continue' && '▶️'}
-                </span>
+                {sourceToolInfo ? (
+                  <ToolIcon toolId={sourceToolInfo.id} size="md" />
+                ) : (
+                  <span className="text-2xl">?</span>
+                )}
               </div>
               <span className="text-xs text-text-secondary">
                 {sourceToolInfo?.name || 'Select source'}
@@ -178,6 +173,7 @@ export function SyncSettingsDialog({
                       : 'bg-bg-tertiary border-border hover:border-border-hover text-text-secondary'
                   )}
                 >
+                  <ToolIcon toolId={tool.id} size="sm" />
                   <div className="flex-1 text-left">
                     <div className="font-medium">{tool.name}</div>
                     <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
@@ -214,6 +210,7 @@ export function SyncSettingsDialog({
                         : 'bg-bg-tertiary border-border hover:border-border-hover text-text-secondary'
                     )}
                   >
+                    <ToolIcon toolId={tool.id} size="sm" className={isSource ? 'opacity-50' : ''} />
                     <div className="flex-1 text-left">
                       <div className="font-medium">{tool.name}</div>
                       <div className="text-xs text-text-tertiary">

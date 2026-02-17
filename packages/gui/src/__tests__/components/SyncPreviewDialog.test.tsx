@@ -55,7 +55,7 @@ describe('SyncPreviewDialog', () => {
       expect(screen.getByText('Sync Preview')).toBeInTheDocument();
     });
 
-    it('should render source and target tools', () => {
+    it('should render source and target tools with display names', () => {
       render(
         <SyncPreviewDialog
           open={true}
@@ -66,11 +66,10 @@ describe('SyncPreviewDialog', () => {
         />
       );
 
-      expect(screen.getByText('Source:')).toBeInTheDocument();
-      expect(screen.getByText('cursor')).toBeInTheDocument();
-      expect(screen.getByText('Targets:')).toBeInTheDocument();
-      expect(screen.getByText('claude-code')).toBeInTheDocument();
-      expect(screen.getByText('copilot')).toBeInTheDocument();
+      // Uses getToolName() to display tool names
+      expect(screen.getByText('Cursor')).toBeInTheDocument();
+      expect(screen.getByText('Claude Code')).toBeInTheDocument();
+      expect(screen.getByText('GitHub Copilot')).toBeInTheDocument();
     });
 
     it('should render file changes', () => {
@@ -116,7 +115,7 @@ describe('SyncPreviewDialog', () => {
         />
       );
 
-      expect(screen.getByText('2 file(s) affected')).toBeInTheDocument();
+      expect(screen.getByText(/2 files/)).toBeInTheDocument();
     });
 
     it('should show total lines summary', () => {
@@ -130,8 +129,8 @@ describe('SyncPreviewDialog', () => {
         />
       );
 
-      // Total: 10 + 5 = 15
-      expect(screen.getByText('+15')).toBeInTheDocument();
+      // Total: 10 + 5 = 15 lines added
+      expect(screen.getByText('+15 lines')).toBeInTheDocument();
     });
   });
 

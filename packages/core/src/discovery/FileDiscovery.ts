@@ -104,6 +104,9 @@ export class FileDiscovery {
    * Discover AI tool configuration files in project
    */
   async discover(projectRoot: string, options?: DiscoveryOptions): Promise<DiscoveryResult> {
+    // Ensure adapters are initialized
+    await adapterRegistry.initialize();
+
     const startTime = Date.now();
     const files: DiscoveredFile[] = [];
     const detectedTools = new Set<IAdapter>();
@@ -163,6 +166,9 @@ export class FileDiscovery {
    * Detect AI tools used in project
    */
   async detectTools(projectRoot: string): Promise<IAdapter[]> {
+    // Ensure adapters are initialized
+    await adapterRegistry.initialize();
+
     const adapters = adapterRegistry.getAll();
     const detected: IAdapter[] = [];
 

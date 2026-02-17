@@ -150,15 +150,36 @@ pnpm install
 # Build all packages
 pnpm build
 
-# Run tests
-pnpm test                    # Core tests
-pnpm test -w @unify-ai/cli   # CLI tests
-pnpm test -w @unify-ai/gui   # GUI tests
+# Start development environment
+pnpm dev              # GUI development (recommended)
+pnpm dev:cli          # CLI development
+pnpm dev:core         # Core library development
 
-# Development mode
-pnpm dev          # Core library watch mode
-pnpm cli          # Run CLI in dev mode
-pnpm gui          # Launch GUI in dev mode
+# Run tests
+pnpm test             # Core tests
+pnpm test:all         # All tests
+```
+
+### Development Commands
+
+```bash
+# Development
+pnpm dev              # Start GUI with hot reload
+pnpm dev:cli          # CLI development mode
+pnpm dev:core         # Core watch mode
+
+# Building
+pnpm build            # Build all packages
+pnpm build:core       # Build core only
+pnpm build:cli        # Build CLI only
+pnpm build:gui        # Build GUI only
+
+# Testing
+pnpm test             # Core tests (default)
+pnpm test:core        # Core tests
+pnpm test:cli         # CLI tests
+pnpm test:gui         # GUI tests
+pnpm test:all         # All tests
 ```
 
 ## Test Coverage

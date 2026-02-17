@@ -22,11 +22,11 @@ export default {
 
         // Theme colors
         'primary': {
-          DEFAULT: '#7C3AED',
-          hover: '#8B5CF6',
-          muted: 'rgba(124, 58, 237, 0.15)',
+          DEFAULT: '#10B981',  // Emerald
+          hover: '#34D399',
+          muted: 'rgba(16, 185, 129, 0.15)',
         },
-        'secondary': '#A78BFA',
+        'secondary': '#6EE7B7',
 
         // Accent colors
         'accent': {
@@ -56,7 +56,7 @@ export default {
         'border': {
           DEFAULT: '#27272A',
           hover: '#3F3F46',
-          focus: '#7C3AED',
+          focus: '#10B981',
         },
       },
       fontFamily: {
@@ -72,7 +72,7 @@ export default {
         'sm': '0 1px 2px rgba(0, 0, 0, 0.5)',
         'md': '0 4px 6px rgba(0, 0, 0, 0.5)',
         'lg': '0 10px 15px rgba(0, 0, 0, 0.5)',
-        'glow': '0 0 20px rgba(124, 58, 237, 0.3)',
+        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
       },
       transitionDuration: {
         'fast': '150ms',

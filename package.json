@@ -7,13 +7,19 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "pnpm --filter @unify-ai/gui run electron:dev",
+    "dev:core": "pnpm --filter @unify-ai/core run dev",
+    "dev:cli": "pnpm --filter @unify-ai/cli run dev",
+    "dev:gui": "pnpm --filter @unify-ai/gui run electron:dev",
     "build": "pnpm -r run build",
-    "dev": "./scripts/dev.sh",
+    "build:core": "pnpm --filter @unify-ai/core run build",
+    "build:cli": "pnpm --filter @unify-ai/cli run build",
+    "build:gui": "pnpm --filter @unify-ai/gui run build",
     "test": "pnpm --filter @unify-ai/core run test",
-    "cli": "pnpm --filter @unify-ai/cli run dev",
-    "gui": "pnpm --filter @unify-ai/gui run dev",
-    "test:all": "pnpm -r run test",
-    "build:all": "pnpm -r run build"
+    "test:core": "pnpm --filter @unify-ai/core run test",
+    "test:cli": "pnpm --filter @unify-ai/cli run test",
+    "test:gui": "pnpm --filter @unify-ai/gui run test",
+    "test:all": "pnpm -r run test"
   },
   "keywords": [
     "ai",

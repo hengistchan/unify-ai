@@ -43,12 +43,12 @@ body {
 
 /* Selection styles */
 ::selection {
-  background-color: rgba(124, 58, 237, 0.3);
+  background-color: rgba(16, 185, 129, 0.3);
 }
 
 /* Focus styles */
 *:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #10B981;
   outline-offset: 2px;
 }
 

@@ -221,7 +221,7 @@ describe('ClaudeCodeAdapter', () => {
   });
 
   describe('generate()', () => {
-    it('should generate CLAUDE.md from rules', async () => {
+    it('should generate CLAUDE.md and rule files from rules', async () => {
       const config: UnifiedConfig = {
         version: '1.0',
         sourceTool: ToolId.CLAUDE_CODE,
@@ -238,9 +238,13 @@ describe('ClaudeCodeAdapter', () => {
 
       expect(result.success).toBe(true);
       expect(result.files.some(f => f.path === 'CLAUDE.md')).toBe(true);
+      expect(result.files.some(f => f.path === '.claude/rules/test-rule.md')).toBe(true);
 
       const claudeMd = result.files.find(f => f.path === 'CLAUDE.md');
-      expect(claudeMd?.content).toContain('Test Rule');
+      expect(claudeMd?.content).toContain('@.claude/rules/test-rule.md');
+
+      const ruleFile = result.files.find(f => f.path === '.claude/rules/test-rule.md');
+      expect(ruleFile?.content).toContain('Test Rule');
     });
 
     it('should generate .mcp.json from MCP config', async () => {
@@ -332,7 +336,7 @@ describe('ClaudeCodeAdapter', () => {
       expect(result.files).toHaveLength(0);
     });
 
-    it('should combine multiple rules into single CLAUDE.md', async () => {
+    it('should generate multiple rule files with imports in CLAUDE.md', async () => {
       const config: UnifiedConfig = {
         version: '1.0',
         sourceTool: ToolId.CLAUDE_CODE,
@@ -344,9 +348,17 @@ describe('ClaudeCodeAdapter', () => {
 
       const result = await adapter.generate(config);
 
+      // Should have CLAUDE.md and 2 rule files
+      expect(result.files.some(f => f.path === 'CLAUDE.md')).toBe(true);
+      expect(result.files.some(f => f.path === '.claude/rules/rule-1.md')).toBe(true);
+      expect(result.files.some(f => f.path === '.claude/rules/rule-2.md')).toBe(true);
+
       const claudeMd = result.files.find(f => f.path === 'CLAUDE.md');
-      expect(claudeMd?.content).toContain('Rule 1');
-      expect(claudeMd?.content).toContain('Rule 2');
+      expect(claudeMd?.content).toContain('@.claude/rules/rule-1.md');
+      expect(claudeMd?.content).toContain('@.claude/rules/rule-2.md');
+
+      const rule1File = result.files.find(f => f.path === '.claude/rules/rule-1.md');
+      expect(rule1File?.content).toBe('Content 1');
     });
   });
 

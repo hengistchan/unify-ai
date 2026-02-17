@@ -7,11 +7,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @unify-ai/core",
-    "dev": "npm run dev -w @unify-ai/core",
-    "test": "npm run test -w @unify-ai/core",
-    "cli": "npm run dev -w @unify-ai/cli",
-    "gui": "npm run dev -w @unify-ai/gui"
+    "build": "pnpm -r run build",
+    "dev": "./scripts/dev.sh",
+    "test": "pnpm --filter @unify-ai/core run test",
+    "cli": "pnpm --filter @unify-ai/cli run dev",
+    "gui": "pnpm --filter @unify-ai/gui run dev",
+    "test:all": "pnpm -r run test",
+    "build:all": "pnpm -r run build"
   },
   "keywords": [
     "ai",

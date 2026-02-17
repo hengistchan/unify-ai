@@ -4,13 +4,17 @@
  */
 
 import { app, BrowserWindow } from 'electron';
-import { createWindow, getMainWindow } from './window';
-import { createApplicationMenu } from './menu';
-import { registerIpcHandlers, unregisterIpcHandlers } from './ipc';
+import { createWindow, getMainWindow } from './window.js';
+import { createApplicationMenu } from './menu.js';
+import { registerIpcHandlers, unregisterIpcHandlers } from './ipc/index.js';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
-if (require('electron-squirrel-startup')) {
-  app.quit();
+try {
+  if (require('electron-squirrel-startup')) {
+    app.quit();
+  }
+} catch {
+  // electron-squirrel-startup not installed, skip
 }
 
 // Single instance lock

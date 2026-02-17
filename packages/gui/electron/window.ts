@@ -5,10 +5,9 @@
 
 import { BrowserWindow } from 'electron';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Get __dirname in ES module scope
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -70,7 +69,7 @@ function loadApp(window: BrowserWindow): void {
     window.loadURL('http://localhost:5173');
     window.webContents.openDevTools();
   } else {
-    window.loadFile(path.join(__dirname, '../dist/index.html'));
+    window.loadFile(path.join(__dirname, '../index.html'));
   }
 }
 

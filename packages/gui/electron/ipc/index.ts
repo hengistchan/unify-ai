@@ -6,7 +6,7 @@
 import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
-import { syncConfig, previewSync, getToolConfig, importConfig } from './sync';
+import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig, previewExport } from './sync';
 
 /**
  * Register all IPC handlers
@@ -51,6 +51,14 @@ export function registerIpcHandlers(): void {
     IPC_CHANNELS.IMPORT_CONFIG,
     async (_event, folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => {
       return importConfig(folderPath, options);
+    }
+  );
+
+  // Export configuration
+  ipcMain.handle(
+    IPC_CHANNELS.EXPORT_CONFIG,
+    async (_event, config: unknown, folderPath: string, targetTools: string[], options?: { createBackup?: boolean; overwrite?: boolean }) => {
+      return exportConfig(config as any, folderPath, targetTools, options);
     }
   );
 

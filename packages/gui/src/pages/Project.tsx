@@ -29,9 +29,13 @@ import {
   selectSyncLoading,
   selectUnifiedConfig,
   selectSyncPreferences,
+  selectImportLoading,
+  selectExportLoading,
 } from '@/stores/appStore';
 import { SyncPreviewDialog } from '@/components/SyncPreviewDialog';
 import { SyncSettingsDialog } from '@/components/SyncSettingsDialog';
+import { ImportDialog } from '@/components/ImportDialog';
+import { ExportDialog } from '@/components/ExportDialog';
 import { cn } from '@/lib/utils';
 
 export function Project() {
@@ -43,6 +47,8 @@ export function Project() {
   const syncLoading = useAppStore(selectSyncLoading);
   const unifiedConfig = useAppStore(selectUnifiedConfig);
   const syncPreferences = useAppStore(selectSyncPreferences);
+  const importLoading = useAppStore(selectImportLoading);
+  const exportLoading = useAppStore(selectExportLoading);
   const {
     previewSync,
     executeSync,
@@ -51,11 +57,15 @@ export function Project() {
     lastSyncTime,
     refreshTools,
     updateSyncPreferences,
+    importConfig,
+    exportConfig,
   } = useAppStore();
 
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showSyncSettings, setShowSyncSettings] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   // Preview sync button handler
   const handlePreviewSync = async () => {
@@ -110,19 +120,25 @@ export function Project() {
   };
 
   const handleImport = () => {
-    addToast({
-      type: 'info',
-      title: 'Coming soon',
-      message: 'Import feature is in development',
-    });
+    setShowImportDialog(true);
   };
 
   const handleExport = () => {
-    addToast({
-      type: 'info',
-      title: 'Coming soon',
-      message: 'Export feature is in development',
-    });
+    setShowExportDialog(true);
+  };
+
+  const handleImportConfirm = async (options: { mergeMultiple: boolean; sourceTool?: string }) => {
+    const result = await importConfig(options);
+    if (result.success) {
+      setShowImportDialog(false);
+    }
+  };
+
+  const handleExportConfirm = async (targetTools: string[], options: { createBackup: boolean }) => {
+    const result = await exportConfig(targetTools, options);
+    if (result.success) {
+      setShowExportDialog(false);
+    }
   };
 
   const handleRefresh = async () => {
@@ -172,6 +188,25 @@ export function Project() {
 
   return (
     <div className="p-6 animate-fade-in">
+      {/* Import Dialog */}
+      <ImportDialog
+        open={showImportDialog}
+        onClose={() => setShowImportDialog(false)}
+        onConfirm={handleImportConfirm}
+        detectedTools={detectedTools}
+        loading={importLoading}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={showExportDialog}
+        onClose={() => setShowExportDialog(false)}
+        onConfirm={handleExportConfirm}
+        detectedTools={detectedTools}
+        unifiedConfig={unifiedConfig}
+        loading={exportLoading}
+      />
+
       {/* Sync Settings Dialog */}
       <SyncSettingsDialog
         open={showSyncSettings}

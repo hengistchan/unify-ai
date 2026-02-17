@@ -7,17 +7,14 @@ export interface ElectronAPI {
   syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) => Promise<SyncResult>;
   previewSync: (sourceFolder: string, targetTools: string[]) => Promise<PreviewResult[]>;
   getToolConfig: (folderPath: string, toolId: string) => Promise<ToolConfigResult>;
+  importConfig: (folderPath: string, options?: ImportOptions) => Promise<ToolConfigResult>;
+  exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) => Promise<ExportResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
 }
 
-export interface DetectedTool {
-  id: string;
-  name: string;
-  configPath: string;
-  detected: boolean;
-  hasRules: boolean;
-  hasMcp: boolean;
-  hasSettings: boolean;
+export interface ImportOptions {
+  mergeMultiple?: boolean;
+  sourceTool?: string;
 }
 
 export interface SyncOptions {
@@ -29,6 +26,14 @@ export interface SyncResult {
   success: boolean;
   message: string;
   syncedTools: string[];
+  errors?: string[];
+  warnings?: string[];
+}
+
+export interface ExportResult {
+  success: boolean;
+  message: string;
+  exportedTools: string[];
   errors?: string[];
   warnings?: string[];
 }

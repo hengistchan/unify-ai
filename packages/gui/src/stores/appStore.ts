@@ -135,6 +135,29 @@ export interface SyncPreferences {
   targetTools: string[];
 }
 
+export interface ImportExportOptions {
+  mergeMultiple?: boolean;
+  createBackup?: boolean;
+  overwrite?: boolean;
+}
+
+export interface ImportResult {
+  success: boolean;
+  config?: UnifiedConfig;
+  sourceTools?: string[];
+  sourceFiles?: string[];
+  errors?: string[];
+  warnings?: string[];
+}
+
+export interface ExportResult {
+  success: boolean;
+  message: string;
+  exportedTools: string[];
+  errors?: string[];
+  warnings?: string[];
+}
+
 // ============================================
 // Store Interface
 // ============================================
@@ -165,6 +188,12 @@ interface AppState {
   executeSync: () => Promise<void>;
   loadToolConfig: (toolId: string) => Promise<void>;
   clearSyncPreview: () => void;
+
+  // Import/Export
+  importLoading: boolean;
+  exportLoading: boolean;
+  importConfig: (options?: ImportExportOptions) => Promise<ImportResult>;
+  exportConfig: (targetTools: string[], options?: ImportExportOptions) => Promise<ExportResult>;
 
   // UI
   sidebarCollapsed: boolean;
@@ -395,6 +424,141 @@ export const useAppStore = create<AppState>()(
 
       clearSyncPreview: () => set({ syncPreview: null, selectedSourceTool: null }),
 
+      // Import/Export
+      importLoading: false,
+      exportLoading: false,
+
+      importConfig: async (options?: ImportExportOptions) => {
+        const { currentProject } = get();
+        if (!currentProject) {
+          const result: ImportResult = {
+            success: false,
+            errors: ['No project selected'],
+          };
+          get().addToast({
+            type: 'error',
+            title: 'No Project',
+            message: 'Please select a project folder first',
+          });
+          return result;
+        }
+
+        set({ importLoading: true });
+        try {
+          const result = await window.electronAPI.importConfig(currentProject, {
+            mergeMultiple: options?.mergeMultiple,
+          });
+
+          if (result.success && result.config) {
+            set({ unifiedConfig: result.config as UnifiedConfig, importLoading: false });
+            get().addToast({
+              type: 'success',
+              title: 'Import Complete',
+              message: `Imported configuration from ${result.sourceTools?.join(', ') || 'detected tools'}`,
+            });
+          } else {
+            set({ importLoading: false });
+            get().addToast({
+              type: 'error',
+              title: 'Import Failed',
+              message: result.errors?.join(', ') || 'Failed to import configuration',
+            });
+          }
+
+          return result as ImportResult;
+        } catch (error) {
+          set({ importLoading: false });
+          const result: ImportResult = {
+            success: false,
+            errors: [error instanceof Error ? error.message : 'Unknown error'],
+          };
+          get().addToast({
+            type: 'error',
+            title: 'Import Error',
+            message: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+          return result;
+        }
+      },
+
+      exportConfig: async (targetTools: string[], options?: ImportExportOptions) => {
+        const { currentProject, unifiedConfig } = get();
+        if (!currentProject) {
+          const result: ExportResult = {
+            success: false,
+            message: 'No project selected',
+            exportedTools: [],
+            errors: ['No project selected'],
+          };
+          get().addToast({
+            type: 'error',
+            title: 'No Project',
+            message: 'Please select a project folder first',
+          });
+          return result;
+        }
+
+        if (!unifiedConfig) {
+          const result: ExportResult = {
+            success: false,
+            message: 'No configuration to export',
+            exportedTools: [],
+            errors: ['No configuration loaded. Please import first.'],
+          };
+          get().addToast({
+            type: 'warning',
+            title: 'No Config',
+            message: 'Please import configuration first',
+          });
+          return result;
+        }
+
+        set({ exportLoading: true });
+        try {
+          const result = await window.electronAPI.exportConfig(
+            unifiedConfig,
+            currentProject,
+            targetTools,
+            {
+              createBackup: options?.createBackup ?? get().settings.backupEnabled,
+              overwrite: options?.overwrite ?? true,
+            }
+          );
+
+          if (result.success) {
+            set({ exportLoading: false });
+            get().addToast({
+              type: 'success',
+              title: 'Export Complete',
+              message: result.message,
+            });
+          } else {
+            set({ exportLoading: false });
+            get().addToast({
+              type: 'error',
+              title: 'Export Failed',
+              message: result.errors?.join(', ') || 'Failed to export configuration',
+            });
+          }
+
+          return result;
+        } catch (error) {
+          set({ exportLoading: false });
+          const result: ExportResult = {
+            success: false,
+            message: error instanceof Error ? error.message : 'Unknown error',
+            exportedTools: [],
+            errors: [error instanceof Error ? error.message : 'Unknown error'],
+          };
+          get().addToast({
+            type: 'error',
+            title: 'Export Error',
+            message: error instanceof Error ? error.message : 'Unknown error occurred',
+          });
+          return result;
+        }
+      },
+
       // UI
       sidebarCollapsed: false,
       toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
@@ -484,3 +648,5 @@ export const selectSyncLoading = (state: AppState) => state.syncLoading;
 export const selectSelectedSourceTool = (state: AppState) => state.selectedSourceTool;
 export const selectUnifiedConfig = (state: AppState) => state.unifiedConfig;
 export const selectSyncPreferences = (state: AppState) => state.syncPreferences;
+export const selectImportLoading = (state: AppState) => state.importLoading;
+export const selectExportLoading = (state: AppState) => state.exportLoading;

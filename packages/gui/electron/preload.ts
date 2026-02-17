@@ -13,7 +13,17 @@ export interface ElectronAPI {
   syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) => Promise<SyncResult>;
   previewSync: (sourceFolder: string, targetTools: string[]) => Promise<PreviewResult[]>;
   getToolConfig: (folderPath: string, toolId: string) => Promise<ToolConfigResult>;
+  importConfig: (folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => Promise<ToolConfigResult>;
+  exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) => Promise<ExportResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
+}
+
+export interface ExportResult {
+  success: boolean;
+  message: string;
+  exportedTools: string[];
+  errors?: string[];
+  warnings?: string[];
 }
 
 export interface DetectedTool {
@@ -151,6 +161,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Get configuration for a specific tool
   getToolConfig: (folderPath: string, toolId: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.GET_TOOL_CONFIG, folderPath, toolId),
+
+  // Import configuration from folder
+  importConfig: (folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) =>
+    ipcRenderer.invoke(IPC_CHANNELS.IMPORT_CONFIG, folderPath, options),
+
+  // Export configuration to target tools
+  exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) =>
+    ipcRenderer.invoke(IPC_CHANNELS.EXPORT_CONFIG, config, folderPath, targetTools, options),
 
   // Listen for folder selection from menu
   onFolderSelected: (callback: (folderPath: string) => void) => {

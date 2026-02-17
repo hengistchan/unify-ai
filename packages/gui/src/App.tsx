@@ -28,7 +28,7 @@ function App() {
         </Routes>
       </Layout>
       {/* Toast notifications */}
-      <div className="fixed top-24 right-4 z-[100] flex flex-col gap-2">
+      <div className="fixed top-16 right-4 z-[100] flex flex-col gap-2">
         {toasts.map((toast: ToastType) => (
           <Toast
             key={toast.id}

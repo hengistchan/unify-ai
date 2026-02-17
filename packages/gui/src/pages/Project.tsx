@@ -28,8 +28,10 @@ import {
   selectSyncPreview,
   selectSyncLoading,
   selectUnifiedConfig,
+  selectSyncPreferences,
 } from '@/stores/appStore';
 import { SyncPreviewDialog } from '@/components/SyncPreviewDialog';
+import { SyncSettingsDialog } from '@/components/SyncSettingsDialog';
 import { cn } from '@/lib/utils';
 
 export function Project() {
@@ -40,15 +42,20 @@ export function Project() {
   const syncPreview = useAppStore(selectSyncPreview);
   const syncLoading = useAppStore(selectSyncLoading);
   const unifiedConfig = useAppStore(selectUnifiedConfig);
+  const syncPreferences = useAppStore(selectSyncPreferences);
   const {
     previewSync,
     executeSync,
     clearSyncPreview,
     addToast,
     lastSyncTime,
+    refreshTools,
+    updateSyncPreferences,
   } = useAppStore();
 
   const [showSyncDialog, setShowSyncDialog] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showSyncSettings, setShowSyncSettings] = useState(false);
 
   // Preview sync button handler
   const handlePreviewSync = async () => {
@@ -61,7 +68,6 @@ export function Project() {
       return;
     }
 
-    // Use first detected tool as source, others as targets
     const detectedList = detectedTools.filter((t) => t.detected);
     if (detectedList.length < 2) {
       addToast({
@@ -72,11 +78,24 @@ export function Project() {
       return;
     }
 
-    const sourceTool = detectedList[0].id;
-    const targetTools = detectedList.slice(1).map((t) => t.id);
+    // Check if we have saved preferences
+    if (syncPreferences.sourceTool && syncPreferences.targetTools.length > 0) {
+      // Verify that saved tools still exist
+      const sourceExists = detectedList.find(t => t.id === syncPreferences.sourceTool);
+      const validTargets = syncPreferences.targetTools.filter(tid =>
+        detectedList.find(t => t.id === tid)
+      );
 
-    await previewSync(sourceTool, targetTools);
-    setShowSyncDialog(true);
+      if (sourceExists && validTargets.length > 0) {
+        // Use saved preferences
+        await previewSync(syncPreferences.sourceTool, validTargets);
+        setShowSyncDialog(true);
+        return;
+      }
+    }
+
+    // No valid saved preferences, show settings dialog
+    setShowSyncSettings(true);
   };
 
   // Execute sync after preview confirmation
@@ -104,6 +123,21 @@ export function Project() {
       title: 'Coming soon',
       message: 'Export feature is in development',
     });
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshTools();
+    setRefreshing(false);
+  };
+
+  const handleSyncSettingsConfirm = async (sourceTool: string, targetTools: string[]) => {
+    // Save preferences
+    updateSyncPreferences({ sourceTool, targetTools });
+
+    // Execute preview sync
+    await previewSync(sourceTool, targetTools);
+    setShowSyncDialog(true);
   };
 
   const handleToolClick = (toolId: string) => {
@@ -138,6 +172,16 @@ export function Project() {
 
   return (
     <div className="p-6 animate-fade-in">
+      {/* Sync Settings Dialog */}
+      <SyncSettingsDialog
+        open={showSyncSettings}
+        onClose={() => setShowSyncSettings(false)}
+        onConfirm={handleSyncSettingsConfirm}
+        detectedTools={detectedTools}
+        initialSource={syncPreferences.sourceTool || undefined}
+        initialTargets={syncPreferences.targetTools}
+      />
+
       {/* Sync Preview Dialog */}
       <SyncPreviewDialog
         open={showSyncDialog}
@@ -157,6 +201,24 @@ export function Project() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={cn('w-4 h-4 mr-1', refreshing && 'animate-spin')} />
+            Refresh
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowSyncSettings(true)}
+            disabled={detectedCount < 2}
+          >
+            <Settings className="w-4 h-4 mr-1" />
+            Sync Settings
+          </Button>
           <Button
             variant="secondary"
             size="sm"

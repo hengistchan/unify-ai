@@ -130,6 +130,11 @@ export interface PromptTemplate {
   template: string;
 }
 
+export interface SyncPreferences {
+  sourceTool: string | null;
+  targetTools: string[];
+}
+
 // ============================================
 // Store Interface
 // ============================================
@@ -143,6 +148,7 @@ interface AppState {
   // Tools
   detectedTools: DetectedTool[];
   setDetectedTools: (tools: DetectedTool[]) => void;
+  refreshTools: () => Promise<void>;
 
   // Sync
   syncStatus: 'idle' | 'syncing' | 'error' | 'success';
@@ -177,6 +183,10 @@ interface AppState {
   // Settings
   settings: AppSettings;
   updateSettings: (settings: Partial<AppSettings>) => void;
+
+  // Sync Preferences
+  syncPreferences: SyncPreferences;
+  updateSyncPreferences: (preferences: Partial<SyncPreferences>) => void;
 }
 
 // ============================================
@@ -202,6 +212,34 @@ export const useAppStore = create<AppState>()(
       // Tools
       detectedTools: [],
       setDetectedTools: (tools) => set({ detectedTools: tools }),
+
+      refreshTools: async () => {
+        const { currentProject } = get();
+        if (!currentProject) {
+          get().addToast({
+            type: 'error',
+            title: 'No Project',
+            message: 'Please select a project folder first',
+          });
+          return;
+        }
+
+        try {
+          const tools = await window.electronAPI.detectTools(currentProject);
+          set({ detectedTools: tools });
+          get().addToast({
+            type: 'success',
+            title: 'Refreshed',
+            message: `Detected ${tools.filter(t => t.detected).length} tools`,
+          });
+        } catch (error) {
+          get().addToast({
+            type: 'error',
+            title: 'Refresh Failed',
+            message: error instanceof Error ? error.message : 'Failed to refresh tools',
+          });
+        }
+      },
 
       // Sync
       syncStatus: 'idle',
@@ -408,6 +446,16 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           settings: { ...state.settings, ...newSettings },
         })),
+
+      // Sync Preferences
+      syncPreferences: {
+        sourceTool: null,
+        targetTools: [],
+      },
+      updateSyncPreferences: (newPreferences) =>
+        set((state) => ({
+          syncPreferences: { ...state.syncPreferences, ...newPreferences },
+        })),
     }),
     {
       name: 'unify-ai-storage',
@@ -415,6 +463,7 @@ export const useAppStore = create<AppState>()(
         recentProjects: state.recentProjects,
         settings: state.settings,
         sidebarCollapsed: state.sidebarCollapsed,
+        syncPreferences: state.syncPreferences,
       }),
     }
   )
@@ -434,3 +483,4 @@ export const selectSyncPreview = (state: AppState) => state.syncPreview;
 export const selectSyncLoading = (state: AppState) => state.syncLoading;
 export const selectSelectedSourceTool = (state: AppState) => state.selectedSourceTool;
 export const selectUnifiedConfig = (state: AppState) => state.unifiedConfig;
+export const selectSyncPreferences = (state: AppState) => state.syncPreferences;

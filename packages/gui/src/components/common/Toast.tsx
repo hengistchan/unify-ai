@@ -15,22 +15,22 @@ export interface ToastProps {
 
 const toastStyles: Record<ToastType, { bg: string; border: string; icon: React.ReactNode }> = {
   success: {
-    bg: 'bg-success-muted',
+    bg: 'bg-bg-secondary',
     border: 'border-success',
     icon: <CheckCircle size={20} className="text-success" />,
   },
   error: {
-    bg: 'bg-error-muted',
+    bg: 'bg-bg-secondary',
     border: 'border-error',
     icon: <XCircle size={20} className="text-error" />,
   },
   warning: {
-    bg: 'bg-warning-muted',
+    bg: 'bg-bg-secondary',
     border: 'border-warning',
     icon: <AlertTriangle size={20} className="text-warning" />,
   },
   info: {
-    bg: 'bg-info-muted',
+    bg: 'bg-bg-secondary',
     border: 'border-info',
     icon: <Info size={20} className="text-info" />,
   },

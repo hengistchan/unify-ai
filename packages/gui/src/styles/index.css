@@ -11,56 +11,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
 
-/* Dark theme (default) */
-.dark {
-  color-scheme: dark;
-}
-
-.dark body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #000000;
-  color: #ffffff;
-}
-
-/* Light theme */
-.light {
-  color-scheme: light;
-}
-
-.light body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #FAFAFA;
-  color: #18181B;
-}
-
-/* Light theme color overrides */
-.light {
-  --bg-primary: #FAFAFA;
-  --bg-secondary: #F4F4F5;
-  --bg-tertiary: #E4E4E7;
-  --bg-elevated: #FFFFFF;
-  --bg-hover: #D4D4D8;
-
-  --text-primary: #18181B;
-  --text-secondary: #52525B;
-  --text-tertiary: #71717A;
-  --text-disabled: #A1A1AA;
-
-  --border-color: #E4E4E7;
-  --border-hover: #D4D4D8;
-  --border-focus: #10B981;
-
-  --primary-muted: rgba(16, 185, 129, 0.1);
-}
-
-/* Dark theme color variables */
-.dark {
+  /* Default to dark theme variables */
   --bg-primary: #000000;
   --bg-secondary: #121212;
   --bg-tertiary: #1E1E1E;
@@ -77,6 +29,58 @@
   --border-focus: #10B981;
 
   --primary-muted: rgba(16, 185, 129, 0.15);
+}
+
+/* Base body styles */
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme */
+.dark {
+  color-scheme: dark;
+  --bg-primary: #000000;
+  --bg-secondary: #121212;
+  --bg-tertiary: #1E1E1E;
+  --bg-elevated: #252525;
+  --bg-hover: #2A2A2A;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #71717A;
+  --text-disabled: #52525B;
+
+  --border-color: #27272A;
+  --border-hover: #3F3F46;
+  --border-focus: #10B981;
+
+  --primary-muted: rgba(16, 185, 129, 0.15);
+}
+
+/* Light theme */
+.light {
+  color-scheme: light;
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F4F4F5;
+  --bg-tertiary: #E4E4E7;
+  --bg-elevated: #FFFFFF;
+  --bg-hover: #D4D4D8;
+
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-tertiary: #71717A;
+  --text-disabled: #A1A1AA;
+
+  --border-color: #E4E4E7;
+  --border-hover: #D4D4D8;
+  --border-focus: #10B981;
+
+  --primary-muted: rgba(16, 185, 129, 0.1);
 }
 
 /* Scrollbar styles - Dark */

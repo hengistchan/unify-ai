@@ -8,24 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Dark theme colors (default)
-        'bg-primary': '#000000',
-        'bg-secondary': '#121212',
-        'bg-tertiary': '#1E1E1E',
-        'bg-elevated': '#252525',
-        'bg-hover': '#2A2A2A',
+        // Use CSS variables for theme-aware colors
+        'bg-primary': 'var(--bg-primary)',
+        'bg-secondary': 'var(--bg-secondary)',
+        'bg-tertiary': 'var(--bg-tertiary)',
+        'bg-elevated': 'var(--bg-elevated)',
+        'bg-hover': 'var(--bg-hover)',
 
-        // Text colors
-        'text-primary': '#FFFFFF',
-        'text-secondary': '#A1A1AA',
-        'text-tertiary': '#71717A',
-        'text-disabled': '#52525B',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-tertiary': 'var(--text-tertiary)',
+        'text-disabled': 'var(--text-disabled)',
 
-        // Theme colors
+        'border': {
+          DEFAULT: 'var(--border-color)',
+          hover: 'var(--border-hover)',
+          focus: 'var(--border-focus)',
+        },
+
+        // Theme colors (constant across themes)
         'primary': {
           DEFAULT: '#10B981',  // Emerald
           hover: '#34D399',
-          muted: 'rgba(16, 185, 129, 0.15)',
+          muted: 'var(--primary-muted)',
         },
         'secondary': '#6EE7B7',
 
@@ -51,13 +56,6 @@ export default {
         'info': {
           DEFAULT: '#3B82F6',
           muted: 'rgba(59, 130, 246, 0.15)',
-        },
-
-        // Border colors
-        'border': {
-          DEFAULT: '#27272A',
-          hover: '#3F3F46',
-          focus: '#10B981',
         },
       },
       fontFamily: {

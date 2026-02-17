@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": ["--root", "./src"]
+    }
+  }
+}

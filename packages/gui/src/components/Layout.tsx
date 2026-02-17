@@ -32,7 +32,15 @@ export function Layout({ children }: LayoutProps) {
       console.log('   - MCP Servers:', unifiedConfig.mcp?.servers?.length || 0);
       console.log('   - Commands:', unifiedConfig.commands?.length || 0);
     }
-    console.log('========================================\n');
+    console.log('========================================');
+
+    // Log full UnifiedConfig
+    if (unifiedConfig) {
+      console.log('\n📋 UnifiedConfig (Full):');
+      console.log('────────────────────────────────');
+      console.log(JSON.stringify(unifiedConfig, null, 2));
+      console.log('────────────────────────────────\n');
+    }
   }, [currentProject, detectedTools, syncStatus, unifiedConfig]);
 
   const navItems = [

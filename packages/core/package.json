@@ -37,7 +37,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build": "tsc --project tsconfig.build.json && node scripts/fix-esm-imports.js",
     "dev": "tsc --project tsconfig.build.json --watch",
     "test": "vitest",
     "typecheck": "tsc --noEmit"

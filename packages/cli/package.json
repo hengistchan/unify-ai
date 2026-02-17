@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "CLI for unify-ai - Unified configuration management for AI coding assistants",
   "type": "module",
-  "main": "./bin/unify-ai.js",
+  "main": "./dist/index.js",
   "bin": {
-    "unify-ai": "./bin/unify-ai.js"
+    "unify-ai": "./dist/bin/unify-ai.js"
   },
   "scripts": {
     "dev": "tsx bin/unify-ai.ts",

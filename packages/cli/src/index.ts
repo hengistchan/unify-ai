@@ -4,8 +4,15 @@
  */
 
 import { Command } from 'commander';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-import { version } from '../package.json' assert { type: 'json' };
+// Read version from package.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf-8'));
+const version = packageJson.version;
 
 import { initCommand } from './commands/init.js';
 import { detectCommand } from './commands/detect.js';

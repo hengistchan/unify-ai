@@ -35,7 +35,7 @@ export function createWindow(): BrowserWindow {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: true,
+      sandbox: false, // Disable sandbox for development
     },
     title: WINDOW_CONFIG.title,
     show: false, // Don't show until ready

@@ -69,7 +69,11 @@ export function Project() {
 
   // Preview sync button handler
   const handlePreviewSync = async () => {
+    console.log('\n🔄 Preview Sync');
+    console.log('────────────────────────────────');
+
     if (detectedTools.length === 0) {
+      console.log('[Sync] No tools detected');
       addToast({
         type: 'warning',
         title: 'No Tools',
@@ -79,7 +83,10 @@ export function Project() {
     }
 
     const detectedList = detectedTools.filter((t) => t.detected);
+    console.log('[Sync] Detected tools:', detectedList.map(t => t.id).join(', '));
+
     if (detectedList.length < 2) {
+      console.log('[Sync] Need at least 2 tools for sync');
       addToast({
         type: 'info',
         title: 'Need Multiple Tools',
@@ -98,6 +105,10 @@ export function Project() {
 
       if (sourceExists && validTargets.length > 0) {
         // Use saved preferences
+        console.log('[Sync] Using saved preferences:');
+        console.log('  Source:', syncPreferences.sourceTool);
+        console.log('  Targets:', validTargets.join(', '));
+        console.log('────────────────────────────────\n');
         await previewSync(syncPreferences.sourceTool, validTargets);
         setShowSyncDialog(true);
         return;
@@ -105,6 +116,8 @@ export function Project() {
     }
 
     // No valid saved preferences, show settings dialog
+    console.log('[Sync] No saved preferences, showing settings dialog');
+    console.log('────────────────────────────────\n');
     setShowSyncSettings(true);
   };
 

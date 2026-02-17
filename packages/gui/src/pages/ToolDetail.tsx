@@ -84,16 +84,54 @@ export function ToolDetail() {
   // Load tool config on mount
   useEffect(() => {
     if (toolId && tool?.detected) {
+      console.log('\n🔧 Tool Detail Page');
+      console.log('────────────────────────────────');
+      console.log('Tool ID:', toolId);
+      console.log('Tool Name:', info?.name);
+      console.log('Config Path:', tool.configPath);
+      console.log('Capabilities:', {
+        rules: tool.hasRules,
+        mcp: tool.hasMcp,
+        settings: tool.hasSettings,
+      });
+      console.log('────────────────────────────────\n');
+
       setIsLoading(true);
       setError(null);
       loadToolConfig(toolId)
-        .then(() => setIsLoading(false))
+        .then(() => {
+          setIsLoading(false);
+          console.log('[ToolDetail] Config loaded successfully');
+        })
         .catch((err) => {
           setIsLoading(false);
           setError(err instanceof Error ? err.message : 'Failed to load config');
+          console.error('[ToolDetail] Failed to load config:', err);
         });
     }
-  }, [toolId, tool?.detected, loadToolConfig]);
+  }, [toolId, tool?.detected, loadToolConfig, info?.name, tool]);
+
+  // Log config details when loaded
+  useEffect(() => {
+    if (unifiedConfig && toolId) {
+      console.log('\n📋 Loaded Configuration for', toolId);
+      console.log('────────────────────────────────');
+      console.log('Rules:', unifiedConfig.rules?.length || 0);
+      if (unifiedConfig.rules?.length) {
+        unifiedConfig.rules.forEach((rule, i) => {
+          console.log(`  ${i + 1}. ${rule.name || rule.id} (${rule.enabled !== false ? 'enabled' : 'disabled'})`);
+        });
+      }
+      console.log('MCP Servers:', unifiedConfig.mcp?.servers?.length || 0);
+      if (unifiedConfig.mcp?.servers?.length) {
+        unifiedConfig.mcp.servers.forEach((server, i) => {
+          console.log(`  ${i + 1}. ${server.name} - ${server.command}`);
+        });
+      }
+      console.log('Has Settings:', !!unifiedConfig.settings);
+      console.log('────────────────────────────────\n');
+    }
+  }, [unifiedConfig, toolId]);
 
   // Extract data from unified config
   const rules: RuleConfig[] = unifiedConfig?.rules ?? [];

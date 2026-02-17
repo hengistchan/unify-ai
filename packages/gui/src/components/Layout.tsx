@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Home,
@@ -14,7 +14,26 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { currentProject, detectedTools, syncStatus } = useAppStore();
+  const { currentProject, detectedTools, syncStatus, unifiedConfig } = useAppStore();
+
+  // Log current state to console
+  useEffect(() => {
+    console.log('\n========================================');
+    console.log('  Unify AI - State');
+    console.log('========================================');
+    console.log('📁 Project:', currentProject || 'No project selected');
+    console.log('🔧 Detected Tools:', detectedTools.length > 0
+      ? detectedTools.filter(t => t.detected).map(t => `${t.name} (${t.id})`).join(', ') || 'none'
+      : 'Not scanned yet');
+    console.log('📊 Sync Status:', syncStatus);
+    console.log('📝 Config Loaded:', unifiedConfig ? 'Yes' : 'No');
+    if (unifiedConfig) {
+      console.log('   - Rules:', unifiedConfig.rules?.length || 0);
+      console.log('   - MCP Servers:', unifiedConfig.mcp?.servers?.length || 0);
+      console.log('   - Commands:', unifiedConfig.commands?.length || 0);
+    }
+    console.log('========================================\n');
+  }, [currentProject, detectedTools, syncStatus, unifiedConfig]);
 
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },

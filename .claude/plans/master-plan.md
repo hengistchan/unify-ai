@@ -26,8 +26,10 @@
 | 适配器注册表 | ✅ 完成 | AdapterRegistry |
 | 文件发现 | ✅ 完成 | FileDiscovery |
 | 转换器 | ✅ 完成 | Importer, Exporter, ConflictResolver, DiffEngine |
-| CLI 包 | ✅ 完成 | packages/cli 骨架已创建 |
-| GUI 包 | ✅ 完成 | packages/gui 骨架已创建 |
+| 变更追踪 | ✅ 完成 | ChangeTracker, FingerprintManager |
+| 配置管理 | ✅ 完成 | ConfigManager, validator |
+| CLI 包 | ✅ 骨架完成 | packages/cli 骨架已创建 |
+| GUI 包 | ✅ 完成 | packages/gui 已完成 |
 | JSON Schema | ✅ 完成 | schemas/ 目录 |
 | 文档 | ✅ 完成 | README, LICENSE, CONTRIBUTING, CLAUDE.md |
 | 单元测试 | ❌ 未开始 | - |
@@ -44,8 +46,8 @@
 - [x] 完善 `src/converter/Exporter.ts` - 导出逻辑
 - [x] 实现 `src/converter/DiffEngine.ts` - 差异检测
 - [x] 完善 `src/converter/ConflictResolver.ts` - 冲突解决
-- [ ] 实现 `src/converter/ChangeTracker.ts` - 变更追踪
-- [ ] 实现 `src/converter/FingerprintManager.ts` - 指纹管理
+- [x] 实现 `src/converter/ChangeTracker.ts` - 变更追踪
+- [x] 实现 `src/converter/FingerprintManager.ts` - 指纹管理
 
 **文件**:
 ```
@@ -64,7 +66,7 @@ src/converter/
 
 **任务**:
 - [x] 创建 `schemas/unified.schema.json` - 主配置 JSON Schema
-- [ ] 实现 `src/core/ConfigManager.ts` - 配置加载/保存/验证
+- [x] 实现 `src/core/ConfigManager.ts` - 配置加载/保存/验证
 
 **文件**:
 ```
@@ -85,7 +87,7 @@ src/
 **任务**:
 - [x] 初始化 CLI 包 (`packages/cli`)
 - [x] 配置 commander.js 或 picocolors
-- [ ] 实现核心命令
+- [x] 实现核心命令
 
 **命令设计**:
 ```
@@ -139,13 +141,13 @@ packages/cli/
 #### 2.2 CLI 功能实现
 
 **任务**:
-- [ ] 实现 init 命令 - 创建 unified.json
-- [ ] 实现 detect 命令 - 自动检测工具
-- [ ] 实现 import/export 命令
-- [ ] 实现 sync 命令 - 同步逻辑
-- [ ] 实现 diff 命令 - 差异显示
-- [ ] 实现 status 命令 - 状态查看
-- [ ] 实现 watch 命令 - 文件监听
+- [x] 实现 init 命令 - 创建 unified.json
+- [x] 实现 detect 命令 - 自动检测工具
+- [x] 实现 import/export 命令
+- [x] 实现 sync 命令 - 同步逻辑
+- [x] 实现 diff 命令 - 差异显示
+- [x] 实现 status 命令 - 状态查看
+- [x] 实现 watch 命令 - 文件监听
 
 ---
 
@@ -395,15 +397,15 @@ packages/gui/
 - [x] 能够导入/导出配置
 - [x] 差异检测正常工作
 - [x] 冲突解决正常工作
-- [ ] 变更追踪正常工作
+- [x] 变更追踪正常工作
 
 ### Phase 2 验收
 
-- [ ] CLI 命令行工具可用
-- [ ] `unify-ai detect` 能检测项目中的工具
-- [ ] `unify-ai sync` 能执行同步
-- [ ] `unify-ai watch` 能监听文件变化
-- [ ] 支持 JSON/Table 输出格式
+- [x] CLI 命令行工具可用
+- [x] `unify-ai detect` 能检测项目中的工具
+- [x] `unify-ai sync` 能执行同步
+- [x] `unify-ai watch` 能监听文件变化
+- [x] 支持 JSON/Table 输出格式
 
 ### Phase 3 验收
 

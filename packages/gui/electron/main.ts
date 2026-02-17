@@ -8,6 +8,17 @@ import { createWindow, getMainWindow } from './window.js';
 import { createApplicationMenu } from './menu.js';
 import { registerIpcHandlers, unregisterIpcHandlers } from './ipc/index.js';
 
+// Print startup info
+console.log('\n========================================');
+console.log('  Unify AI - GUI Application');
+console.log('========================================');
+console.log(`  Version:    ${app.getVersion()}`);
+console.log(`  Electron:   ${process.versions.electron}`);
+console.log(`  Node:       ${process.versions.node}`);
+console.log(`  Platform:   ${process.platform} ${process.arch}`);
+console.log(`  App Path:   ${app.getAppPath()}`);
+console.log('========================================\n');
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 try {
   if (require('electron-squirrel-startup')) {
@@ -39,14 +50,21 @@ if (!gotTheLock) {
  * Initialize the application
  */
 function initializeApp(): void {
+  console.log('[Main] Initializing application...');
+
   // Create the main window
   createWindow();
+  console.log('[Main] Window created');
 
   // Create the application menu
   createApplicationMenu();
+  console.log('[Main] Menu created');
 
   // Register IPC handlers
   registerIpcHandlers();
+  console.log('[Main] IPC handlers registered');
+
+  console.log('[Main] Application ready\n');
 }
 
 // App lifecycle events

@@ -14,19 +14,28 @@ import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig, pre
 export function registerIpcHandlers(): void {
   // Open folder dialog
   ipcMain.handle(IPC_CHANNELS.OPEN_FOLDER, async () => {
-    return openFolderDialog();
+    console.log('[IPC] Opening folder dialog...');
+    const result = await openFolderDialog();
+    console.log('[IPC] Folder selected:', result || 'cancelled');
+    return result;
   });
 
   // Detect AI tools
   ipcMain.handle(IPC_CHANNELS.DETECT_TOOLS, async (_event, folderPath: string) => {
-    return detectTools(folderPath);
+    console.log('[IPC] Detecting tools in:', folderPath);
+    const result = await detectTools(folderPath);
+    console.log('[IPC] Detected tools:', result.filter(t => t.detected).map(t => t.id).join(', ') || 'none');
+    return result;
   });
 
   // Sync configuration
   ipcMain.handle(
     IPC_CHANNELS.SYNC_CONFIG,
     async (_event, sourceFolder: string, targetTools: string[], options?: { createBackup?: boolean; overwrite?: boolean }) => {
-      return syncConfig(sourceFolder, targetTools, options);
+      console.log('[IPC] Syncing config:', { sourceFolder, targetTools, options });
+      const result = await syncConfig(sourceFolder, targetTools, options);
+      console.log('[IPC] Sync result:', result.success ? 'success' : 'failed', `- ${result.syncedTools.length} tools`);
+      return result;
     }
   );
 
@@ -34,7 +43,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC_CHANNELS.PREVIEW_SYNC,
     async (_event, sourceFolder: string, targetTools: string[]) => {
-      return previewSync(sourceFolder, targetTools);
+      console.log('[IPC] Previewing sync:', { sourceFolder, targetTools });
+      const result = await previewSync(sourceFolder, targetTools);
+      console.log('[IPC] Preview complete:', result.length, 'tools');
+      return result;
     }
   );
 
@@ -42,7 +54,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC_CHANNELS.GET_TOOL_CONFIG,
     async (_event, folderPath: string, toolId: string) => {
-      return getToolConfig(folderPath, toolId);
+      console.log('[IPC] Getting tool config:', { folderPath, toolId });
+      const result = await getToolConfig(folderPath, toolId);
+      console.log('[IPC] Config loaded:', result.success ? 'success' : 'failed');
+      return result;
     }
   );
 
@@ -50,7 +65,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC_CHANNELS.IMPORT_CONFIG,
     async (_event, folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => {
-      return importConfig(folderPath, options);
+      console.log('[IPC] Importing config:', { folderPath, options });
+      const result = await importConfig(folderPath, options);
+      console.log('[IPC] Import result:', result.success ? 'success' : 'failed');
+      return result;
     }
   );
 
@@ -58,11 +76,14 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     IPC_CHANNELS.EXPORT_CONFIG,
     async (_event, config: unknown, folderPath: string, targetTools: string[], options?: { createBackup?: boolean; overwrite?: boolean }) => {
-      return exportConfig(config as any, folderPath, targetTools, options);
+      console.log('[IPC] Exporting config:', { folderPath, targetTools, options });
+      const result = await exportConfig(config as any, folderPath, targetTools, options);
+      console.log('[IPC] Export result:', result.success ? 'success' : 'failed', `- ${result.exportedTools.length} tools`);
+      return result;
     }
   );
 
-  console.log('IPC handlers registered');
+  console.log('[IPC] All handlers registered');
 }
 
 /**

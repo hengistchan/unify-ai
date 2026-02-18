@@ -1,3 +1,38 @@
+## [0.0.1] - 2026-02-18
+
+### Features
+- feat(ci): configure ESLint, Prettier, and optimize CI workflows
+- feat: add automated release system and fix Electron build
+- feat(gui): dynamically read app version from package.json
+- feat(gui): add custom app icon and unify version to 0.0.1
+- feat(gui): enable multi-select for import and improve sync UX
+- feat(gui): simplify sync UX with unified sync dialog
+- feat(gui): improve sync UI with explanations and details
+
+### Bug Fixes
+- fix(ci): resolve Electron build error for @unify-ai/core dependency
+- fix(ci): resolve TypeScript type errors in GUI package
+- fix(ci): resolve TypeScript type errors in test files
+- fix(ci): resolve @unify-ai/core workspace dependency in CLI tests
+- feat: add automated release system and fix Electron build
+- fix(gui): update version number to 0.0.1 in Settings page
+- fix(gui): show friendly config paths instead of glob patterns
+- fix(gui): use ToolIcon in ToolDetail page
+- fix(gui): always show source/target selection for direct sync
+
+### Documentation
+- chore: remove outdated plan documents
+
+### Maintenance
+- chore: remove outdated plan documents
+- chore: ignore electron-builder release folder
+
+### Other Changes
+- style: format modified files with Prettier
+- style: format .cursor directory
+- style: format code with Prettier
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

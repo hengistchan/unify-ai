@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { X, FileJson, Download, Upload, Check, AlertCircle } from 'lucide-react';
+import { X, FileJson, Download, Upload, Check, AlertCircle, AlertTriangle } from 'lucide-react';
 import { Button, Badge, ToolIcon } from '@/components/common';
 import type { DetectedTool, UnifiedConfig } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
@@ -31,7 +31,7 @@ export function UnifiedConfigDialog({
   exportLoading,
 }: UnifiedConfigDialogProps) {
   const [step, setStep] = useState<'overview' | 'import' | 'export'>('overview');
-  const [importSource, setImportSource] = useState<string>('');
+  const [importSources, setImportSources] = useState<Set<string>>(new Set());
   const [exportTargets, setExportTargets] = useState<Set<string>>(new Set());
   const [createBackup, setCreateBackup] = useState(true);
 
@@ -47,8 +47,8 @@ export function UnifiedConfigDialog({
 
   const handleImport = async () => {
     const result = await onImport({
-      mergeMultiple: !importSource,
-      sourceTool: importSource || undefined,
+      mergeMultiple: importSources.size > 1,
+      sourceTool: importSources.size === 1 ? Array.from(importSources)[0] : undefined,
     });
     if (result.success) {
       setStep('overview');
@@ -61,6 +61,16 @@ export function UnifiedConfigDialog({
     if (result.success) {
       setStep('overview');
     }
+  };
+
+  const toggleImportSource = (toolId: string) => {
+    const newSources = new Set(importSources);
+    if (newSources.has(toolId)) {
+      newSources.delete(toolId);
+    } else {
+      newSources.add(toolId);
+    }
+    setImportSources(newSources);
   };
 
   const toggleExportTarget = (toolId: string) => {
@@ -99,7 +109,7 @@ export function UnifiedConfigDialog({
             </button>
             <span className="text-text-tertiary">/</span>
             <span className="text-sm text-text-secondary">
-              {step === 'import' && 'Import from Tool'}
+              {step === 'import' && 'Import from Tools'}
               {step === 'export' && 'Export to Tools'}
             </span>
           </div>
@@ -147,7 +157,7 @@ export function UnifiedConfigDialog({
                 ) : (
                   <div className="flex items-center gap-2 p-3 bg-warning-muted rounded text-warning text-sm">
                     <AlertCircle className="w-4 h-4" />
-                    <span>No unified config yet. Import from a tool to create one.</span>
+                    <span>No unified config yet. Import from tools to create one.</span>
                   </div>
                 )}
               </div>
@@ -162,9 +172,9 @@ export function UnifiedConfigDialog({
                     <Download className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-text-primary">Import from Tool</h4>
+                    <h4 className="font-medium text-text-primary">Import from Tools</h4>
                     <p className="text-xs text-text-tertiary mt-0.5">
-                      Read configuration from a tool into unified.json
+                      Read from multiple tools and merge
                     </p>
                   </div>
                 </button>
@@ -199,17 +209,20 @@ export function UnifiedConfigDialog({
           {step === 'import' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-text-primary mb-3">
-                  Select source tool to import from:
+                <h3 className="text-sm font-medium text-text-primary mb-2">
+                  Select source tools to import from:
                 </h3>
+                <p className="text-xs text-text-tertiary mb-3">
+                  Select multiple tools to merge their configurations
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {detectedList.map((tool) => (
                     <button
                       key={tool.id}
-                      onClick={() => setImportSource(tool.id)}
+                      onClick={() => toggleImportSource(tool.id)}
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-lg border transition-all',
-                        importSource === tool.id
+                        importSources.has(tool.id)
                           ? 'bg-primary-muted border-primary'
                           : 'bg-bg-tertiary border-border hover:border-border-hover'
                       )}
@@ -219,13 +232,29 @@ export function UnifiedConfigDialog({
                         <div className="font-medium text-text-primary">{tool.name}</div>
                         <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
                       </div>
-                      {importSource === tool.id && (
+                      {importSources.has(tool.id) && (
                         <Check className="w-5 h-5 text-primary" />
                       )}
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* Merge info */}
+              {importSources.size > 1 && (
+                <div className="p-3 bg-info-muted border border-info/30 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-info mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-info">
+                      <p className="font-medium">Merge mode enabled</p>
+                      <p className="text-xs mt-1">
+                        Configurations from {importSources.size} tools will be merged.
+                        Conflicts will be resolved by keeping the most recent.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-between items-center pt-4 border-t border-border">
                 <Button variant="secondary" onClick={() => setStep('overview')}>
@@ -234,11 +263,11 @@ export function UnifiedConfigDialog({
                 <Button
                   variant="primary"
                   onClick={handleImport}
-                  disabled={!importSource || importLoading}
+                  disabled={importSources.size === 0 || importLoading}
                   loading={importLoading}
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  Import
+                  Import {importSources.size > 0 && `(${importSources.size})`}
                 </Button>
               </div>
             </div>
@@ -247,9 +276,12 @@ export function UnifiedConfigDialog({
           {step === 'export' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-medium text-text-primary mb-3">
+                <h3 className="text-sm font-medium text-text-primary mb-2">
                   Select target tools to export to:
                 </h3>
+                <p className="text-xs text-text-tertiary mb-3">
+                  unified.json will be written to selected tools
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   {detectedList.map((tool) => (
                     <button
@@ -299,7 +331,7 @@ export function UnifiedConfigDialog({
                   loading={exportLoading}
                 >
                   <Upload className="w-4 h-4 mr-1" />
-                  Export
+                  Export {exportTargets.size > 0 && `(${exportTargets.size})`}
                 </Button>
               </div>
             </div>

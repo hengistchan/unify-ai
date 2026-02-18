@@ -132,7 +132,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      expect(screen.getByText('Import from Tool')).toBeInTheDocument();
+      expect(screen.getByText('Import from Tools')).toBeInTheDocument();
       expect(screen.getByText('Export to Tools')).toBeInTheDocument();
     });
 
@@ -170,8 +170,8 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
-      expect(screen.getByText('Select source tool to import from:')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Import from Tools'));
+      expect(screen.getByText('Select source tools to import from:')).toBeInTheDocument();
     });
 
     it('should go to export step when Export is clicked', () => {
@@ -206,10 +206,10 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
+      fireEvent.click(screen.getByText('Import from Tools'));
       fireEvent.click(screen.getByText('Back'));
 
-      expect(screen.getByText('Import from Tool')).toBeInTheDocument();
+      expect(screen.getByText('Import from Tools')).toBeInTheDocument();
     });
   });
 
@@ -228,14 +228,14 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
+      fireEvent.click(screen.getByText('Import from Tools'));
 
       expect(screen.getByText('Claude Code')).toBeInTheDocument();
       expect(screen.getByText('Cursor')).toBeInTheDocument();
       expect(screen.getByText('GitHub Copilot')).toBeInTheDocument();
     });
 
-    it('should select a tool when clicked', () => {
+    it('should allow selecting multiple source tools', () => {
       render(
         <UnifiedConfigDialog
           open={true}
@@ -249,11 +249,36 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
+      fireEvent.click(screen.getByText('Import from Tools'));
       fireEvent.click(screen.getByText('Claude Code'));
+      fireEvent.click(screen.getByText('Cursor'));
 
-      // Should show checkmark for selected tool (using Check icon from lucide)
-      expect(screen.getByText('Claude Code').closest('button')).toHaveClass('border-primary');
+      // Both should have primary border class (multi-select)
+      const claudeButton = screen.getByText('Claude Code').closest('button');
+      const cursorButton = screen.getByText('Cursor').closest('button');
+      expect(claudeButton).toHaveClass('border-primary');
+      expect(cursorButton).toHaveClass('border-primary');
+    });
+
+    it('should show merge info when multiple tools selected', () => {
+      render(
+        <UnifiedConfigDialog
+          open={true}
+          onClose={mockOnClose}
+          detectedTools={defaultDetectedTools}
+          unifiedConfig={defaultUnifiedConfig}
+          onImport={mockOnImport}
+          onExport={mockOnExport}
+          importLoading={false}
+          exportLoading={false}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Claude Code'));
+      fireEvent.click(screen.getByText('Cursor'));
+
+      expect(screen.getByText('Merge mode enabled')).toBeInTheDocument();
     });
 
     it('should call onImport when Import button clicked', async () => {
@@ -270,10 +295,10 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
+      fireEvent.click(screen.getByText('Import from Tools'));
       fireEvent.click(screen.getByText('Cursor'));
 
-      const importButtons = screen.getAllByText('Import');
+      const importButtons = screen.getAllByText(/Import/);
       fireEvent.click(importButtons[importButtons.length - 1]);
 
       expect(mockOnImport).toHaveBeenCalled();
@@ -293,11 +318,11 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tool'));
+      fireEvent.click(screen.getByText('Import from Tools'));
 
-      const importButtons = screen.getAllByText('Import');
-      const lastImportButton = importButtons[importButtons.length - 1].closest('button');
-      expect(lastImportButton).toBeDisabled();
+      // When no tools selected, button shows "Import" without count
+      const importButton = screen.getByRole('button', { name: /Import$/ });
+      expect(importButton).toBeDisabled();
     });
   });
 
@@ -365,7 +390,7 @@ describe('UnifiedConfigDialog', () => {
       fireEvent.click(screen.getByText('Export to Tools'));
       fireEvent.click(screen.getByText('Cursor'));
 
-      const exportButtons = screen.getAllByText('Export');
+      const exportButtons = screen.getAllByText(/Export \(/);
       fireEvent.click(exportButtons[exportButtons.length - 1]);
 
       expect(mockOnExport).toHaveBeenCalledWith(['cursor'], { createBackup: true });
@@ -387,9 +412,9 @@ describe('UnifiedConfigDialog', () => {
 
       fireEvent.click(screen.getByText('Export to Tools'));
 
-      const exportButtons = screen.getAllByText('Export');
-      const lastExportButton = exportButtons[exportButtons.length - 1].closest('button');
-      expect(lastExportButton).toBeDisabled();
+      // When no tools selected, button shows "Export" without count
+      const exportButton = screen.getByRole('button', { name: /Export$/ });
+      expect(exportButton).toBeDisabled();
     });
 
     it('should show backup checkbox', () => {

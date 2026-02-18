@@ -473,6 +473,7 @@ export const useAppStore = create<AppState>()(
         try {
           const result = await window.electronAPI.importConfig(currentProject, {
             mergeMultiple: options?.mergeMultiple,
+            sourceTool: options?.sourceTool,
           });
 
           if (result.success && result.config) {
@@ -482,7 +483,9 @@ export const useAppStore = create<AppState>()(
             get().addToast({
               type: 'success',
               title: 'Import Complete',
-              message: `Imported configuration from ${result.sourceTools?.join(', ') || 'detected tools'}`,
+              message: options?.mergeMultiple
+                ? `Merged configuration from ${result.sourceTools?.length || 0} tools`
+                : `Imported configuration from ${result.sourceTools?.join(', ') || 'detected tools'}`,
             });
           } else {
             set({ importLoading: false });

@@ -1,6 +1,6 @@
 {
   "name": "unify-ai",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "type": "module",
   "description": "Unified configuration management for AI agent tools",

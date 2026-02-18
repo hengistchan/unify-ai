@@ -1,3 +1,24 @@
+## [0.0.2] - 2026-02-19
+
+### Features
+- feat(gui): rename Import to Generate Unified Config
+- feat(gui): show all supported tools in UnifiedConfigDialog export
+- feat(gui): show all supported tools in export dialog
+- chore: remove planned features from v0.1.0
+
+### Bug Fixes
+- fix(gui): update tests for renamed text
+- fix(gui): add scrolling to SyncSettingsDialog
+- fix(cli): remove TODO and clean up sync command comments
+
+### Code Refactoring
+- refactor(cli): remove unused template option from init command
+
+### Maintenance
+- chore: add unified.json to gitignore
+- chore: remove planned features from v0.1.0
+
+
 ## [0.0.1] - 2026-02-18
 
 ### Features

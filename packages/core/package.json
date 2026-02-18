@@ -1,6 +1,6 @@
 {
   "name": "@unify-ai/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Core library for unify-ai",
   "type": "module",
   "main": "./dist/index.js",

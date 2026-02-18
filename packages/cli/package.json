@@ -1,6 +1,6 @@
 {
   "name": "@unify-ai/cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI for unify-ai - Unified configuration management for AI coding assistants",
   "type": "module",
   "main": "./dist/index.js",

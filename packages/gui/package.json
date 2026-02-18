@@ -1,6 +1,6 @@
 {
   "name": "@unify-ai/gui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Electron + React GUI for unify-ai configuration management",
   "type": "module",
   "main": "dist/electron/main.js",

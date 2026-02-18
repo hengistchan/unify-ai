@@ -16,7 +16,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { Button, Badge, Card } from '@/components/common';
+import { Button, Badge, Card, ToolIcon, getToolName } from '@/components/common';
 import {
   useAppStore,
   selectUnifiedConfig,
@@ -24,48 +24,16 @@ import {
 } from '@/stores/appStore';
 import type { RuleConfig, MCPServerConfig, ToolSettings } from '@/stores/appStore';
 
-// Tool information map
-const toolInfo: Record<string, { name: string; description: string; emoji: string }> = {
-  'claude-code': {
-    name: 'Claude Code',
-    description: 'Anthropic\'s official CLI for Claude',
-    emoji: '🤖',
-  },
-  cursor: {
-    name: 'Cursor',
-    description: 'AI-first code editor',
-    emoji: '⚡',
-  },
-  copilot: {
-    name: 'GitHub Copilot',
-    description: 'AI pair programmer by GitHub',
-    emoji: '🐙',
-  },
-  windsurf: {
-    name: 'Windsurf',
-    description: 'AI-powered IDE by Codeium',
-    emoji: '🌊',
-  },
-  codex: {
-    name: 'Codex',
-    description: 'OpenAI\'s coding assistant',
-    emoji: '📝',
-  },
-  cline: {
-    name: 'Cline',
-    description: 'Autonomous coding agent for VS Code',
-    emoji: '📋',
-  },
-  aider: {
-    name: 'Aider',
-    description: 'AI pair programming in your terminal',
-    emoji: '🤝',
-  },
-  continue: {
-    name: 'Continue',
-    description: 'Open-source AI code assistant',
-    emoji: '▶️',
-  },
+// Tool information map (without emoji - uses ToolIcon component)
+const toolDescriptions: Record<string, string> = {
+  'claude-code': 'Anthropic\'s official CLI for Claude',
+  cursor: 'AI-first code editor',
+  copilot: 'AI pair programmer by GitHub',
+  windsurf: 'AI-powered IDE by Codeium',
+  codex: 'OpenAI\'s coding assistant',
+  cline: 'Autonomous coding agent for VS Code',
+  aider: 'AI pair programming in your terminal',
+  continue: 'Open-source AI code assistant',
 };
 
 export function ToolDetail() {
@@ -78,8 +46,9 @@ export function ToolDetail() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const info = toolInfo[toolId ?? ''];
+  const description = toolDescriptions[toolId ?? ''];
   const tool = detectedTools.find((t) => t.id === toolId);
+  const toolName = toolId ? getToolName(toolId) : 'Unknown';
 
   // Load tool config on mount
   useEffect(() => {
@@ -87,7 +56,7 @@ export function ToolDetail() {
       console.log('\n🔧 Tool Detail Page');
       console.log('────────────────────────────────');
       console.log('Tool ID:', toolId);
-      console.log('Tool Name:', info?.name);
+      console.log('Tool Name:', toolName);
       console.log('Config Path:', tool.configPath);
       console.log('Capabilities:', {
         rules: tool.hasRules,
@@ -109,7 +78,7 @@ export function ToolDetail() {
           console.error('[ToolDetail] Failed to load config:', err);
         });
     }
-  }, [toolId, tool?.detected, loadToolConfig, info?.name, tool]);
+  }, [toolId, tool?.detected, loadToolConfig, toolName, tool]);
 
   // Log config details when loaded
   useEffect(() => {
@@ -168,7 +137,7 @@ export function ToolDetail() {
     }
   }
 
-  if (!info) {
+  if (!description) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <h2 className="text-xl font-semibold text-text-secondary mb-2">Tool not found</h2>
@@ -185,7 +154,7 @@ export function ToolDetail() {
       <div className="flex flex-col items-center justify-center h-full">
         <AlertCircle className="w-12 h-12 text-warning mb-4" />
         <h2 className="text-xl font-semibold text-text-secondary mb-2">Tool not detected</h2>
-        <p className="text-text-tertiary mb-4">The tool "{info.name}" was not detected in this project.</p>
+        <p className="text-text-tertiary mb-4">The tool "{toolName}" was not detected in this project.</p>
         <Button onClick={() => navigate('/project')}>
           Back to Project
         </Button>
@@ -222,11 +191,11 @@ export function ToolDetail() {
           </button>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center">
-              <span className="text-2xl">{info.emoji}</span>
+              {toolId && <ToolIcon toolId={toolId} size="lg" />}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">{info.name}</h1>
-              <p className="text-text-tertiary">{info.description}</p>
+              <h1 className="text-2xl font-bold text-text-primary">{toolName}</h1>
+              <p className="text-text-tertiary">{description}</p>
             </div>
           </div>
         </div>
@@ -251,11 +220,11 @@ export function ToolDetail() {
           </button>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center">
-              <span className="text-2xl">{info.emoji}</span>
+              {toolId && <ToolIcon toolId={toolId} size="lg" />}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">{info.name}</h1>
-              <p className="text-text-tertiary">{info.description}</p>
+              <h1 className="text-2xl font-bold text-text-primary">{toolName}</h1>
+              <p className="text-text-tertiary">{description}</p>
             </div>
           </div>
         </div>
@@ -283,14 +252,14 @@ export function ToolDetail() {
         </button>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg bg-primary-muted flex items-center justify-center">
-            <span className="text-2xl">{info.emoji}</span>
+            {toolId && <ToolIcon toolId={toolId} size="lg" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-text-primary">{info.name}</h1>
+              <h1 className="text-2xl font-bold text-text-primary">{toolName}</h1>
               <Badge variant="success">Detected</Badge>
             </div>
-            <p className="text-text-tertiary">{info.description}</p>
+            <p className="text-text-tertiary">{description}</p>
           </div>
         </div>
       </div>

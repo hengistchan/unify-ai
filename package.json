@@ -2,6 +2,7 @@
   "name": "unify-ai",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "Unified configuration management for AI agent tools",
   "workspaces": [
     "packages/*"
@@ -19,7 +20,11 @@
     "test:core": "pnpm --filter @unify-ai/core run test",
     "test:cli": "pnpm --filter @unify-ai/cli run test",
     "test:gui": "pnpm --filter @unify-ai/gui run test",
-    "test:all": "pnpm -r run test"
+    "test:all": "pnpm -r run test",
+    "lint": "eslint . --config eslint.config.js",
+    "lint:fix": "eslint . --config eslint.config.js --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "keywords": [
     "ai",
@@ -33,5 +38,14 @@
   "license": "MIT",
   "engines": {
     "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.0"
   }
 }

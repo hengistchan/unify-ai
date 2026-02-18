@@ -30,6 +30,15 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
+      # Cache pnpm store
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -59,7 +68,7 @@ jobs:
           fail_ci_if_error: false
 
   lint:
-    name: Lint
+    name: Lint & Format
     runs-on: ubuntu-latest
 
     steps:
@@ -77,15 +86,83 @@ jobs:
           node-version: 22.x
           cache: 'pnpm'
 
+      # Cache pnpm store
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run ESLint
-        run: echo "ESLint not configured yet"
-        # TODO: Configure ESLint
-        # run: pnpm lint
+        run: pnpm lint
 
       - name: Check formatting
-        run: echo "Prettier not configured yet"
-        # TODO: Configure Prettier
-        # run: pnpm format:check
+        run: pnpm format:check
+
+  build-electron:
+    name: Build Electron App
+    runs-on: ${{ matrix.os }}
+    needs: [test, lint]
+
+    strategy:
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'pnpm'
+
+      # Cache pnpm store
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # Cache Electron binary
+      - name: Cache Electron
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: ${{ runner.os }}-electron-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Electron app
+        run: pnpm --filter @unify-ai/gui run electron:build
+        env:
+          # Use mirror for faster downloads
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
+      - name: Upload Electron artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-${{ matrix.os }}
+          path: |
+            packages/gui/release/*.dmg
+            packages/gui/release/*.zip
+            packages/gui/release/*.AppImage
+          retention-days: 7

@@ -106,22 +106,20 @@ export class Logger {
     if (this.quiet) return;
 
     // Calculate column widths
-    const widths = headers.map((h, i) =>
-      Math.max(h.length, ...rows.map(r => (r[i] || '').length))
-    );
+    const widths = headers.map((h, i) => Math.max(h.length, ...rows.map(r => (r[i] || '').length)));
 
     // Print header
     const headerLine = headers
       .map((h, i) => (this.color ? chalk.bold(h) : h).padEnd(widths[i]))
       .join('  ');
     console.log(headerLine);
-    console.log(this.color ? chalk.gray('─'.repeat(headerLine.length)) : '─'.repeat(headerLine.length));
+    console.log(
+      this.color ? chalk.gray('─'.repeat(headerLine.length)) : '─'.repeat(headerLine.length)
+    );
 
     // Print rows
     for (const row of rows) {
-      const rowLine = row
-        .map((cell, i) => (cell || '').padEnd(widths[i]))
-        .join('  ');
+      const rowLine = row.map((cell, i) => (cell || '').padEnd(widths[i])).join('  ');
       console.log(rowLine);
     }
   }

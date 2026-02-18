@@ -14,7 +14,7 @@ export const detectCommand = new Command('detect')
   .description('Detect AI tools in the project')
   .option('-j, --json', 'Output as JSON')
   .option('-v, --verbose', 'Show detailed information')
-  .action(async (options) => {
+  .action(async options => {
     const logger = getLogger({ color: options.parent?.color ?? true });
 
     try {
@@ -37,7 +37,9 @@ export const detectCommand = new Command('detect')
 
       if (detectedTools.length === 0) {
         logger.warn('No AI tool configurations found.');
-        logger.info('Supported tools: Claude Code, Cursor, Copilot, Windsurf, Cline, Aider, Continue');
+        logger.info(
+          'Supported tools: Claude Code, Cursor, Copilot, Windsurf, Cline, Aider, Continue'
+        );
         return;
       }
 
@@ -47,7 +49,13 @@ export const detectCommand = new Command('detect')
       if (options.verbose) {
         // Detailed table
         const table = new Table({
-          head: [String(chalk.cyan('Tool')), String(chalk.cyan('ID')), String(chalk.cyan('Version')), String(chalk.cyan('Config Files')), String(chalk.cyan('Capabilities'))],
+          head: [
+            String(chalk.cyan('Tool')),
+            String(chalk.cyan('ID')),
+            String(chalk.cyan('Version')),
+            String(chalk.cyan('Config Files')),
+            String(chalk.cyan('Capabilities')),
+          ],
           style: {
             head: [],
             border: [],
@@ -55,7 +63,8 @@ export const detectCommand = new Command('detect')
         });
 
         for (const adapter of detectedTools) {
-          const capabilities = adapter.getCapabilities()
+          const capabilities = adapter
+            .getCapabilities()
             .map(c => `${c.capability} (${c.level})`)
             .join(', ');
 
@@ -63,7 +72,10 @@ export const detectCommand = new Command('detect')
             adapter.toolMeta.name,
             adapter.toolMeta.id,
             adapter.version,
-            adapter.getFilePatterns().map(p => p.pattern).join(', '),
+            adapter
+              .getFilePatterns()
+              .map(p => p.pattern)
+              .join(', '),
             capabilities,
           ]);
         }

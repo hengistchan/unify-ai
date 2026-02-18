@@ -19,16 +19,19 @@ Before releasing, ensure you have:
 ## Release Types
 
 ### 1. Patch Release (Bug Fixes)
+
 - Version: `0.0.X` → `0.0.Y`
 - For: Bug fixes, documentation updates, minor improvements
 - Example: `0.0.1` → `0.0.2`
 
 ### 2. Minor Release (New Features)
+
 - Version: `0.X.0` → `0.Y.0`
 - For: New features, backward-compatible changes
 - Example: `0.0.1` → `0.1.0`
 
 ### 3. Major Release (Breaking Changes)
+
 - Version: `X.0.0` → `Y.0.0`
 - For: Breaking changes, major rewrites
 - Example: `0.1.0` → `1.0.0`
@@ -44,6 +47,7 @@ Run the automated preparation script:
 ```
 
 This script will:
+
 - ✅ Check working directory is clean
 - ✅ Pull latest changes
 - ✅ Run all tests (core, CLI, GUI)
@@ -53,6 +57,7 @@ This script will:
 - ✅ Create release commit
 
 **Example:**
+
 ```bash
 # Patch release
 ./scripts/prepare-release.sh 0.0.2
@@ -109,6 +114,7 @@ GitHub Actions will automatically:
    - Downloadable GUI binaries
 
 Monitor progress at:
+
 ```
 https://github.com/YOUR_USERNAME/unify-ai/actions
 ```
@@ -158,6 +164,7 @@ git push origin v0.1.0-beta.1
 ```
 
 Pre-release behavior:
+
 - ✅ Tests run
 - ✅ GUI builds
 - ❌ **Not published to npm**
@@ -170,6 +177,7 @@ If a release fails or has critical bugs:
 ### Automatic Rollback
 
 If the GitHub Actions workflow fails, it will automatically:
+
 - Deprecate npm packages
 - Create a GitHub issue
 
@@ -180,11 +188,13 @@ If the GitHub Actions workflow fails, it will automatically:
 ```
 
 This will:
+
 - Deprecate npm packages
 - Delete git tag (local and remote)
 - Optionally revert version bump commit
 
 **Example:**
+
 ```bash
 ./scripts/rollback-release.sh 0.0.2
 ```
@@ -192,12 +202,14 @@ This will:
 ## Release Checklist
 
 ### Before Release
+
 - [ ] All tests pass locally
 - [ ] CHANGELOG.md updated (or will be auto-generated)
 - [ ] Version number decided (patch/minor/major)
 - [ ] Working directory clean (no uncommitted changes)
 
 ### During Release
+
 - [ ] Run `./scripts/prepare-release.sh <version>`
 - [ ] Review generated changes
 - [ ] Push commit to GitHub
@@ -205,6 +217,7 @@ This will:
 - [ ] Monitor GitHub Actions workflow
 
 ### After Release
+
 - [ ] Verify npm packages are published
 - [ ] Download and test GUI binaries
 - [ ] Verify GitHub Release is created
@@ -215,6 +228,7 @@ This will:
 ### "Working directory has uncommitted changes"
 
 **Solution:** Commit or stash your changes first:
+
 ```bash
 git status
 git add .
@@ -224,6 +238,7 @@ git commit -m "your changes"
 ### "Version already exists as git tag"
 
 **Solution:** Choose a different version number or delete the tag:
+
 ```bash
 git tag -d v0.0.2
 git push origin :refs/tags/v0.0.2
@@ -232,11 +247,13 @@ git push origin :refs/tags/v0.0.2
 ### GitHub Actions Failed
 
 **Check:**
+
 1. GitHub Actions logs for error details
 2. npm token is valid: `npm whoami`
 3. Package.json version matches tag version
 
 **Recovery:**
+
 1. Fix the issue
 2. Rollback if needed: `./scripts/rollback-release.sh <version>`
 3. Prepare new release with patch version
@@ -244,11 +261,13 @@ git push origin :refs/tags/v0.0.2
 ### npm Publish Failed
 
 **Check:**
+
 1. npm token has publish permissions
 2. Package name is not taken
 3. Version doesn't already exist on npm
 
 **Recovery:**
+
 ```bash
 # Manual publish
 cd packages/core
@@ -261,6 +280,7 @@ npm publish --access public
 ## Version Bump Examples
 
 ### Patch Release (0.0.1 → 0.0.2)
+
 ```bash
 # Fix a bug
 git add .
@@ -272,6 +292,7 @@ git push origin v0.0.2
 ```
 
 ### Minor Release (0.0.1 → 0.1.0)
+
 ```bash
 # Add new feature
 git add .
@@ -283,6 +304,7 @@ git push origin v0.1.0
 ```
 
 ### Major Release (0.1.0 → 1.0.0)
+
 ```bash
 # Breaking changes
 git add .
@@ -296,11 +318,13 @@ git push origin v1.0.0
 ## CI/CD Workflows
 
 ### Continuous Integration (`.github/workflows/ci.yml`)
+
 - **Triggers:** Push to main/develop, PRs
 - **Actions:** Test, lint, build
 - **Status:** ![CI Status](https://github.com/YOUR_USERNAME/unify-ai/workflows/CI/badge.svg)
 
 ### Release (`.github/workflows/release.yml`)
+
 - **Triggers:** Push tag `v*.*.*`
 - **Actions:** Validate, test, publish npm, build GUI, create GitHub release
 - **Status:** ![Release Status](https://github.com/YOUR_USERNAME/unify-ai/workflows/Release/badge.svg)
@@ -314,6 +338,7 @@ git push origin v1.0.0
 ## Questions?
 
 If you encounter any issues during the release process:
+
 1. Check the [Troubleshooting](#troubleshooting) section
 2. Review GitHub Actions logs
 3. Create an issue on GitHub

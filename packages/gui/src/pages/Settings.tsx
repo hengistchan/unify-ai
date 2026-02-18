@@ -27,9 +27,12 @@ export function Settings() {
   useEffect(() => {
     // Fetch app version from Electron
     if (window.electronAPI?.getAppVersion) {
-      window.electronAPI.getAppVersion().then(setAppVersion).catch(() => {
-        setAppVersion('unknown');
-      });
+      window.electronAPI
+        .getAppVersion()
+        .then(setAppVersion)
+        .catch(() => {
+          setAppVersion('unknown');
+        });
     } else {
       setAppVersion('dev');
     }
@@ -79,7 +82,9 @@ export function Settings() {
               <RotateCcw className="w-5 h-5 text-text-tertiary" />
               <div>
                 <p className="text-sm font-medium text-text-secondary">Auto Sync</p>
-                <p className="text-xs text-text-tertiary">Automatically sync configurations on file changes</p>
+                <p className="text-xs text-text-tertiary">
+                  Automatically sync configurations on file changes
+                </p>
               </div>
             </div>
             <button
@@ -104,7 +109,9 @@ export function Settings() {
               <Database className="w-5 h-5 text-text-tertiary" />
               <div>
                 <p className="text-sm font-medium text-text-secondary">Backup Enabled</p>
-                <p className="text-xs text-text-tertiary">Create backups before overwriting config files</p>
+                <p className="text-xs text-text-tertiary">
+                  Create backups before overwriting config files
+                </p>
               </div>
             </div>
             <button

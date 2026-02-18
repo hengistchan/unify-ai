@@ -20,16 +20,16 @@ unify-ai is a tool that unifies configuration management across multiple AI codi
 
 ## Supported Tools
 
-| Tool | Rules | MCP | Settings | Config Format |
-|------|-------|-----|----------|---------------|
-| Cursor | ✅ Full | ⚠️ Partial | ⚠️ Partial | Markdown + JSON |
-| Claude Code | ✅ Full | ✅ Full | ✅ Full | Markdown + JSON |
-| Codex | ✅ Full | ✅ Full | ✅ Full | TOML + Markdown |
-| Copilot | ✅ Full | ❌ None | ❌ None | Markdown |
-| Windsurf | ✅ Full | ⚠️ Partial | ⚠️ Partial | Text |
-| Cline | ✅ Full | ✅ Full | ⚠️ Partial | Markdown + JSON |
-| Aider | ✅ Full | ❌ None | ✅ Full | YAML |
-| Continue | ✅ Full | ⚠️ Partial | ✅ Full | YAML |
+| Tool        | Rules   | MCP        | Settings   | Config Format   |
+| ----------- | ------- | ---------- | ---------- | --------------- |
+| Cursor      | ✅ Full | ⚠️ Partial | ⚠️ Partial | Markdown + JSON |
+| Claude Code | ✅ Full | ✅ Full    | ✅ Full    | Markdown + JSON |
+| Codex       | ✅ Full | ✅ Full    | ✅ Full    | TOML + Markdown |
+| Copilot     | ✅ Full | ❌ None    | ❌ None    | Markdown        |
+| Windsurf    | ✅ Full | ⚠️ Partial | ⚠️ Partial | Text            |
+| Cline       | ✅ Full | ✅ Full    | ⚠️ Partial | Markdown + JSON |
+| Aider       | ✅ Full | ❌ None    | ✅ Full    | YAML            |
+| Continue    | ✅ Full | ⚠️ Partial | ✅ Full    | YAML            |
 
 ## Features
 
@@ -92,6 +92,7 @@ pnpm gui
 ```
 
 The GUI provides:
+
 - 📁 Project management with folder selection
 - 🔍 Auto-detection of AI tools
 - 👁️ Sync preview before applying changes
@@ -131,15 +132,15 @@ The core library uses an **adapter pattern** where each AI tool has its own adap
 
 ### Key Components
 
-| Component | Description |
-|-----------|-------------|
-| **Adapters** | Parse and generate tool-specific config formats |
-| **Importer** | Import configs from tools to unified format |
-| **Exporter** | Export unified config to tool formats |
-| **DiffEngine** | Detect differences between configs |
-| **ConflictResolver** | Handle sync conflicts |
-| **ChangeTracker** | Track configuration changes |
-| **ConfigManager** | Load, save, validate configs |
+| Component            | Description                                     |
+| -------------------- | ----------------------------------------------- |
+| **Adapters**         | Parse and generate tool-specific config formats |
+| **Importer**         | Import configs from tools to unified format     |
+| **Exporter**         | Export unified config to tool formats           |
+| **DiffEngine**       | Detect differences between configs              |
+| **ConflictResolver** | Handle sync conflicts                           |
+| **ChangeTracker**    | Track configuration changes                     |
+| **ConfigManager**    | Load, save, validate configs                    |
 
 ## Development
 
@@ -184,11 +185,11 @@ pnpm test:all         # All tests
 
 ## Test Coverage
 
-| Package | Tests | Status |
-|---------|-------|--------|
-| @unify-ai/core | 167 | ✅ |
-| @unify-ai/cli | 47 | ✅ |
-| @unify-ai/gui | 85 | ✅ |
+| Package        | Tests | Status |
+| -------------- | ----- | ------ |
+| @unify-ai/core | 167   | ✅     |
+| @unify-ai/cli  | 47    | ✅     |
+| @unify-ai/gui  | 85    | ✅     |
 
 ## JSON Schemas
 
@@ -202,16 +203,16 @@ Configuration schemas are available in the `schemas/` directory:
 
 ## CLI Commands Reference
 
-| Command | Description |
-|---------|-------------|
-| `init [path]` | Create unified.json configuration file |
-| `detect [path]` | Detect AI tools in a project |
-| `import <tool> [path]` | Import configuration from a specific tool |
-| `export <tool> [path]` | Export unified config to a specific tool |
-| `sync [path]` | Synchronize configurations between tools |
-| `diff <tool> [path]` | Show differences between unified and tool config |
-| `status [path]` | Show current sync status |
-| `watch [path]` | Watch for file changes and auto-sync |
+| Command                | Description                                      |
+| ---------------------- | ------------------------------------------------ |
+| `init [path]`          | Create unified.json configuration file           |
+| `detect [path]`        | Detect AI tools in a project                     |
+| `import <tool> [path]` | Import configuration from a specific tool        |
+| `export <tool> [path]` | Export unified config to a specific tool         |
+| `sync [path]`          | Synchronize configurations between tools         |
+| `diff <tool> [path]`   | Show differences between unified and tool config |
+| `status [path]`        | Show current sync status                         |
+| `watch [path]`         | Watch for file changes and auto-sync             |
 
 ### CLI Options
 

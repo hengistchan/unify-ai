@@ -55,14 +55,17 @@ interface CursorRuleFrontmatter {
  * Cursor MCP configuration format
  */
 interface CursorMCPConfig {
-  mcpServers: Record<string, {
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-    disabled?: boolean;
-    autoApprove?: string[];
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      disabled?: boolean;
+      autoApprove?: string[];
+    }
+  >;
 }
 
 /**
@@ -214,7 +217,11 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     // Determine file type
     if (filePath.endsWith('.md')) {
       const result = await this.parseRuleContent(content, filePath);
@@ -227,11 +234,13 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -249,22 +258,26 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -275,16 +288,18 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
     const pattern = path.join(projectRoot, '.cursor/rules/*.md');
     const matches = await glob(pattern, { nodir: true });
 
-    return Promise.all(matches.map(async (absolutePath) => {
-      const stats = await fs.stat(absolutePath);
-      return {
-        path: path.relative(projectRoot, absolutePath),
-        absolutePath,
-        exists: true,
-        size: stats.size,
-        lastModified: stats.mtime,
-      };
-    }));
+    return Promise.all(
+      matches.map(async absolutePath => {
+        const stats = await fs.stat(absolutePath);
+        return {
+          path: path.relative(projectRoot, absolutePath),
+          absolutePath,
+          exists: true,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
   }
 
   private async parseRuleFile(filePath: string): Promise<{
@@ -297,17 +312,22 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseRuleContent(content: string, filePath: string): Promise<{
+  private async parseRuleContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {
@@ -370,9 +390,8 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    const frontmatterStr = Object.keys(filtered).length > 0
-      ? `---\n${yaml.stringify(filtered)}---\n\n`
-      : '';
+    const frontmatterStr =
+      Object.keys(filtered).length > 0 ? `---\n${yaml.stringify(filtered)}---\n\n` : '';
 
     return `${frontmatterStr}${rule.content}`;
   }
@@ -397,7 +416,10 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
     if (!globs) return undefined;
     if (typeof globs === 'string') {
       // Support comma-separated string
-      return globs.split(',').map(g => g.trim()).filter(Boolean);
+      return globs
+        .split(',')
+        .map(g => g.trim())
+        .filter(Boolean);
     }
     return globs;
   }
@@ -415,12 +437,14 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       return this.parseMCPContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -452,11 +476,13 @@ export class CursorAdapter extends BaseAdapter implements IAdapter {
       };
     } catch (error) {
       return {
-        errors: [{
-          code: 'JSON_PARSE_ERROR',
-          message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'JSON_PARSE_ERROR',
+            message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }

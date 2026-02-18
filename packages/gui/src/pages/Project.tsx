@@ -62,7 +62,7 @@ export function Project() {
   const [showUnifiedConfigDialog, setShowUnifiedConfigDialog] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const detectedCount = detectedTools.filter((t) => t.detected).length;
+  const detectedCount = detectedTools.filter(t => t.detected).length;
 
   // Handle sync mode selection
   const handleSyncModeSelect = (mode: SyncMode) => {
@@ -121,9 +121,7 @@ export function Project() {
         <FolderOpen className="w-16 h-16 text-text-tertiary mb-4" />
         <h2 className="text-xl font-semibold text-text-secondary mb-2">No Project Open</h2>
         <p className="text-text-tertiary mb-4">Open a project to manage AI tool configurations</p>
-        <Button onClick={() => navigate('/')}>
-          Go to Home
-        </Button>
+        <Button onClick={() => navigate('/')}>Go to Home</Button>
       </div>
     );
   }
@@ -131,12 +129,14 @@ export function Project() {
   // Calculate stats from unified config
   const rulesCount = unifiedConfig?.rules?.length ?? 0;
   const mcpServersCount = unifiedConfig?.mcp?.servers?.length ?? 0;
-  const configFilesCount = detectedTools.filter((t) => t.detected).reduce((acc, t) => {
-    if (t.hasRules) acc++;
-    if (t.hasMcp) acc++;
-    if (t.hasSettings) acc++;
-    return acc;
-  }, 0);
+  const configFilesCount = detectedTools
+    .filter(t => t.detected)
+    .reduce((acc, t) => {
+      if (t.hasRules) acc++;
+      if (t.hasMcp) acc++;
+      if (t.hasSettings) acc++;
+      return acc;
+    }, 0);
 
   return (
     <div className="p-6 animate-fade-in">
@@ -190,12 +190,7 @@ export function Project() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
+          <Button variant="secondary" size="sm" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={cn('w-4 h-4 mr-1', refreshing && 'animate-spin')} />
             Refresh
           </Button>
@@ -213,13 +208,15 @@ export function Project() {
 
       {/* Sync Status */}
       {(syncStatus !== 'idle' || lastSyncTime) && (
-        <div className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg mb-6 text-sm',
-          syncStatus === 'success' && 'bg-success-muted text-success',
-          syncStatus === 'error' && 'bg-error-muted text-error',
-          syncStatus === 'syncing' && 'bg-info-muted text-info',
-          syncStatus === 'idle' && 'bg-bg-tertiary text-text-tertiary'
-        )}>
+        <div
+          className={cn(
+            'flex items-center gap-2 px-4 py-2 rounded-lg mb-6 text-sm',
+            syncStatus === 'success' && 'bg-success-muted text-success',
+            syncStatus === 'error' && 'bg-error-muted text-error',
+            syncStatus === 'syncing' && 'bg-info-muted text-info',
+            syncStatus === 'idle' && 'bg-bg-tertiary text-text-tertiary'
+          )}
+        >
           {syncStatus === 'success' && <Check className="w-4 h-4" />}
           {syncStatus === 'error' && <AlertCircle className="w-4 h-4" />}
           {syncStatus === 'syncing' && <RefreshCw className="w-4 h-4 animate-spin" />}
@@ -228,7 +225,9 @@ export function Project() {
             {syncStatus === 'syncing' && 'Syncing configurations...'}
             {syncStatus === 'success' && 'Sync completed successfully'}
             {syncStatus === 'error' && 'Sync failed'}
-            {syncStatus === 'idle' && lastSyncTime && `Last synced: ${new Date(lastSyncTime).toLocaleString()}`}
+            {syncStatus === 'idle' &&
+              lastSyncTime &&
+              `Last synced: ${new Date(lastSyncTime).toLocaleString()}`}
           </span>
         </div>
       )}
@@ -255,66 +254,68 @@ export function Project() {
         {detectedTools.length === 0 ? (
           <div className="text-center py-8 text-text-tertiary">
             <p>No AI tools detected in this project</p>
-            <p className="text-sm mt-1">Open a project with AI tool configurations to get started</p>
+            <p className="text-sm mt-1">
+              Open a project with AI tool configurations to get started
+            </p>
           </div>
         ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {detectedTools.map((tool) => (
-            <button
-              key={tool.id}
-              onClick={() => tool.detected && handleToolClick(tool.id)}
-              disabled={!tool.detected}
-              className={cn(
-                'flex items-center gap-4 p-4 bg-bg-secondary border border-border rounded-lg text-left transition-all',
-                tool.detected
-                  ? 'hover:bg-bg-elevated hover:border-border-hover cursor-pointer'
-                  : 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <div className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
-                tool.detected ? 'bg-primary-muted' : 'bg-bg-tertiary'
-              )}>
-                <ToolIcon toolId={tool.id} size="sm" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-text-primary truncate">{tool.name}</h3>
-                  {tool.detected ? (
-                    <Badge variant="success">Detected</Badge>
-                  ) : (
-                    <Badge variant="default">Not Found</Badge>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {detectedTools.map(tool => (
+              <button
+                key={tool.id}
+                onClick={() => tool.detected && handleToolClick(tool.id)}
+                disabled={!tool.detected}
+                className={cn(
+                  'flex items-center gap-4 p-4 bg-bg-secondary border border-border rounded-lg text-left transition-all',
+                  tool.detected
+                    ? 'hover:bg-bg-elevated hover:border-border-hover cursor-pointer'
+                    : 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <div
+                  className={cn(
+                    'w-10 h-10 rounded-lg flex items-center justify-center',
+                    tool.detected ? 'bg-primary-muted' : 'bg-bg-tertiary'
                   )}
+                >
+                  <ToolIcon toolId={tool.id} size="sm" />
                 </div>
-                {tool.detected && (
-                  <div className="flex items-center gap-3 mt-1">
-                    {tool.hasRules && (
-                      <span className="flex items-center gap-1 text-xs text-text-tertiary">
-                        <FileText className="w-3 h-3" />
-                        Rules
-                      </span>
-                    )}
-                    {tool.hasMcp && (
-                      <span className="flex items-center gap-1 text-xs text-text-tertiary">
-                        <Server className="w-3 h-3" />
-                        MCP
-                      </span>
-                    )}
-                    {tool.hasSettings && (
-                      <span className="flex items-center gap-1 text-xs text-text-tertiary">
-                        <Settings className="w-3 h-3" />
-                        Settings
-                      </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-text-primary truncate">{tool.name}</h3>
+                    {tool.detected ? (
+                      <Badge variant="success">Detected</Badge>
+                    ) : (
+                      <Badge variant="default">Not Found</Badge>
                     )}
                   </div>
-                )}
-              </div>
-              {tool.detected && (
-                <ChevronRight className="w-5 h-5 text-text-tertiary" />
-              )}
-            </button>
-          ))}
-        </div>
+                  {tool.detected && (
+                    <div className="flex items-center gap-3 mt-1">
+                      {tool.hasRules && (
+                        <span className="flex items-center gap-1 text-xs text-text-tertiary">
+                          <FileText className="w-3 h-3" />
+                          Rules
+                        </span>
+                      )}
+                      {tool.hasMcp && (
+                        <span className="flex items-center gap-1 text-xs text-text-tertiary">
+                          <Server className="w-3 h-3" />
+                          MCP
+                        </span>
+                      )}
+                      {tool.hasSettings && (
+                        <span className="flex items-center gap-1 text-xs text-text-tertiary">
+                          <Settings className="w-3 h-3" />
+                          Settings
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {tool.detected && <ChevronRight className="w-5 h-5 text-text-tertiary" />}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -327,21 +328,27 @@ export function Project() {
               <FileText className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">Rules Files</span>
             </div>
-            <span className="text-text-tertiary">{rulesCount > 0 ? `${rulesCount} files` : '-'}</span>
+            <span className="text-text-tertiary">
+              {rulesCount > 0 ? `${rulesCount} files` : '-'}
+            </span>
           </div>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Server className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">MCP Servers</span>
             </div>
-            <span className="text-text-tertiary">{mcpServersCount > 0 ? `${mcpServersCount} servers` : '-'}</span>
+            <span className="text-text-tertiary">
+              {mcpServersCount > 0 ? `${mcpServersCount} servers` : '-'}
+            </span>
           </div>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Settings className="w-5 h-5 text-text-tertiary" />
               <span className="text-text-secondary">Settings</span>
             </div>
-            <span className="text-text-tertiary">{detectedCount > 0 ? `${detectedCount} tools configured` : '-'}</span>
+            <span className="text-text-tertiary">
+              {detectedCount > 0 ? `${detectedCount} tools configured` : '-'}
+            </span>
           </div>
         </div>
       </div>

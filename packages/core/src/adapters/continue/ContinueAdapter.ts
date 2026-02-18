@@ -55,14 +55,17 @@ interface ContinueConfig {
 
   rules?: string[];
 
-  mcpServers: Record<string, {
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-    disabled?: boolean;
-    [key: string]: unknown;
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      disabled?: boolean;
+      [key: string]: unknown;
+    }
+  >;
 
   prompts?: Array<{
     name: string;
@@ -151,11 +154,13 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
     const configPath = await this.findConfigFile(projectRoot);
 
     if (!configPath) {
-      return this.createErrorResult([{
-        code: 'CONFIG_NOT_FOUND',
-        message: 'Continue.dev config.yaml not found',
-        recoverable: false,
-      }]);
+      return this.createErrorResult([
+        {
+          code: 'CONFIG_NOT_FOUND',
+          message: 'Continue.dev config.yaml not found',
+          recoverable: false,
+        },
+      ]);
     }
 
     sourceFiles.push({
@@ -312,7 +317,11 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content string
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const result = await this.parseConfigContent(content);
 
     if (result.errors && result.errors.length > 0) {
@@ -320,11 +329,13 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
         success: false,
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -398,11 +409,13 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
         contextFiles: result.config?.context,
       },
       metadata: {
-        sourceFiles: [{
-          path: filePath,
-          absolutePath: filePath,
-          exists: true,
-        }],
+        sourceFiles: [
+          {
+            path: filePath,
+            absolutePath: filePath,
+            exists: true,
+          },
+        ],
         parseTime: Date.now(),
       },
     };
@@ -434,12 +447,14 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
       return this.parseConfigContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read config file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read config file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -453,11 +468,13 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
       return { config };
     } catch (error) {
       return {
-        errors: [{
-          code: 'YAML_PARSE_ERROR',
-          message: `Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'YAML_PARSE_ERROR',
+            message: `Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -505,20 +522,24 @@ export class ContinueAdapter extends BaseAdapter implements IAdapter {
       if (models) {
         config.models = models;
       } else if (settings.model.default) {
-        config.models = [{
-          name: settings.model.default,
-          provider: 'anthropic', // Default provider
-        }];
+        config.models = [
+          {
+            name: settings.model.default,
+            provider: 'anthropic', // Default provider
+          },
+        ];
       }
     }
 
     // Apply tool-specific settings
     if (settings.toolSpecific) {
       if (settings.toolSpecific.tabAutocompleteModel) {
-        config.tabAutocompleteModel = settings.toolSpecific.tabAutocompleteModel as ContinueConfig['tabAutocompleteModel'];
+        config.tabAutocompleteModel = settings.toolSpecific
+          .tabAutocompleteModel as ContinueConfig['tabAutocompleteModel'];
       }
       if (settings.toolSpecific.embeddingsModel) {
-        config.embeddingsModel = settings.toolSpecific.embeddingsModel as ContinueConfig['embeddingsModel'];
+        config.embeddingsModel = settings.toolSpecific
+          .embeddingsModel as ContinueConfig['embeddingsModel'];
       }
       if (settings.toolSpecific.reranker) {
         config.reranker = settings.toolSpecific.reranker as ContinueConfig['reranker'];

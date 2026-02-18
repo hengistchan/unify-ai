@@ -47,12 +47,8 @@ describe('ConflictResolver', () => {
   describe('resolveRuleConflicts()', () => {
     it('should return all rules when no conflicts', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: RuleConfig[] = [
-        { id: 'rule-1', content: 'content 1' },
-      ];
-      const incoming: RuleConfig[] = [
-        { id: 'rule-2', content: 'content 2' },
-      ];
+      const existing: RuleConfig[] = [{ id: 'rule-1', content: 'content 1' }];
+      const incoming: RuleConfig[] = [{ id: 'rule-2', content: 'content 2' }];
 
       const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -62,12 +58,8 @@ describe('ConflictResolver', () => {
 
     it('should detect rule content conflict', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: RuleConfig[] = [
-        { id: 'rule-1', name: 'Rule 1', content: 'old content' },
-      ];
-      const incoming: RuleConfig[] = [
-        { id: 'rule-1', name: 'Rule 1', content: 'new content' },
-      ];
+      const existing: RuleConfig[] = [{ id: 'rule-1', name: 'Rule 1', content: 'old content' }];
+      const incoming: RuleConfig[] = [{ id: 'rule-1', name: 'Rule 1', content: 'new content' }];
 
       const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -78,12 +70,8 @@ describe('ConflictResolver', () => {
 
     it('should detect rule name conflict', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: RuleConfig[] = [
-        { id: 'rule-1', name: 'Old Name', content: 'same content' },
-      ];
-      const incoming: RuleConfig[] = [
-        { id: 'rule-1', name: 'New Name', content: 'same content' },
-      ];
+      const existing: RuleConfig[] = [{ id: 'rule-1', name: 'Old Name', content: 'same content' }];
+      const incoming: RuleConfig[] = [{ id: 'rule-1', name: 'New Name', content: 'same content' }];
 
       const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -92,12 +80,8 @@ describe('ConflictResolver', () => {
 
     it('should detect rule globs conflict', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: RuleConfig[] = [
-        { id: 'rule-1', content: 'content', globs: ['*.ts'] },
-      ];
-      const incoming: RuleConfig[] = [
-        { id: 'rule-1', content: 'content', globs: ['*.tsx'] },
-      ];
+      const existing: RuleConfig[] = [{ id: 'rule-1', content: 'content', globs: ['*.ts'] }];
+      const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'content', globs: ['*.tsx'] }];
 
       const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -118,12 +102,8 @@ describe('ConflictResolver', () => {
     describe('skip strategy', () => {
       it('should skip conflicting rules', () => {
         const resolver = new ConflictResolver('skip');
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'old content' },
-        ];
-        const incoming: RuleConfig[] = [
-          { id: 'rule-1', content: 'new content' },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'old content' }];
+        const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'new content' }];
 
         const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -137,12 +117,8 @@ describe('ConflictResolver', () => {
     describe('overwrite strategy', () => {
       it('should overwrite existing rule with incoming', () => {
         const resolver = new ConflictResolver('overwrite');
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'old content' },
-        ];
-        const incoming: RuleConfig[] = [
-          { id: 'rule-1', content: 'new content' },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'old content' }];
+        const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'new content' }];
 
         const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -155,9 +131,7 @@ describe('ConflictResolver', () => {
     describe('merge strategy', () => {
       it('should merge rules', () => {
         const resolver = new ConflictResolver('merge');
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'short', globs: ['*.ts'] },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'short', globs: ['*.ts'] }];
         const incoming: RuleConfig[] = [
           { id: 'rule-1', content: 'longer content here', globs: ['*.tsx'] },
         ];
@@ -173,12 +147,8 @@ describe('ConflictResolver', () => {
 
       it('should prefer longer content when merging', () => {
         const resolver = new ConflictResolver('merge');
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'short' },
-        ];
-        const incoming: RuleConfig[] = [
-          { id: 'rule-1', content: 'this is much longer content' },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'short' }];
+        const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'this is much longer content' }];
 
         const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -188,12 +158,8 @@ describe('ConflictResolver', () => {
 
       it('should prefer non-empty name when merging', () => {
         const resolver = new ConflictResolver('merge');
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'content', name: '' },
-        ];
-        const incoming: RuleConfig[] = [
-          { id: 'rule-1', content: 'content', name: 'Rule Name' },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'content', name: '' }];
+        const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'content', name: 'Rule Name' }];
 
         const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -208,12 +174,8 @@ describe('ConflictResolver', () => {
           action: 'keep_existing',
         });
         const resolver = new ConflictResolver('overwrite', customResolver);
-        const existing: RuleConfig[] = [
-          { id: 'rule-1', content: 'old content' },
-        ];
-        const incoming: RuleConfig[] = [
-          { id: 'rule-1', content: 'new content' },
-        ];
+        const existing: RuleConfig[] = [{ id: 'rule-1', content: 'old content' }];
+        const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'new content' }];
 
         const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -225,12 +187,8 @@ describe('ConflictResolver', () => {
   describe('resolveMCPConflicts()', () => {
     it('should return all servers when no conflicts', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: MCPServerConfig[] = [
-        { name: 'server1', command: 'cmd1' },
-      ];
-      const incoming: MCPServerConfig[] = [
-        { name: 'server2', command: 'cmd2' },
-      ];
+      const existing: MCPServerConfig[] = [{ name: 'server1', command: 'cmd1' }];
+      const incoming: MCPServerConfig[] = [{ name: 'server2', command: 'cmd2' }];
 
       const result = resolver.resolveMCPConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -240,12 +198,8 @@ describe('ConflictResolver', () => {
 
     it('should detect MCP command conflict', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: MCPServerConfig[] = [
-        { name: 'server1', command: 'old-cmd' },
-      ];
-      const incoming: MCPServerConfig[] = [
-        { name: 'server1', command: 'new-cmd' },
-      ];
+      const existing: MCPServerConfig[] = [{ name: 'server1', command: 'old-cmd' }];
+      const incoming: MCPServerConfig[] = [{ name: 'server1', command: 'new-cmd' }];
 
       const result = resolver.resolveMCPConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -256,12 +210,8 @@ describe('ConflictResolver', () => {
 
     it('should detect MCP args conflict', () => {
       const resolver = new ConflictResolver('merge');
-      const existing: MCPServerConfig[] = [
-        { name: 'server1', command: 'cmd', args: ['--old'] },
-      ];
-      const incoming: MCPServerConfig[] = [
-        { name: 'server1', command: 'cmd', args: ['--new'] },
-      ];
+      const existing: MCPServerConfig[] = [{ name: 'server1', command: 'cmd', args: ['--old'] }];
+      const incoming: MCPServerConfig[] = [{ name: 'server1', command: 'cmd', args: ['--new'] }];
 
       const result = resolver.resolveMCPConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -296,12 +246,8 @@ describe('ConflictResolver', () => {
     describe('skip strategy', () => {
       it('should skip conflicting servers', () => {
         const resolver = new ConflictResolver('skip');
-        const existing: MCPServerConfig[] = [
-          { name: 'server1', command: 'old-cmd' },
-        ];
-        const incoming: MCPServerConfig[] = [
-          { name: 'server1', command: 'new-cmd' },
-        ];
+        const existing: MCPServerConfig[] = [{ name: 'server1', command: 'old-cmd' }];
+        const incoming: MCPServerConfig[] = [{ name: 'server1', command: 'new-cmd' }];
 
         const result = resolver.resolveMCPConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -313,12 +259,8 @@ describe('ConflictResolver', () => {
     describe('overwrite strategy', () => {
       it('should overwrite existing server with incoming', () => {
         const resolver = new ConflictResolver('overwrite');
-        const existing: MCPServerConfig[] = [
-          { name: 'server1', command: 'old-cmd' },
-        ];
-        const incoming: MCPServerConfig[] = [
-          { name: 'server1', command: 'new-cmd' },
-        ];
+        const existing: MCPServerConfig[] = [{ name: 'server1', command: 'old-cmd' }];
+        const incoming: MCPServerConfig[] = [{ name: 'server1', command: 'new-cmd' }];
 
         const result = resolver.resolveMCPConflicts(existing, incoming, 'cursor' as ToolId);
 
@@ -453,12 +395,8 @@ describe('ConflictResolver', () => {
   describe('ask strategy', () => {
     it('should default to merge when ask strategy is used', () => {
       const resolver = new ConflictResolver('ask');
-      const existing: RuleConfig[] = [
-        { id: 'rule-1', content: 'old' },
-      ];
-      const incoming: RuleConfig[] = [
-        { id: 'rule-1', content: 'new' },
-      ];
+      const existing: RuleConfig[] = [{ id: 'rule-1', content: 'old' }];
+      const incoming: RuleConfig[] = [{ id: 'rule-1', content: 'new' }];
 
       const result = resolver.resolveRuleConflicts(existing, incoming, 'cursor' as ToolId);
 

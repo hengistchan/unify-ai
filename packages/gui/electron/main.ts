@@ -22,9 +22,9 @@ app.setName('Unify AI');
  */
 function getIconPath(): string | undefined {
   const possiblePaths = [
-    path.join(__dirname, '../build/icon.png'),  // Production: dist/electron/../build/
+    path.join(__dirname, '../build/icon.png'), // Production: dist/electron/../build/
     path.join(__dirname, '../../build/icon.png'), // Development from source
-    path.join(__dirname, '../public/icon.png'),  // Alternative path
+    path.join(__dirname, '../public/icon.png'), // Alternative path
   ];
 
   for (const iconPath of possiblePaths) {
@@ -136,10 +136,10 @@ app.on('before-quit', () => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   console.error('Uncaught exception:', error);
 });
 
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', reason => {
   console.error('Unhandled rejection:', reason);
 });

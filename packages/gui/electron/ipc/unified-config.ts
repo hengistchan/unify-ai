@@ -24,10 +24,7 @@ export interface LoadResult {
 /**
  * Save unified config to project root
  */
-export async function saveUnifiedConfig(
-  projectRoot: string,
-  config: unknown
-): Promise<SaveResult> {
+export async function saveUnifiedConfig(projectRoot: string, config: unknown): Promise<SaveResult> {
   const configPath = path.join(projectRoot, UNIFIED_CONFIG_FILE);
 
   try {
@@ -49,9 +46,7 @@ export async function saveUnifiedConfig(
 /**
  * Load unified config from project root
  */
-export async function loadUnifiedConfig(
-  projectRoot: string
-): Promise<LoadResult> {
+export async function loadUnifiedConfig(projectRoot: string): Promise<LoadResult> {
   const configPath = path.join(projectRoot, UNIFIED_CONFIG_FILE);
 
   try {

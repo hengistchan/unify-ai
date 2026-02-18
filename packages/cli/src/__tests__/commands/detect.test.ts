@@ -105,9 +105,7 @@ describe('detect command', () => {
     });
 
     it('should show simple list without verbose flag', async () => {
-      const mockAdapters = [
-        createMockAdapter('cursor', 'Cursor'),
-      ];
+      const mockAdapters = [createMockAdapter('cursor', 'Cursor')];
 
       mockFileDiscoveryDetectTools.mockResolvedValue(mockAdapters as any);
 
@@ -132,9 +130,7 @@ describe('detect command', () => {
 
   describe('--json output', () => {
     it('should output JSON format when --json flag is set', async () => {
-      const mockAdapters = [
-        createMockAdapter('cursor', 'Cursor'),
-      ];
+      const mockAdapters = [createMockAdapter('cursor', 'Cursor')];
 
       mockFileDiscoveryDetectTools.mockResolvedValue(mockAdapters as any);
 
@@ -153,9 +149,7 @@ describe('detect command', () => {
     });
 
     it('should include tool details in JSON output', async () => {
-      const mockAdapters = [
-        createMockAdapter('cursor', 'Cursor'),
-      ];
+      const mockAdapters = [createMockAdapter('cursor', 'Cursor')];
 
       mockFileDiscoveryDetectTools.mockResolvedValue(mockAdapters as any);
 
@@ -201,26 +195,24 @@ describe('detect command', () => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        detectCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow('process.exit');
+      await expect(detectCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow(
+        'process.exit'
+      );
 
       expect(mockExit).toHaveBeenCalledWith(1);
       mockExit.mockRestore();
     });
 
     it('should handle permission errors', async () => {
-      mockFileDiscoveryDetectTools.mockRejectedValue(
-        new Error('Permission denied')
-      );
+      mockFileDiscoveryDetectTools.mockRejectedValue(new Error('Permission denied'));
 
       const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        detectCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow('process.exit');
+      await expect(detectCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow(
+        'process.exit'
+      );
 
       mockExit.mockRestore();
     });

@@ -5,6 +5,7 @@
 ### 1.1 核心目标
 
 设计一套完整的双向转换和同步机制，实现：
+
 - **Single Source of Truth**: unified.json 作为唯一可信源
 - **多工具支持**: 同步生成到 Claude Code, Cursor, Copilot, Windsurf, Aider 等
 - **双向同步**: 支持从工具配置导入回主配置
@@ -13,13 +14,13 @@
 
 ### 1.2 核心场景
 
-| 场景 | 方向 | 描述 |
-|------|------|------|
-| Export | unified.json → 工具配置 | 生成各工具的配置文件 |
-| Import | 工具配置 → unified.json | 导入工具配置修改到主配置 |
-| Diff | 双向比较 | 检测主配置与生成配置的差异 |
-| Merge | 工具配置 → unified.json | 智能合并修改，处理冲突 |
-| Watch | 实时监听 | 文件变化时自动同步 |
+| 场景   | 方向                    | 描述                       |
+| ------ | ----------------------- | -------------------------- |
+| Export | unified.json → 工具配置 | 生成各工具的配置文件       |
+| Import | 工具配置 → unified.json | 导入工具配置修改到主配置   |
+| Diff   | 双向比较                | 检测主配置与生成配置的差异 |
+| Merge  | 工具配置 → unified.json | 智能合并修改，处理冲突     |
+| Watch  | 实时监听                | 文件变化时自动同步         |
 
 ---
 
@@ -48,13 +49,13 @@
 
 ```typescript
 enum SyncState {
-  IDLE = 'idle',           // 空闲状态
-  SCANNING = 'scanning',   // 扫描配置文件
-  DIFFING = 'diffing',     // 计算差异
+  IDLE = 'idle', // 空闲状态
+  SCANNING = 'scanning', // 扫描配置文件
+  DIFFING = 'diffing', // 计算差异
   RESOLVING = 'resolving', // 解决冲突
-  SYNCING = 'syncing',     // 执行同步
-  ERROR = 'error',         // 错误状态
-  CONFLICT = 'conflict',   // 需要用户解决冲突
+  SYNCING = 'syncing', // 执行同步
+  ERROR = 'error', // 错误状态
+  CONFLICT = 'conflict', // 需要用户解决冲突
 }
 
 interface SyncStateMachine {
@@ -118,7 +119,7 @@ interface UnifiedConfig {
   $schema: string;
   $version: string;
   $lastSync: string;
-  $syncId: string;  // UUID，用于追踪同步
+  $syncId: string; // UUID，用于追踪同步
 
   // 全局设置
   global: GlobalSettings;
@@ -154,7 +155,7 @@ interface ProviderConfig {
   id: string;
   name: string;
   type: 'anthropic' | 'openai' | 'google' | 'custom';
-  apiKey: string;  // 引用环境变量或加密存储
+  apiKey: string; // 引用环境变量或加密存储
   baseUrl?: string;
   models: ModelConfig[];
 }
@@ -166,7 +167,7 @@ interface McpServerConfig {
   args?: string[];
   env?: Record<string, string>;
   enabled: boolean;
-  tools?: string[];  // 限制可用工具
+  tools?: string[]; // 限制可用工具
 }
 ```
 
@@ -190,30 +191,30 @@ interface SyncMetadata {
 }
 
 interface FileFingerprint {
-  path: string;           // 相对路径
-  hash: string;           // 内容哈希 (SHA-256)
-  lastGenerated: string;  // 上次生成时间
-  generator: string;      // 生成器版本
+  path: string; // 相对路径
+  hash: string; // 内容哈希 (SHA-256)
+  lastGenerated: string; // 上次生成时间
+  generator: string; // 生成器版本
   size: number;
 }
 
 interface ChangeRecord {
   timestamp: string;
   type: 'export' | 'import' | 'merge' | 'manual';
-  source: string;         // 变更来源
+  source: string; // 变更来源
   changes: PropertyChange[];
   resolved?: boolean;
 }
 
 interface PropertyChange {
-  path: string;           // JSON Path
+  path: string; // JSON Path
   oldValue: any;
   newValue: any;
   source: 'user' | 'system' | 'conflict';
 }
 
 interface ConfigLock {
-  path: string;           // 锁定的配置路径
+  path: string; // 锁定的配置路径
   reason: string;
   lockedAt: string;
   lockedBy: string;
@@ -277,9 +278,7 @@ class ClaudeCodeMapper implements ToolConfigMapper<ClaudeToolConfig> {
         allow: this.mapPermissions(unified.global.permissions?.allow ?? []),
         deny: this.mapPermissions(unified.global.permissions?.deny ?? []),
       },
-      mcpServers: unified.mcpServers
-        .filter(s => s.enabled)
-        .map(s => this.mapMcpServer(s)),
+      mcpServers: unified.mcpServers.filter(s => s.enabled).map(s => this.mapMcpServer(s)),
       defaultModel: unified.global.defaultModel,
     };
   }
@@ -311,15 +310,15 @@ class ClaudeCodeMapper implements ToolConfigMapper<ClaudeToolConfig> {
 
 ```typescript
 enum DiffType {
-  ADDED = 'added',       // 新增
-  REMOVED = 'removed',   // 删除
+  ADDED = 'added', // 新增
+  REMOVED = 'removed', // 删除
   MODIFIED = 'modified', // 修改
-  MOVED = 'moved',       // 移动/重命名
+  MOVED = 'moved', // 移动/重命名
 }
 
 interface DiffEntry {
   type: DiffType;
-  path: string;          // JSON Path
+  path: string; // JSON Path
   source: 'unified' | 'tool';
   unifiedValue?: any;
   toolValue?: any;
@@ -349,18 +348,11 @@ interface DiffSummary {
 ```typescript
 class DiffEngine {
   // 深度比较两个配置
-  deepDiff(
-    unified: any,
-    generated: any,
-    path: string = ''
-  ): DiffEntry[] {
+  deepDiff(unified: any, generated: any, path: string = ''): DiffEntry[] {
     const diffs: DiffEntry[] = [];
 
     // 获取所有键
-    const allKeys = new Set([
-      ...Object.keys(unified ?? {}),
-      ...Object.keys(generated ?? {}),
-    ]);
+    const allKeys = new Set([...Object.keys(unified ?? {}), ...Object.keys(generated ?? {})]);
 
     for (const key of allKeys) {
       const currentPath = path ? `${path}.${key}` : key;
@@ -439,11 +431,11 @@ class DiffEngine {
 
 ```typescript
 enum ConflictType {
-  VALUE_MISMATCH = 'value_mismatch',     // 值不匹配
-  DELETE_MODIFY = 'delete_modify',       // 一边删除一边修改
-  ADD_ADD = 'add_add',                   // 两边都新增
-  TYPE_MISMATCH = 'type_mismatch',       // 类型不匹配
-  DEPENDENCY = 'dependency',             // 依赖冲突
+  VALUE_MISMATCH = 'value_mismatch', // 值不匹配
+  DELETE_MODIFY = 'delete_modify', // 一边删除一边修改
+  ADD_ADD = 'add_add', // 两边都新增
+  TYPE_MISMATCH = 'type_mismatch', // 类型不匹配
+  DEPENDENCY = 'dependency', // 依赖冲突
 }
 
 interface Conflict {
@@ -473,12 +465,12 @@ interface ConflictResolution {
 }
 
 enum ResolutionStrategy {
-  UNIFIED_WINS = 'unified_wins',     // 主配置优先
-  TOOL_WINS = 'tool_wins',           // 工具配置优先
-  MERGE = 'merge',                   // 合并
-  KEEP_BOTH = 'keep_both',           // 保留两者
-  USER_DECIDE = 'user_deccide',      // 用户决定
-  LATEST = 'latest',                 // 最新修改优先
+  UNIFIED_WINS = 'unified_wins', // 主配置优先
+  TOOL_WINS = 'tool_wins', // 工具配置优先
+  MERGE = 'merge', // 合并
+  KEEP_BOTH = 'keep_both', // 保留两者
+  USER_DECIDE = 'user_deccide', // 用户决定
+  LATEST = 'latest', // 最新修改优先
 }
 ```
 
@@ -490,29 +482,27 @@ class ConflictDetector {
 
   constructor() {
     this.strategies = new Map([
-      [ConflictType.VALUE_MISMATCH, [
-        ResolutionStrategy.LATEST,
-        ResolutionStrategy.UNIFIED_WINS,
-        ResolutionStrategy.USER_DECIDE,
-      ]],
-      [ConflictType.DELETE_MODIFY, [
-        ResolutionStrategy.TOOL_WINS,  // 保留用户修改
-        ResolutionStrategy.USER_DECIDE,
-      ]],
-      [ConflictType.ADD_ADD, [
-        ResolutionStrategy.MERGE,
-        ResolutionStrategy.USER_DECIDE,
-      ]],
-      [ConflictType.TYPE_MISMATCH, [
-        ResolutionStrategy.USER_DECIDE,
-      ]],
+      [
+        ConflictType.VALUE_MISMATCH,
+        [
+          ResolutionStrategy.LATEST,
+          ResolutionStrategy.UNIFIED_WINS,
+          ResolutionStrategy.USER_DECIDE,
+        ],
+      ],
+      [
+        ConflictType.DELETE_MODIFY,
+        [
+          ResolutionStrategy.TOOL_WINS, // 保留用户修改
+          ResolutionStrategy.USER_DECIDE,
+        ],
+      ],
+      [ConflictType.ADD_ADD, [ResolutionStrategy.MERGE, ResolutionStrategy.USER_DECIDE]],
+      [ConflictType.TYPE_MISMATCH, [ResolutionStrategy.USER_DECIDE]],
     ]);
   }
 
-  detect(
-    diffs: DiffEntry[],
-    metadata: SyncMetadata
-  ): Conflict[] {
+  detect(diffs: DiffEntry[], metadata: SyncMetadata): Conflict[] {
     const conflicts: Conflict[] = [];
 
     for (const diff of diffs) {
@@ -564,8 +554,9 @@ class ConflictDetector {
   private canAutoResolve(diff: DiffEntry): boolean {
     // 简单类型的差异可以自动解决
     const simpleTypes = ['string', 'number', 'boolean'];
-    return simpleTypes.includes(typeof diff.unifiedValue) &&
-           simpleTypes.includes(typeof diff.toolValue);
+    return (
+      simpleTypes.includes(typeof diff.unifiedValue) && simpleTypes.includes(typeof diff.toolValue)
+    );
   }
 }
 ```
@@ -591,9 +582,7 @@ class ConflictResolver {
     return resolutions;
   }
 
-  private async applyDefaultStrategy(
-    conflict: Conflict
-  ): Promise<ConflictResolution | null> {
+  private async applyDefaultStrategy(conflict: Conflict): Promise<ConflictResolution | null> {
     switch (conflict.type) {
       case ConflictType.VALUE_MISMATCH:
         // 使用最新修改
@@ -624,14 +613,10 @@ class ConflictResolver {
 
       case ConflictType.ADD_ADD:
         // 尝试合并
-        if (Array.isArray(conflict.unified.value) &&
-            Array.isArray(conflict.tool.value)) {
+        if (Array.isArray(conflict.unified.value) && Array.isArray(conflict.tool.value)) {
           return {
             strategy: ResolutionStrategy.MERGE,
-            resolvedValue: [...new Set([
-              ...conflict.unified.value,
-              ...conflict.tool.value,
-            ])],
+            resolvedValue: [...new Set([...conflict.unified.value, ...conflict.tool.value])],
             reason: 'Merged arrays',
           };
         }
@@ -668,16 +653,15 @@ class ConflictResolver {
 
       if (choice !== null && choice !== 'custom') {
         resolutions.push({
-          strategy: choice === conflict.unified.value
-            ? ResolutionStrategy.UNIFIED_WINS
-            : ResolutionStrategy.TOOL_WINS,
+          strategy:
+            choice === conflict.unified.value
+              ? ResolutionStrategy.UNIFIED_WINS
+              : ResolutionStrategy.TOOL_WINS,
           resolvedValue: choice,
           reason: 'User decision',
         });
       } else if (choice === 'custom') {
-        const customValue = await ui.promptInput(
-          `Enter custom value for ${conflict.path}:`
-        );
+        const customValue = await ui.promptInput(`Enter custom value for ${conflict.path}:`);
         resolutions.push({
           strategy: ResolutionStrategy.USER_DECIDE,
           resolvedValue: customValue,
@@ -715,10 +699,7 @@ class ChangeTracker {
   }
 
   // 获取文件变更历史
-  async getHistory(
-    path: string,
-    options?: HistoryOptions
-  ): Promise<ChangeRecord[]> {
+  async getHistory(path: string, options?: HistoryOptions): Promise<ChangeRecord[]> {
     return this.db.query({
       path,
       limit: options?.limit ?? 100,
@@ -727,10 +708,7 @@ class ChangeTracker {
   }
 
   // 检测变更来源
-  async detectSource(
-    path: string,
-    currentContent: any
-  ): Promise<ChangeSource> {
+  async detectSource(path: string, currentContent: any): Promise<ChangeSource> {
     // 1. 获取上次记录的指纹
     const lastFingerprint = await this.db.getFingerprint(path);
 
@@ -755,11 +733,7 @@ class ChangeTracker {
     }
 
     // 4. 分析变更模式判断是用户修改还是系统修改
-    const analysis = await this.analyzeChangePattern(
-      path,
-      lastFingerprint.content,
-      currentContent
-    );
+    const analysis = await this.analyzeChangePattern(path, lastFingerprint.content, currentContent);
 
     return {
       type: analysis.isUser ? 'user' : 'unknown',
@@ -799,8 +773,7 @@ class ChangeTracker {
     const diff = this.computeDiff(oldContent, newContent);
     for (const change of diff) {
       // 用户通常修改值，系统通常修改结构
-      if (typeof change.newValue === 'string' &&
-          !change.path.includes('$')) {
+      if (typeof change.newValue === 'string' && !change.path.includes('$')) {
         indicators.user += 0.1;
       }
     }
@@ -819,7 +792,7 @@ class ChangeTracker {
 
 interface ChangeSource {
   type: 'user' | 'system' | 'new' | 'unchanged' | 'unknown';
-  confidence: number;  // 0-1
+  confidence: number; // 0-1
 }
 
 interface ChangeEvent {
@@ -926,12 +899,12 @@ enum SyncMode {
 
 interface SyncOptions {
   mode: SyncMode;
-  tools?: string[];           // 指定工具，空 = 全部
-  dryRun: boolean;            // 只预览不执行
-  force: boolean;             // 强制覆盖
-  backup: boolean;            // 备份原文件
+  tools?: string[]; // 指定工具，空 = 全部
+  dryRun: boolean; // 只预览不执行
+  force: boolean; // 强制覆盖
+  backup: boolean; // 备份原文件
   conflictStrategy?: ResolutionStrategy;
-  exclude?: string[];         // 排除的路径
+  exclude?: string[]; // 排除的路径
 }
 ```
 
@@ -966,8 +939,7 @@ class SyncExecutor {
     const unified = await this.loadUnified();
 
     // 2. 确定要同步的工具
-    const toolsToSync = options.tools ??
-      Array.from(this.mappers.keys());
+    const toolsToSync = options.tools ?? Array.from(this.mappers.keys());
 
     // 3. 对每个工具执行同步
     for (const toolId of toolsToSync) {
@@ -978,12 +950,7 @@ class SyncExecutor {
       }
 
       try {
-        const toolResult = await this.syncTool(
-          toolId,
-          mapper,
-          unified,
-          options
-        );
+        const toolResult = await this.syncTool(toolId, mapper, unified, options);
         result.changes.push(...toolResult.changes);
         result.conflicts.push(...toolResult.conflicts);
       } catch (error) {
@@ -997,10 +964,7 @@ class SyncExecutor {
     // 4. 处理冲突
     if (result.conflicts.length > 0) {
       if (options.mode === SyncMode.TWO_WAY_INTERACTIVE) {
-        await this.conflictResolver.interactiveResolve(
-          result.conflicts,
-          this.ui
-        );
+        await this.conflictResolver.interactiveResolve(result.conflicts, this.ui);
       } else if (options.conflictStrategy) {
         await this.conflictResolver.autoResolve(result.conflicts);
       }
@@ -1068,9 +1032,7 @@ class SyncExecutor {
 
     // 1. 检查工具配置是否存在
     const toolConfigExists = await this.fileExists(configPath);
-    const toolConfig = toolConfigExists
-      ? await this.readJson(configPath)
-      : null;
+    const toolConfig = toolConfigExists ? await this.readJson(configPath) : null;
 
     // 2. 生成期望的工具配置
     const expectedConfig = await mapper.exportFromUnified(unified);
@@ -1078,17 +1040,11 @@ class SyncExecutor {
     // 3. 检测工具配置变更
     let toolModified = false;
     if (toolConfig && existingFingerprint) {
-      const verification = this.fingerprintManager.verify(
-        configPath,
-        toolConfig
-      );
+      const verification = this.fingerprintManager.verify(configPath, toolConfig);
       toolModified = verification.modified;
 
       // 检测是用户修改还是系统修改
-      const changeSource = await this.changeTracker.detectSource(
-        configPath,
-        toolConfig
-      );
+      const changeSource = await this.changeTracker.detectSource(configPath, toolConfig);
 
       if (toolModified && changeSource.type === 'user') {
         // 用户修改了工具配置，需要导入回 unified
@@ -1177,7 +1133,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'from', type: 'string', description: 'Import from existing tool config' },
       { name: 'interactive', type: 'boolean', alias: 'i', description: 'Interactive mode' },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const initializer = new ConfigInitializer();
       await initializer.init({
         fromTool: args.from,
@@ -1194,7 +1150,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'dry-run', type: 'boolean', description: 'Preview without writing' },
       { name: 'force', type: 'boolean', description: 'Overwrite existing configs' },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const exporter = new ConfigExporter();
       const result = await exporter.export({
         tools: args.tools,
@@ -1213,7 +1169,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'merge', type: 'boolean', description: 'Merge with existing config' },
       { name: 'strategy', type: 'string', enum: ['override', 'merge', 'ask'] },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const importer = new ConfigImporter();
       const result = await importer.import({
         tools: args.tools,
@@ -1233,14 +1189,14 @@ const cliCommands: CommandDefinition[] = [
       { name: 'watch', type: 'boolean', description: 'Watch for changes' },
       { name: 'interval', type: 'number', description: 'Sync interval in seconds' },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const syncer = new SyncExecutor();
 
       if (args.watch) {
         // 启动 watch 模式
         const watcher = new ConfigWatcher();
         await watcher.start({
-          on_change: async (event) => {
+          on_change: async event => {
             const result = await syncer.sync({
               mode: args.mode,
               tools: args.tools,
@@ -1268,7 +1224,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'format', type: 'string', enum: ['table', 'json', 'unified'] },
       { name: 'color', type: 'boolean', default: true },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const differ = new DiffEngine();
       const unified = await loadUnified();
       const diffs = await differ.computeAllDiffs(unified, args.tool);
@@ -1293,7 +1249,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'debounce', type: 'number', default: 1000 },
       { name: 'mode', type: 'string', enum: Object.values(SyncMode) },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const watcher = new ConfigWatcher();
       await watcher.start({
         mode: args.mode ?? SyncMode.TWO_WAY_AUTO,
@@ -1309,7 +1265,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'all', type: 'boolean', description: 'Resolve all conflicts' },
       { name: 'strategy', type: 'string', enum: Object.values(ResolutionStrategy) },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const resolver = new ConflictResolver();
       const conflicts = await resolver.getPendingConflicts();
 
@@ -1329,7 +1285,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'limit', type: 'number', default: 20 },
       { name: 'format', type: 'string', enum: ['table', 'json'] },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const tracker = new ChangeTracker();
       const history = await tracker.getHistory(args.path, { limit: args.limit });
       printHistory(history, args.format);
@@ -1339,10 +1295,8 @@ const cliCommands: CommandDefinition[] = [
   {
     name: 'backup',
     description: 'Backup current configurations',
-    options: [
-      { name: 'name', type: 'string', description: 'Backup name' },
-    ],
-    handler: async (args) => {
+    options: [{ name: 'name', type: 'string', description: 'Backup name' }],
+    handler: async args => {
       const backupManager = new BackupManager();
       const backupId = await backupManager.create(args.name);
       console.log(`Backup created: ${backupId}`);
@@ -1356,7 +1310,7 @@ const cliCommands: CommandDefinition[] = [
       { name: 'id', type: 'string', description: 'Backup ID to restore' },
       { name: 'list', type: 'boolean', description: 'List available backups' },
     ],
-    handler: async (args) => {
+    handler: async args => {
       const backupManager = new BackupManager();
 
       if (args.list) {
@@ -1481,23 +1435,20 @@ class ConfigWatcher {
 
     const allPaths = [unifiedPath, ...toolPaths];
 
-    this.watcher = watch(
-      allPaths,
-      {
-        persistent: true,
-        ignoreInitial: true,
-        awaitWriteFinish: {
-          stabilityThreshold: 300,
-          pollInterval: 100,
-        },
-      }
-    );
+    this.watcher = watch(allPaths, {
+      persistent: true,
+      ignoreInitial: true,
+      awaitWriteFinish: {
+        stabilityThreshold: 300,
+        pollInterval: 100,
+      },
+    });
 
     this.watcher
-      .on('change', (path) => this.handleChange(path))
-      .on('add', (path) => this.handleAdd(path))
-      .on('unlink', (path) => this.handleUnlink(path))
-      .on('error', (error) => this.handleError(error));
+      .on('change', path => this.handleChange(path))
+      .on('add', path => this.handleAdd(path))
+      .on('unlink', path => this.handleUnlink(path))
+      .on('error', error => this.handleError(error));
 
     console.log(`Watching ${allPaths.length} config files...`);
   }

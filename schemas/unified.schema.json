@@ -102,11 +102,7 @@
       "items": {
         "type": "string",
         "format": "uri-reference",
-        "examples": [
-          "./base.json",
-          "@unify-ai/presets/typescript",
-          "@unify-ai/presets/react"
-        ]
+        "examples": ["./base.json", "@unify-ai/presets/typescript", "@unify-ai/presets/react"]
       }
     },
 

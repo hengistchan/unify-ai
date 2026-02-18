@@ -4,13 +4,7 @@
  */
 
 import type { IAdapter } from '../adapters/base/IAdapter';
-import type {
-  UnifiedConfig,
-  ParseResult,
-  ConvertOptions,
-  ToolId,
-  ParseError,
-} from '../core/types';
+import type { UnifiedConfig, ParseResult, ConvertOptions, ToolId, ParseError } from '../core/types';
 import { adapterRegistry } from '../adapters/registry';
 
 /**
@@ -76,20 +70,24 @@ export class Importer {
     if (options?.sourceTool) {
       const adapter = adapterRegistry.get(options.sourceTool);
       if (!adapter) {
-        return this.createErrorResult([{
-          code: 'UNKNOWN_TOOL',
-          message: `Unknown tool: ${options.sourceTool}`,
-        }]);
+        return this.createErrorResult([
+          {
+            code: 'UNKNOWN_TOOL',
+            message: `Unknown tool: ${options.sourceTool}`,
+          },
+        ]);
       }
       adapters = [adapter];
     } else {
       // Auto-detect
       adapters = await adapterRegistry.detectForProject(projectRoot);
       if (adapters.length === 0) {
-        return this.createErrorResult([{
-          code: 'NO_CONFIG_FOUND',
-          message: 'No AI tool configuration found in the project',
-        }]);
+        return this.createErrorResult([
+          {
+            code: 'NO_CONFIG_FOUND',
+            message: 'No AI tool configuration found in the project',
+          },
+        ]);
       }
     }
 
@@ -181,10 +179,12 @@ export class Importer {
   ): Promise<ImportResult> {
     const adapter = adapterRegistry.get(toolId);
     if (!adapter) {
-      return this.createErrorResult([{
-        code: 'UNKNOWN_TOOL',
-        message: `Unknown tool: ${toolId}`,
-      }]);
+      return this.createErrorResult([
+        {
+          code: 'UNKNOWN_TOOL',
+          message: `Unknown tool: ${toolId}`,
+        },
+      ]);
     }
 
     const result = await adapter.parseFile(filePath, options);
@@ -203,11 +203,13 @@ export class Importer {
         message: w.message,
         tool: toolId,
       })),
-      metadata: result.metadata ? {
-        sourceTools: [toolId],
-        sourceFiles: result.metadata.sourceFiles.map(f => f.path),
-        importTime: result.metadata.parseTime,
-      } : undefined,
+      metadata: result.metadata
+        ? {
+            sourceTools: [toolId],
+            sourceFiles: result.metadata.sourceFiles.map(f => f.path),
+            importTime: result.metadata.parseTime,
+          }
+        : undefined,
     };
   }
 

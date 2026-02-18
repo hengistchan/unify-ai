@@ -15,7 +15,11 @@ describe('Button', () => {
     });
 
     it('should render without children', () => {
-      render(<Button aria-label="icon button"><Plus /></Button>);
+      render(
+        <Button aria-label="icon button">
+          <Plus />
+        </Button>
+      );
       expect(screen.getByRole('button', { name: /icon button/i })).toBeInTheDocument();
     });
   });
@@ -149,7 +153,11 @@ describe('Button', () => {
 
     it('should not call onClick when disabled', () => {
       const handleClick = vi.fn();
-      render(<Button onClick={handleClick} disabled>Click me</Button>);
+      render(
+        <Button onClick={handleClick} disabled>
+          Click me
+        </Button>
+      );
 
       fireEvent.click(screen.getByRole('button'));
       expect(handleClick).not.toHaveBeenCalled();
@@ -157,7 +165,11 @@ describe('Button', () => {
 
     it('should not call onClick when loading', () => {
       const handleClick = vi.fn();
-      render(<Button onClick={handleClick} loading>Click me</Button>);
+      render(
+        <Button onClick={handleClick} loading>
+          Click me
+        </Button>
+      );
 
       fireEvent.click(screen.getByRole('button'));
       expect(handleClick).not.toHaveBeenCalled();
@@ -166,7 +178,11 @@ describe('Button', () => {
 
   describe('Custom Props', () => {
     it('should spread additional props to button element', () => {
-      render(<Button data-testid="custom-button" type="submit">Submit</Button>);
+      render(
+        <Button data-testid="custom-button" type="submit">
+          Submit
+        </Button>
+      );
       const button = screen.getByTestId('custom-button');
       expect(button).toHaveAttribute('type', 'submit');
     });

@@ -443,15 +443,7 @@
         "type": {
           "type": "string",
           "description": "Validation type",
-          "enum": [
-            "required",
-            "type",
-            "format",
-            "pattern",
-            "enum",
-            "range",
-            "custom"
-          ]
+          "enum": ["required", "type", "format", "pattern", "enum", "range", "custom"]
         },
         "value": {
           "description": "Expected value or constraint"

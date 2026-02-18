@@ -181,11 +181,7 @@ export class ConflictResolver {
     const allConflicts: Conflict[] = [];
 
     // Resolve rule conflicts
-    const ruleResult = this.resolveRuleConflicts(
-      existing.rules,
-      incoming.rules,
-      sourceTool
-    );
+    const ruleResult = this.resolveRuleConflicts(existing.rules, incoming.rules, sourceTool);
     allConflicts.push(...ruleResult.conflicts);
 
     // Resolve MCP conflicts
@@ -254,15 +250,19 @@ export class ConflictResolver {
   }
 
   private isRuleContentDifferent(a: RuleConfig, b: RuleConfig): boolean {
-    return a.content !== b.content ||
-           a.name !== b.name ||
-           JSON.stringify(a.globs) !== JSON.stringify(b.globs);
+    return (
+      a.content !== b.content ||
+      a.name !== b.name ||
+      JSON.stringify(a.globs) !== JSON.stringify(b.globs)
+    );
   }
 
   private isMCPServerDifferent(a: MCPServerConfig, b: MCPServerConfig): boolean {
-    return a.command !== b.command ||
-           JSON.stringify(a.args) !== JSON.stringify(b.args) ||
-           JSON.stringify(a.env) !== JSON.stringify(b.env);
+    return (
+      a.command !== b.command ||
+      JSON.stringify(a.args) !== JSON.stringify(b.args) ||
+      JSON.stringify(a.env) !== JSON.stringify(b.env)
+    );
   }
 
   private mergeRules(a: RuleConfig, b: RuleConfig): RuleConfig {

@@ -145,14 +145,7 @@
         "type": {
           "type": "string",
           "description": "Scope type",
-          "enum": [
-            "always",
-            "file_pattern",
-            "directory",
-            "language",
-            "task_type",
-            "custom"
-          ],
+          "enum": ["always", "file_pattern", "directory", "language", "task_type", "custom"],
           "default": "always"
         },
         "patterns": {
@@ -169,11 +162,39 @@
           "items": {
             "type": "string",
             "enum": [
-              "typescript", "javascript", "python", "rust", "go", "java",
-              "kotlin", "swift", "c", "cpp", "csharp", "ruby", "php",
-              "scala", "elixir", "haskell", "lua", "r", "sql", "html",
-              "css", "scss", "sass", "less", "json", "yaml", "toml",
-              "markdown", "shell", "dockerfile", "graphql", "vue", "svelte"
+              "typescript",
+              "javascript",
+              "python",
+              "rust",
+              "go",
+              "java",
+              "kotlin",
+              "swift",
+              "c",
+              "cpp",
+              "csharp",
+              "ruby",
+              "php",
+              "scala",
+              "elixir",
+              "haskell",
+              "lua",
+              "r",
+              "sql",
+              "html",
+              "css",
+              "scss",
+              "sass",
+              "less",
+              "json",
+              "yaml",
+              "toml",
+              "markdown",
+              "shell",
+              "dockerfile",
+              "graphql",
+              "vue",
+              "svelte"
             ]
           },
           "examples": [["typescript", "javascript"]]
@@ -261,7 +282,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "examples": [{"naming": "camelCase for variables", "file_structure": "feature-based"}]
+          "examples": [{ "naming": "camelCase for variables", "file_structure": "feature-based" }]
         }
       }
     },

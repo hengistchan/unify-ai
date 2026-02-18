@@ -79,7 +79,7 @@ export async function discoverConfigFiles(folderPath: string) {
   try {
     const result = await fileDiscovery.discover(folderPath);
     return {
-      files: result.files.map((file) => ({
+      files: result.files.map(file => ({
         path: file.path,
         absolutePath: file.absolutePath,
         exists: file.exists,

@@ -40,10 +40,7 @@ export function SyncModeDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-xl overflow-hidden animate-fade-in">
@@ -53,10 +50,7 @@ export function SyncModeDialog({
             <RefreshCw className="w-5 h-5 text-primary" />
             Sync Configuration
           </h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-bg-hover rounded transition-colors"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-bg-hover rounded transition-colors">
             <X className="w-5 h-5 text-text-tertiary" />
           </button>
         </div>
@@ -81,17 +75,21 @@ export function SyncModeDialog({
               )}
             >
               <div className="flex items-start gap-3">
-                <div className={cn(
-                  'p-2 rounded-lg',
-                  selectedMode === 'direct-sync' ? 'bg-primary text-white' : 'bg-bg-secondary'
-                )}>
+                <div
+                  className={cn(
+                    'p-2 rounded-lg',
+                    selectedMode === 'direct-sync' ? 'bg-primary text-white' : 'bg-bg-secondary'
+                  )}
+                >
                   <RefreshCw className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-text-primary">Sync Between Tools</h3>
                     {selectedMode === 'direct-sync' && (
-                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">Selected</span>
+                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">
+                        Selected
+                      </span>
                     )}
                   </div>
                   <p className="text-sm text-text-secondary mt-1">
@@ -117,20 +115,26 @@ export function SyncModeDialog({
               )}
             >
               <div className="flex items-start gap-3">
-                <div className={cn(
-                  'p-2 rounded-lg',
-                  selectedMode === 'unified-config' ? 'bg-primary text-white' : 'bg-bg-secondary'
-                )}>
+                <div
+                  className={cn(
+                    'p-2 rounded-lg',
+                    selectedMode === 'unified-config' ? 'bg-primary text-white' : 'bg-bg-secondary'
+                  )}
+                >
                   <FileJson className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-text-primary">Manage Unified Config</h3>
                     {selectedMode === 'unified-config' && (
-                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">Selected</span>
+                      <span className="text-xs bg-primary text-white px-2 py-0.5 rounded">
+                        Selected
+                      </span>
                     )}
                     {hasUnifiedConfig && (
-                      <span className="text-xs bg-success-muted text-success px-2 py-0.5 rounded">Config exists</span>
+                      <span className="text-xs bg-success-muted text-success px-2 py-0.5 rounded">
+                        Config exists
+                      </span>
                     )}
                   </div>
                   <p className="text-sm text-text-secondary mt-1">
@@ -161,11 +165,7 @@ export function SyncModeDialog({
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleConfirm}
-            disabled={!canProceed}
-          >
+          <Button variant="primary" onClick={handleConfirm} disabled={!canProceed}>
             Continue
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>

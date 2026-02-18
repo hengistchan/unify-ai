@@ -4,15 +4,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import {
-  FolderOpen,
-  Plus,
-  Download,
-  Clock,
-  ArrowRight,
-  Sparkles,
-  RefreshCw,
-} from 'lucide-react';
+import { FolderOpen, Plus, Download, Clock, ArrowRight, Sparkles, RefreshCw } from 'lucide-react';
 import {
   useAppStore,
   selectRecentProjects,
@@ -26,13 +18,7 @@ export function Home() {
   const recentProjects = useAppStore(selectRecentProjects);
   const currentProject = useAppStore(selectCurrentProject);
   const detectedTools = useAppStore(selectDetectedTools);
-  const {
-    setProject,
-    setDetectedTools,
-    addRecentProject,
-    addToast,
-    previewSync,
-  } = useAppStore();
+  const { setProject, setDetectedTools, addRecentProject, addToast, previewSync } = useAppStore();
 
   const handleOpenProject = async () => {
     try {
@@ -116,7 +102,7 @@ export function Home() {
       return;
     }
 
-    const detectedList = detectedTools.filter((t) => t.detected);
+    const detectedList = detectedTools.filter(t => t.detected);
     if (detectedList.length < 2) {
       addToast({
         type: 'info',
@@ -127,14 +113,14 @@ export function Home() {
     }
 
     const sourceTool = detectedList[0].id;
-    const targetTools = detectedList.slice(1).map((t) => t.id);
+    const targetTools = detectedList.slice(1).map(t => t.id);
     await previewSync(sourceTool, targetTools);
     navigate('/project');
   };
 
   // Calculate project status
   const hasCurrentProject = !!currentProject;
-  const detectedCount = detectedTools.filter((t) => t.detected).length;
+  const detectedCount = detectedTools.filter(t => t.detected).length;
 
   return (
     <div className="max-w-4xl mx-auto p-8 animate-fade-in">
@@ -143,12 +129,10 @@ export function Home() {
         <div className="flex items-center justify-center mb-4">
           <Sparkles className="w-12 h-12 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold text-text-primary mb-3">
-          Welcome to Unify AI
-        </h1>
+        <h1 className="text-4xl font-bold text-text-primary mb-3">Welcome to Unify AI</h1>
         <p className="text-lg text-text-tertiary max-w-lg mx-auto">
-          Unified configuration management for AI coding assistants.
-          Sync your configs across Cursor, Claude Code, Copilot, and more.
+          Unified configuration management for AI coding assistants. Sync your configs across
+          Cursor, Claude Code, Copilot, and more.
         </p>
       </div>
 
@@ -163,9 +147,7 @@ export function Home() {
             <FolderOpen className="w-6 h-6 text-primary" />
           </div>
           <div className="text-left flex-1">
-            <h3 className="text-lg font-semibold text-text-primary mb-1">
-              Open Project
-            </h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-1">Open Project</h3>
             <p className="text-sm text-text-tertiary">
               Open an existing project to manage AI tool configurations
             </p>
@@ -182,9 +164,7 @@ export function Home() {
             <Plus className="w-6 h-6 text-success" />
           </div>
           <div className="text-left flex-1">
-            <h3 className="text-lg font-semibold text-text-primary mb-1">
-              Create New Config
-            </h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-1">Create New Config</h3>
             <p className="text-sm text-text-tertiary">
               Start fresh with a new unified configuration
             </p>
@@ -240,9 +220,7 @@ export function Home() {
             <Download className="w-5 h-5 text-text-tertiary" />
           </div>
           <div className="text-left flex-1">
-            <h3 className="text-sm font-medium text-text-secondary">
-              Import from Tool
-            </h3>
+            <h3 className="text-sm font-medium text-text-secondary">Import from Tool</h3>
             <p className="text-xs text-text-tertiary">
               Import existing configuration from a specific AI tool
             </p>
@@ -258,7 +236,7 @@ export function Home() {
             <h2 className="text-sm font-medium text-text-tertiary">Recent Projects</h2>
           </div>
           <div className="space-y-2">
-            {recentProjects.map((project) => (
+            {recentProjects.map(project => (
               <button
                 key={project.path}
                 onClick={() => handleOpenRecent(project.path)}
@@ -266,9 +244,7 @@ export function Home() {
               >
                 <FolderOpen className="w-5 h-5 text-text-tertiary" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-secondary truncate">
-                    {project.name}
-                  </p>
+                  <p className="text-sm font-medium text-text-secondary truncate">{project.name}</p>
                   <p className="text-xs text-text-tertiary truncate font-mono">{project.path}</p>
                 </div>
                 <span className="text-xs text-text-tertiary">

@@ -23,7 +23,7 @@ export const initCommand = new Command('init')
   .option('-t, --template <name>', 'Use template (default, minimal, full)', 'default')
   .option('--force', 'Overwrite existing config')
   .option('--skip-hooks', 'Skip hooks')
-  .action(async (options) => {
+  .action(async options => {
     const logger = getLogger({ color: options.parent?.color ?? true });
 
     try {
@@ -114,12 +114,12 @@ async function runFromToolInit(
   // Map string to ToolId
   const toolIdMap: Record<string, ToolId> = {
     'claude-code': ToolId.CLAUDE_CODE,
-    'cursor': ToolId.CURSOR,
-    'copilot': ToolId.COPILOT,
-    'windsurf': ToolId.WINDSURF,
-    'cline': ToolId.CLINE,
-    'aider': ToolId.AIDER,
-    'continue': ToolId.CONTINUE,
+    cursor: ToolId.CURSOR,
+    copilot: ToolId.COPILOT,
+    windsurf: ToolId.WINDSURF,
+    cline: ToolId.CLINE,
+    aider: ToolId.AIDER,
+    continue: ToolId.CONTINUE,
   };
 
   const toolId = toolIdMap[options.from];

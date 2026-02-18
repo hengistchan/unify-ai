@@ -49,9 +49,7 @@ export function createApplicationMenu(): void {
           },
         },
         { type: 'separator' },
-        process.platform === 'darwin'
-          ? { role: 'close' as const }
-          : { role: 'quit' as const },
+        process.platform === 'darwin' ? { role: 'close' as const } : { role: 'quit' as const },
       ],
     },
 

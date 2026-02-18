@@ -435,11 +435,13 @@
           "additionalProperties": {
             "type": "string"
           },
-          "examples": [{
-            "code_generation": "claude-opus-4",
-            "quick_question": "claude-sonnet-4",
-            "code_review": "claude-opus-4"
-          }]
+          "examples": [
+            {
+              "code_generation": "claude-opus-4",
+              "quick_question": "claude-sonnet-4",
+              "code_review": "claude-opus-4"
+            }
+          ]
         }
       }
     },
@@ -470,13 +472,7 @@
           "description": "Conditions that trigger fallback",
           "items": {
             "type": "string",
-            "enum": [
-              "rate_limit",
-              "timeout",
-              "error",
-              "capacity",
-              "quality_threshold"
-            ]
+            "enum": ["rate_limit", "timeout", "error", "capacity", "quality_threshold"]
           }
         },
         "max_attempts": {

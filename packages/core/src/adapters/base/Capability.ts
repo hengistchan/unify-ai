@@ -3,11 +3,7 @@
  * Capability declaration utility functions and constants
  */
 
-import {
-  ConfigCapability,
-  CapabilityLevel,
-  type CapabilityDeclaration,
-} from '../../core/types';
+import { ConfigCapability, CapabilityLevel, type CapabilityDeclaration } from '../../core/types';
 
 /**
  * Create capability declaration
@@ -176,28 +172,23 @@ export const ToolCapabilities = {
 /**
  * Check if capability is available
  */
-export function isCapabilityAvailable(
-  declaration: CapabilityDeclaration
-): boolean {
+export function isCapabilityAvailable(declaration: CapabilityDeclaration): boolean {
   return declaration.level !== CapabilityLevel.NONE;
 }
 
 /**
  * Check if capability supports export
  */
-export function canExportCapability(
-  declaration: CapabilityDeclaration
-): boolean {
-  return declaration.level === CapabilityLevel.FULL ||
-         declaration.level === CapabilityLevel.PARTIAL;
+export function canExportCapability(declaration: CapabilityDeclaration): boolean {
+  return (
+    declaration.level === CapabilityLevel.FULL || declaration.level === CapabilityLevel.PARTIAL
+  );
 }
 
 /**
  * Check if capability supports import
  */
-export function canImportCapability(
-  declaration: CapabilityDeclaration
-): boolean {
+export function canImportCapability(declaration: CapabilityDeclaration): boolean {
   return declaration.level !== CapabilityLevel.NONE;
 }
 
@@ -207,7 +198,10 @@ export function canImportCapability(
 export function getCompatibilityNotes(
   declarations: CapabilityDeclaration[]
 ): Record<ConfigCapability, string | undefined> {
-  const result: Record<ConfigCapability, string | undefined> = {} as Record<ConfigCapability, string | undefined>;
+  const result: Record<ConfigCapability, string | undefined> = {} as Record<
+    ConfigCapability,
+    string | undefined
+  >;
 
   for (const decl of declarations) {
     result[decl.capability] = decl.notes;

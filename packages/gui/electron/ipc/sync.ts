@@ -63,8 +63,8 @@ export async function importConfig(
       config: result.config,
       sourceTools: result.metadata?.sourceTools,
       sourceFiles: result.metadata?.sourceFiles,
-      errors: result.errors?.map((e) => e.message),
-      warnings: result.warnings?.map((w) => w.message),
+      errors: result.errors?.map(e => e.message),
+      warnings: result.warnings?.map(w => w.message),
     };
   } catch (error) {
     console.error('Error importing config:', error);
@@ -103,18 +103,21 @@ export async function exportConfig(
       if (result.success) {
         exportedTools.push(toolId);
       } else {
-        errors.push(`${toolId}: ${result.errors?.map((e) => e.message).join(', ') || 'Unknown error'}`);
+        errors.push(
+          `${toolId}: ${result.errors?.map(e => e.message).join(', ') || 'Unknown error'}`
+        );
       }
       if (result.warnings) {
-        warnings.push(...result.warnings.map((w) => `${toolId}: ${w.message}`));
+        warnings.push(...result.warnings.map(w => `${toolId}: ${w.message}`));
       }
     });
 
     return {
       success: exportedTools.length > 0,
-      message: exportedTools.length > 0
-        ? `Successfully exported configuration to ${exportedTools.length} tool(s)`
-        : 'Failed to export to any tools',
+      message:
+        exportedTools.length > 0
+          ? `Successfully exported configuration to ${exportedTools.length} tool(s)`
+          : 'Failed to export to any tools',
       exportedTools,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
@@ -139,23 +142,21 @@ export async function previewExport(
 ): Promise<PreviewResult[]> {
   try {
     const previewResults = await Promise.all(
-      targetTools.map(async (toolId) => {
+      targetTools.map(async toolId => {
         try {
-          const generateResult = await exporter.preview(
-            config,
-            toolId as ToolId
-          );
+          const generateResult = await exporter.preview(config, toolId as ToolId);
 
           return {
             success: generateResult.success,
             toolId,
-            files: generateResult.files.map((file) => ({
+            files: generateResult.files.map(file => ({
               path: file.path,
-              content: typeof file.content === 'string' ? file.content : file.content.toString('utf-8'),
+              content:
+                typeof file.content === 'string' ? file.content : file.content.toString('utf-8'),
               size: typeof file.content === 'string' ? file.content.length : file.content.length,
             })),
-            errors: generateResult.errors?.map((e) => e.message),
-            warnings: generateResult.warnings?.map((w) => w.message),
+            errors: generateResult.errors?.map(e => e.message),
+            warnings: generateResult.warnings?.map(w => w.message),
           };
         } catch (error) {
           return {
@@ -171,7 +172,7 @@ export async function previewExport(
     return previewResults;
   } catch (error) {
     console.error('Error previewing export:', error);
-    return targetTools.map((toolId) => ({
+    return targetTools.map(toolId => ({
       success: false,
       toolId,
       files: [],
@@ -197,7 +198,7 @@ export async function syncConfig(
         success: false,
         message: 'Failed to import configuration from source',
         syncedTools: [],
-        errors: importResult.errors?.map((e) => e.message) || ['Unknown import error'],
+        errors: importResult.errors?.map(e => e.message) || ['Unknown import error'],
       };
     }
 
@@ -220,18 +221,21 @@ export async function syncConfig(
       if (result.success) {
         syncedTools.push(toolId);
       } else {
-        errors.push(`${toolId}: ${result.errors?.map((e) => e.message).join(', ') || 'Unknown error'}`);
+        errors.push(
+          `${toolId}: ${result.errors?.map(e => e.message).join(', ') || 'Unknown error'}`
+        );
       }
       if (result.warnings) {
-        warnings.push(...result.warnings.map((w) => `${toolId}: ${w.message}`));
+        warnings.push(...result.warnings.map(w => `${toolId}: ${w.message}`));
       }
     });
 
     return {
       success: syncedTools.length > 0,
-      message: syncedTools.length > 0
-        ? `Successfully synced configuration to ${syncedTools.length} tool(s)`
-        : 'Failed to sync to any tools',
+      message:
+        syncedTools.length > 0
+          ? `Successfully synced configuration to ${syncedTools.length} tool(s)`
+          : 'Failed to sync to any tools',
       syncedTools,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
@@ -259,7 +263,7 @@ export async function previewSync(
     const importResult = await importer.import(sourceFolder);
 
     if (!importResult.success || !importResult.config) {
-      return targetTools.map((toolId) => ({
+      return targetTools.map(toolId => ({
         success: false,
         toolId,
         files: [],
@@ -269,23 +273,21 @@ export async function previewSync(
 
     // Generate preview for each target tool
     const previewResults = await Promise.all(
-      targetTools.map(async (toolId) => {
+      targetTools.map(async toolId => {
         try {
-          const generateResult = await exporter.preview(
-            importResult.config!,
-            toolId as ToolId
-          );
+          const generateResult = await exporter.preview(importResult.config!, toolId as ToolId);
 
           return {
             success: generateResult.success,
             toolId,
-            files: generateResult.files.map((file) => ({
+            files: generateResult.files.map(file => ({
               path: file.path,
-              content: typeof file.content === 'string' ? file.content : file.content.toString('utf-8'),
+              content:
+                typeof file.content === 'string' ? file.content : file.content.toString('utf-8'),
               size: typeof file.content === 'string' ? file.content.length : file.content.length,
             })),
-            errors: generateResult.errors?.map((e) => e.message),
-            warnings: generateResult.warnings?.map((w) => w.message),
+            errors: generateResult.errors?.map(e => e.message),
+            warnings: generateResult.warnings?.map(w => w.message),
           };
         } catch (error) {
           return {
@@ -301,7 +303,7 @@ export async function previewSync(
     return previewResults;
   } catch (error) {
     console.error('Error previewing sync:', error);
-    return targetTools.map((toolId) => ({
+    return targetTools.map(toolId => ({
       success: false,
       toolId,
       files: [],
@@ -313,10 +315,7 @@ export async function previewSync(
 /**
  * Get unified configuration for a specific tool
  */
-export async function getToolConfig(
-  folderPath: string,
-  toolId: string
-): Promise<ToolConfigResult> {
+export async function getToolConfig(folderPath: string, toolId: string): Promise<ToolConfigResult> {
   try {
     const result = await importer.importFrom(folderPath, toolId as ToolId);
 
@@ -325,8 +324,8 @@ export async function getToolConfig(
       config: result.config,
       sourceTools: result.metadata?.sourceTools,
       sourceFiles: result.metadata?.sourceFiles,
-      errors: result.errors?.map((e) => e.message),
-      warnings: result.warnings?.map((w) => w.message),
+      errors: result.errors?.map(e => e.message),
+      warnings: result.warnings?.map(w => w.message),
     };
   } catch (error) {
     console.error('Error getting tool config:', error);

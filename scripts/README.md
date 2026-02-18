@@ -5,16 +5,19 @@ This directory contains automated scripts for managing releases.
 ## Scripts Overview
 
 ### `prepare-release.sh` (Recommended)
+
 **Fully automated release preparation**
 
 This is the main script for preparing a new release. It handles everything from testing to version bumping to CHANGELOG generation.
 
 **Usage:**
+
 ```bash
 ./scripts/prepare-release.sh <version> [type]
 ```
 
 **What it does:**
+
 1. ✅ Checks working directory is clean
 2. ✅ Verifies current branch (warns if not on main)
 3. ✅ Pulls latest changes
@@ -26,6 +29,7 @@ This is the main script for preparing a new release. It handles everything from 
 9. ✅ Provides next steps
 
 **Example:**
+
 ```bash
 ./scripts/prepare-release.sh 0.0.2
 ```
@@ -33,22 +37,26 @@ This is the main script for preparing a new release. It handles everything from 
 ---
 
 ### `update-version.sh`
+
 **Update version numbers only**
 
 Updates version numbers in all package.json files. Used by `prepare-release.sh` internally.
 
 **Usage:**
+
 ```bash
 ./scripts/update-version.sh <version>
 ```
 
 **What it does:**
+
 1. ✅ Validates version format
 2. ✅ Checks for existing git tags
 3. ✅ Updates root package.json
-4. ✅ Updates packages/*/package.json
+4. ✅ Updates packages/\*/package.json
 
 **Example:**
+
 ```bash
 ./scripts/update-version.sh 0.0.2
 ```
@@ -56,16 +64,19 @@ Updates version numbers in all package.json files. Used by `prepare-release.sh` 
 ---
 
 ### `test-release.sh`
+
 **Test the release process**
 
 Runs a dry-run of the release process without actually publishing. Good for verifying everything works before a real release.
 
 **Usage:**
+
 ```bash
 ./scripts/test-release.sh
 ```
 
 **What it does:**
+
 1. ✅ Runs all tests
 2. ✅ Builds all packages
 3. ✅ Tests CLI global installation
@@ -75,16 +86,19 @@ Runs a dry-run of the release process without actually publishing. Good for veri
 ---
 
 ### `release.sh`
+
 **Manual release script**
 
 Manually triggers the release process. **Not recommended** - use GitHub Actions instead by pushing a tag.
 
 **Usage:**
+
 ```bash
 ./scripts/release.sh <version>
 ```
 
 **What it does:**
+
 1. ✅ Runs tests
 2. ✅ Builds packages
 3. ✅ Updates version
@@ -93,6 +107,7 @@ Manually triggers the release process. **Not recommended** - use GitHub Actions 
 6. ✅ Pushes to GitHub
 
 **Example:**
+
 ```bash
 ./scripts/release.sh 0.0.2
 ```
@@ -102,21 +117,25 @@ Manually triggers the release process. **Not recommended** - use GitHub Actions 
 ---
 
 ### `rollback-release.sh`
+
 **Rollback a failed release**
 
 Deprecates npm packages and deletes git tags for a failed release.
 
 **Usage:**
+
 ```bash
 ./scripts/rollback-release.sh <version>
 ```
 
 **What it does:**
+
 1. ✅ Deprecates npm packages
 2. ✅ Deletes local and remote git tags
 3. ✅ Optionally reverts version bump commit
 
 **Example:**
+
 ```bash
 ./scripts/rollback-release.sh 0.0.2
 ```
@@ -181,6 +200,7 @@ git push origin main --tags
 Before using these scripts, ensure you have:
 
 1. **jq** installed (for JSON manipulation):
+
    ```bash
    # macOS
    brew install jq
@@ -193,6 +213,7 @@ Before using these scripts, ensure you have:
    ```
 
 2. **pnpm** installed:
+
    ```bash
    npm install -g pnpm
    ```
@@ -216,6 +237,7 @@ Before using these scripts, ensure you have:
 ### "jq is required but not installed"
 
 Install jq:
+
 ```bash
 brew install jq  # macOS
 ```
@@ -223,6 +245,7 @@ brew install jq  # macOS
 ### "Working directory has uncommitted changes"
 
 Commit your changes first:
+
 ```bash
 git add .
 git commit -m "your changes"
@@ -231,6 +254,7 @@ git commit -m "your changes"
 ### "Version already exists as git tag"
 
 Choose a different version or delete the tag:
+
 ```bash
 git tag -d v0.0.2
 git push origin :refs/tags/v0.0.2
@@ -241,6 +265,7 @@ git push origin :refs/tags/v0.0.2
 ## Support
 
 For issues or questions:
+
 1. Check the [Release Guide](/.claude/plans/release-guide.md)
 2. Review GitHub Actions logs
 3. Create an issue on GitHub

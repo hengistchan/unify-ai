@@ -149,7 +149,7 @@ export interface ValidationResult {
 }
 
 export interface ValidationError {
-  path: string;                  // Config path, e.g., "rules[0].content"
+  path: string; // Config path, e.g., "rules[0].content"
   message: string;
   value?: unknown;
 }

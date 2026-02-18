@@ -14,8 +14,14 @@ interface UnifiedConfigDialogProps {
   onClose: () => void;
   detectedTools: DetectedTool[];
   unifiedConfig: UnifiedConfig | null;
-  onImport: (options: { mergeMultiple: boolean; sourceTool?: string }) => Promise<{ success: boolean }>;
-  onExport: (targetTools: string[], options: { createBackup: boolean }) => Promise<{ success: boolean }>;
+  onImport: (options: {
+    mergeMultiple: boolean;
+    sourceTool?: string;
+  }) => Promise<{ success: boolean }>;
+  onExport: (
+    targetTools: string[],
+    options: { createBackup: boolean }
+  ) => Promise<{ success: boolean }>;
   importLoading: boolean;
   exportLoading: boolean;
 }
@@ -35,7 +41,7 @@ export function UnifiedConfigDialog({
   const [exportTargets, setExportTargets] = useState<Set<string>>(new Set());
   const [createBackup, setCreateBackup] = useState(true);
 
-  const detectedList = detectedTools.filter((t) => t.detected);
+  const detectedList = detectedTools.filter(t => t.detected);
 
   // Config stats
   const rulesCount = unifiedConfig?.rules?.length ?? 0;
@@ -86,10 +92,7 @@ export function UnifiedConfigDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden animate-fade-in">
@@ -113,10 +116,7 @@ export function UnifiedConfigDialog({
               {step === 'export' && 'Export to Tools'}
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-bg-hover rounded transition-colors"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-bg-hover rounded transition-colors">
             <X className="w-5 h-5 text-text-tertiary" />
           </button>
         </div>
@@ -131,7 +131,9 @@ export function UnifiedConfigDialog({
                   <FileJson className="w-5 h-5 text-primary" />
                   <div>
                     <h3 className="font-medium text-text-primary">unified.json</h3>
-                    <p className="text-xs text-text-tertiary">Your centralized configuration file</p>
+                    <p className="text-xs text-text-tertiary">
+                      Your centralized configuration file
+                    </p>
                   </div>
                 </div>
 
@@ -150,7 +152,9 @@ export function UnifiedConfigDialog({
                       <p className="text-xs text-text-tertiary">Commands</p>
                     </div>
                     <div className="text-center p-2 bg-bg-secondary rounded">
-                      <p className="text-lg font-bold text-text-primary">{hasSettings ? '✓' : '-'}</p>
+                      <p className="text-lg font-bold text-text-primary">
+                        {hasSettings ? '✓' : '-'}
+                      </p>
                       <p className="text-xs text-text-tertiary">Settings</p>
                     </div>
                   </div>
@@ -189,11 +193,18 @@ export function UnifiedConfigDialog({
                       : 'bg-bg-tertiary border-border opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <div className={cn(
-                    'p-2 rounded-lg',
-                    unifiedConfig ? 'bg-success-muted' : 'bg-bg-secondary'
-                  )}>
-                    <Upload className={cn('w-5 h-5', unifiedConfig ? 'text-success' : 'text-text-tertiary')} />
+                  <div
+                    className={cn(
+                      'p-2 rounded-lg',
+                      unifiedConfig ? 'bg-success-muted' : 'bg-bg-secondary'
+                    )}
+                  >
+                    <Upload
+                      className={cn(
+                        'w-5 h-5',
+                        unifiedConfig ? 'text-success' : 'text-text-tertiary'
+                      )}
+                    />
                   </div>
                   <div>
                     <h4 className="font-medium text-text-primary">Export to Tools</h4>
@@ -216,7 +227,7 @@ export function UnifiedConfigDialog({
                   Select multiple tools to merge their configurations
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {detectedList.map((tool) => (
+                  {detectedList.map(tool => (
                     <button
                       key={tool.id}
                       onClick={() => toggleImportSource(tool.id)}
@@ -245,8 +256,8 @@ export function UnifiedConfigDialog({
                     <div className="text-sm text-info">
                       <p className="font-medium">Merge mode enabled</p>
                       <p className="text-xs mt-1">
-                        Configurations from {importSources.size} tools will be merged.
-                        Conflicts will be resolved by keeping the most recent.
+                        Configurations from {importSources.size} tools will be merged. Conflicts
+                        will be resolved by keeping the most recent.
                       </p>
                     </div>
                   </div>
@@ -280,7 +291,7 @@ export function UnifiedConfigDialog({
                   unified.json will be written to selected tools
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {detectedList.map((tool) => (
+                  {detectedList.map(tool => (
                     <button
                       key={tool.id}
                       onClick={() => toggleExportTarget(tool.id)}
@@ -307,7 +318,7 @@ export function UnifiedConfigDialog({
                   <input
                     type="checkbox"
                     checked={createBackup}
-                    onChange={(e) => setCreateBackup(e.target.checked)}
+                    onChange={e => setCreateBackup(e.target.checked)}
                     className="w-4 h-4 rounded border-border"
                   />
                   <span className="text-sm text-text-secondary">Create backup before export</span>

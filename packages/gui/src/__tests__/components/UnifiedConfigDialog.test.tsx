@@ -13,9 +13,33 @@ describe('UnifiedConfigDialog', () => {
   const mockOnExport = vi.fn();
 
   const defaultDetectedTools: DetectedTool[] = [
-    { id: 'claude-code', name: 'Claude Code', configPath: '/CLAUDE.md', detected: true, hasRules: true, hasMcp: true, hasSettings: true },
-    { id: 'cursor', name: 'Cursor', configPath: '/.cursorrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
-    { id: 'copilot', name: 'GitHub Copilot', configPath: '/.github/copilot-instructions.md', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
+    {
+      id: 'claude-code',
+      name: 'Claude Code',
+      configPath: '/CLAUDE.md',
+      detected: true,
+      hasRules: true,
+      hasMcp: true,
+      hasSettings: true,
+    },
+    {
+      id: 'cursor',
+      name: 'Cursor',
+      configPath: '/.cursorrules',
+      detected: true,
+      hasRules: true,
+      hasMcp: false,
+      hasSettings: false,
+    },
+    {
+      id: 'copilot',
+      name: 'GitHub Copilot',
+      configPath: '/.github/copilot-instructions.md',
+      detected: true,
+      hasRules: true,
+      hasMcp: false,
+      hasSettings: false,
+    },
   ];
 
   const defaultUnifiedConfig: UnifiedConfig = {
@@ -33,9 +57,7 @@ describe('UnifiedConfigDialog', () => {
     settings: {
       model: { default: 'claude-3' },
     },
-    commands: [
-      { id: 'cmd1', name: 'Command 1', template: 'template1' },
-    ],
+    commands: [{ id: 'cmd1', name: 'Command 1', template: 'template1' }],
   };
 
   beforeEach(() => {

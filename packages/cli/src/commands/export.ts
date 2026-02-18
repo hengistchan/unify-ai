@@ -39,18 +39,21 @@ export const exportCommand = new Command('export')
       // Export to each tool
       logger.info('Exporting to tools...');
 
-      const targets = tools.length > 0 ? tools : ['claude-code', 'cursor', 'copilot', 'windsurf', 'cline', 'aider', 'continue'];
+      const targets =
+        tools.length > 0
+          ? tools
+          : ['claude-code', 'cursor', 'copilot', 'windsurf', 'cline', 'aider', 'continue'];
 
       for (const toolId of targets) {
         // Map string to ToolId
         const toolIdMap: Record<string, ToolId> = {
           'claude-code': ToolId.CLAUDE_CODE,
-          'cursor': ToolId.CURSOR,
-          'copilot': ToolId.COPILOT,
-          'windsurf': ToolId.WINDSURF,
-          'cline': ToolId.CLINE,
-          'aider': ToolId.AIDER,
-          'continue': ToolId.CONTINUE,
+          cursor: ToolId.CURSOR,
+          copilot: ToolId.COPILOT,
+          windsurf: ToolId.WINDSURF,
+          cline: ToolId.CLINE,
+          aider: ToolId.AIDER,
+          continue: ToolId.CONTINUE,
         };
 
         const tid = toolIdMap[toolId];
@@ -78,7 +81,9 @@ export const exportCommand = new Command('export')
             }
           }
         } catch (error) {
-          logger.error(`Failed to export to ${toolId}: ${error instanceof Error ? error.message : error}`);
+          logger.error(
+            `Failed to export to ${toolId}: ${error instanceof Error ? error.message : error}`
+          );
         }
       }
 

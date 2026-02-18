@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  RefreshCw,
-  Download,
-  Upload,
-  List,
-  LayoutGrid,
-  ChevronRight,
-} from 'lucide-react';
+import { RefreshCw, Download, Upload, List, LayoutGrid, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ToolbarProps, BreadcrumbItem } from '@/types/layout';
 
@@ -32,9 +25,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <nav className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((item: BreadcrumbItem, index: number) => (
           <React.Fragment key={index}>
-            {index > 0 && (
-              <ChevronRight className="w-4 h-4 text-text-tertiary mx-1" />
-            )}
+            {index > 0 && <ChevronRight className="w-4 h-4 text-text-tertiary mx-1" />}
             {item.path ? (
               <button
                 onClick={() => {

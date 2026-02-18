@@ -78,18 +78,10 @@ export const Toast: React.FC<ToastProps> = ({
       )}
       role="alert"
     >
-      <span className="flex-shrink-0 mt-0.5">
-        {style.icon}
-      </span>
+      <span className="flex-shrink-0 mt-0.5">{style.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary">
-          {message}
-        </p>
-        {description && (
-          <p className="text-xs text-text-secondary mt-1">
-            {description}
-          </p>
-        )}
+        <p className="text-sm font-medium text-text-primary">{message}</p>
+        {description && <p className="text-xs text-text-secondary mt-1">{description}</p>}
       </div>
       <button
         onClick={handleClose}
@@ -108,21 +100,11 @@ export interface ToastContainerProps {
   onClose: (id: string) => void;
 }
 
-export const ToastContainer: React.FC<ToastContainerProps> = ({
-  toasts,
-  onClose,
-}) => {
+export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, onClose }) => {
   return (
-    <div
-      className="fixed top-24 right-4 z-[100] flex flex-col gap-2"
-      aria-live="polite"
-    >
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          {...toast}
-          onClose={onClose}
-        />
+    <div className="fixed top-24 right-4 z-[100] flex flex-col gap-2" aria-live="polite">
+      {toasts.map(toast => (
+        <Toast key={toast.id} {...toast} onClose={onClose} />
       ))}
     </div>
   );
@@ -145,12 +127,7 @@ export const useToast = (options: UseToastOptions = {}) => {
   const { defaultDuration = 3000 } = options;
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
-  const addToast = (
-    type: ToastType,
-    message: string,
-    description?: string,
-    duration?: number
-  ) => {
+  const addToast = (type: ToastType, message: string, description?: string, duration?: number) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newToast: ToastData = {
       id,
@@ -159,12 +136,12 @@ export const useToast = (options: UseToastOptions = {}) => {
       description,
       duration: duration ?? defaultDuration,
     };
-    setToasts((prev) => [...prev, newToast]);
+    setToasts(prev => [...prev, newToast]);
     return id;
   };
 
   const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   const success = (message: string, description?: string, duration?: number) =>
@@ -190,9 +167,7 @@ export const useToast = (options: UseToastOptions = {}) => {
     warning,
     info,
     clear,
-    ToastContainer: () => (
-      <ToastContainer toasts={toasts} onClose={removeToast} />
-    ),
+    ToastContainer: () => <ToastContainer toasts={toasts} onClose={removeToast} />,
   };
 };
 

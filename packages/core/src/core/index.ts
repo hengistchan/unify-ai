@@ -15,10 +15,7 @@ export {
 } from './ConfigManager';
 
 // Validator (aliased to avoid conflict with IAdapter types)
-export {
-  ConfigValidator,
-  configValidator,
-} from './validator';
+export { ConfigValidator, configValidator } from './validator';
 
 export type {
   ValidationResult as ConfigValidationResult,

@@ -84,11 +84,7 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Header */}
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between p-4 border-b border-border">
-            {title && (
-              <h2 className="text-lg font-semibold text-text-primary">
-                {title}
-              </h2>
-            )}
+            {title && <h2 className="text-lg font-semibold text-text-primary">{title}</h2>}
             {showCloseButton && (
               <Button
                 variant="ghost"
@@ -104,9 +100,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Body */}
-        <div className="p-4">
-          {children}
-        </div>
+        <div className="p-4">{children}</div>
 
         {/* Footer */}
         {footer && (

@@ -8,11 +8,7 @@ import * as path from 'path';
 import { glob } from 'glob';
 
 import type { IAdapter } from '../adapters/base/IAdapter';
-import type {
-  FileInfo,
-  FilePattern,
-  ConfigCapability,
-} from '../core/types';
+import type { FileInfo, FilePattern, ConfigCapability } from '../core/types';
 import { adapterRegistry } from '../adapters/registry';
 
 /**
@@ -115,7 +111,7 @@ export class FileDiscovery {
     const adapters = options?.adapters ?? adapterRegistry.getAll();
 
     // Scan all adapter file patterns in parallel
-    const scanPromises = adapters.map(async (adapter) => {
+    const scanPromises = adapters.map(async adapter => {
       const patterns = this.filterPatterns(adapter.getFilePatterns(), options?.capabilities);
       const adapterFiles: DiscoveredFile[] = [];
 
@@ -173,7 +169,7 @@ export class FileDiscovery {
     const detected: IAdapter[] = [];
 
     await Promise.all(
-      adapters.map(async (adapter) => {
+      adapters.map(async adapter => {
         if (await adapter.detect(projectRoot)) {
           detected.push(adapter);
         }
@@ -257,7 +253,7 @@ export class FileDiscovery {
       });
 
       return Promise.all(
-        matches.map(async (absolutePath) => {
+        matches.map(async absolutePath => {
           const relativePath = path.relative(projectRoot, absolutePath);
           const stats = await fs.stat(absolutePath);
           return {
@@ -285,7 +281,7 @@ export class FileDiscovery {
 
   private deduplicateFiles<T extends FileInfo>(files: T[]): T[] {
     const seen = new Set<string>();
-    return files.filter((file) => {
+    return files.filter(file => {
       if (seen.has(file.absolutePath)) {
         return false;
       }

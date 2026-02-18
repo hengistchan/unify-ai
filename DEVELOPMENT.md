@@ -115,13 +115,13 @@ pnpm dev              # 仅启动 Vite 服务器
 
 ## 📝 命令对照表
 
-| 旧命令 | 新命令 | 说明 |
-|--------|--------|------|
-| `pnpm dev` | `pnpm dev:core` | Core 库监听编译 |
-| `pnpm cli` | `pnpm dev:cli` | CLI 开发模式 |
-| `pnpm gui` | `pnpm dev` 或 `pnpm dev:gui` | GUI 开发环境 |
-| - | `pnpm dev:gui` | 明确指定 GUI 开发 |
-| - | `pnpm dev:core` | 明确指定 Core 开发 |
+| 旧命令     | 新命令                       | 说明               |
+| ---------- | ---------------------------- | ------------------ |
+| `pnpm dev` | `pnpm dev:core`              | Core 库监听编译    |
+| `pnpm cli` | `pnpm dev:cli`               | CLI 开发模式       |
+| `pnpm gui` | `pnpm dev` 或 `pnpm dev:gui` | GUI 开发环境       |
+| -          | `pnpm dev:gui`               | 明确指定 GUI 开发  |
+| -          | `pnpm dev:core`              | 明确指定 Core 开发 |
 
 ## 🔥 推荐工作流
 

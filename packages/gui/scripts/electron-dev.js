@@ -29,7 +29,7 @@ function startElectron() {
     },
   });
 
-  electronProcess.on('close', (code) => {
+  electronProcess.on('close', code => {
     if (!isRestarting && code !== 0) {
       console.log(`Electron exited with code ${code}`);
     }
@@ -47,7 +47,7 @@ function rebuildAndRestart() {
     cwd: __dirname,
   });
 
-  buildProcess.on('close', (code) => {
+  buildProcess.on('close', code => {
     if (code === 0) {
       console.log('✅ Build complete, restarting Electron...\n');
       startElectron();
@@ -68,12 +68,12 @@ const watcher = watch(path.join(__dirname, '../electron'), {
   ignoreInitial: true,
 });
 
-watcher.on('change', (filePath) => {
+watcher.on('change', filePath => {
   console.log(`📝 File changed: ${path.relative(path.join(__dirname, '..'), filePath)}`);
   rebuildAndRestart();
 });
 
-watcher.on('add', (filePath) => {
+watcher.on('add', filePath => {
   console.log(`📝 File added: ${path.relative(path.join(__dirname, '..'), filePath)}`);
   rebuildAndRestart();
 });

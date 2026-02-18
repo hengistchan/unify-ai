@@ -144,6 +144,7 @@ Maintainers follow these steps:
 ### Bug Reports
 
 Include:
+
 - Clear title and description
 - Steps to reproduce
 - Expected behavior
@@ -154,6 +155,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - Clear use case
 - Benefits to users
 - Possible implementation approach

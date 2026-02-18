@@ -45,7 +45,7 @@ export class TableFormatter extends OutputFormatter {
 
   printTable(headers: string[], rows: string[][]): void {
     const table = new Table({
-      head: headers.map(h => this.color ? String(chalk.cyan(h)) : h),
+      head: headers.map(h => (this.color ? String(chalk.cyan(h)) : h)),
       style: {
         head: [],
         border: [],

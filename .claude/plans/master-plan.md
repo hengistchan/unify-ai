@@ -11,6 +11,7 @@
 ### 1.1 目标
 
 创建一个统一管理多种 AI 编码工具（Cursor, Claude Code, Copilot, Windsurf, Codex, Cline, Aider, Continue）配置的工具，支持：
+
 - 配置导入/导出
 - 双向同步
 - 冲突检测与解决
@@ -18,21 +19,21 @@
 
 ### 1.2 当前状态
 
-| 模块 | 状态 | 说明 |
-|------|------|------|
-| 核心类型 | ✅ 完成 | types.ts, 能力枚举 |
-| 适配器基类 | ✅ 完成 | BaseAdapter, IAdapter, Capability |
-| 8 个适配器 | ✅ 完成 | 全部 8 个工具适配器 |
-| 适配器注册表 | ✅ 完成 | AdapterRegistry |
-| 文件发现 | ✅ 完成 | FileDiscovery |
-| 转换器 | ✅ 完成 | Importer, Exporter, ConflictResolver, DiffEngine |
-| 变更追踪 | ✅ 完成 | ChangeTracker, FingerprintManager |
-| 配置管理 | ✅ 完成 | ConfigManager, validator |
-| CLI 包 | ✅ 骨架完成 | packages/cli 骨架已创建 |
-| GUI 包 | ✅ 完成 | packages/gui 已完成 |
-| JSON Schema | ✅ 完成 | schemas/ 目录 |
-| 文档 | ✅ 完成 | README, LICENSE, CONTRIBUTING, CLAUDE.md |
-| 单元测试 | ❌ 未开始 | - |
+| 模块         | 状态        | 说明                                             |
+| ------------ | ----------- | ------------------------------------------------ |
+| 核心类型     | ✅ 完成     | types.ts, 能力枚举                               |
+| 适配器基类   | ✅ 完成     | BaseAdapter, IAdapter, Capability                |
+| 8 个适配器   | ✅ 完成     | 全部 8 个工具适配器                              |
+| 适配器注册表 | ✅ 完成     | AdapterRegistry                                  |
+| 文件发现     | ✅ 完成     | FileDiscovery                                    |
+| 转换器       | ✅ 完成     | Importer, Exporter, ConflictResolver, DiffEngine |
+| 变更追踪     | ✅ 完成     | ChangeTracker, FingerprintManager                |
+| 配置管理     | ✅ 完成     | ConfigManager, validator                         |
+| CLI 包       | ✅ 骨架完成 | packages/cli 骨架已创建                          |
+| GUI 包       | ✅ 完成     | packages/gui 已完成                              |
+| JSON Schema  | ✅ 完成     | schemas/ 目录                                    |
+| 文档         | ✅ 完成     | README, LICENSE, CONTRIBUTING, CLAUDE.md         |
+| 单元测试     | ❌ 未开始   | -                                                |
 
 ---
 
@@ -43,6 +44,7 @@
 #### 1.1 完善转换器模块
 
 **任务**:
+
 - [x] 完善 `src/converter/Exporter.ts` - 导出逻辑
 - [x] 实现 `src/converter/DiffEngine.ts` - 差异检测
 - [x] 完善 `src/converter/ConflictResolver.ts` - 冲突解决
@@ -50,6 +52,7 @@
 - [x] 实现 `src/converter/FingerprintManager.ts` - 指纹管理
 
 **文件**:
+
 ```
 src/converter/
 ├── index.ts
@@ -65,10 +68,12 @@ src/converter/
 #### 1.2 统一配置 Schema
 
 **任务**:
+
 - [x] 创建 `schemas/unified.schema.json` - 主配置 JSON Schema
 - [x] 实现 `src/core/ConfigManager.ts` - 配置加载/保存/验证
 
 **文件**:
+
 ```
 src/
 ├── core/
@@ -85,11 +90,13 @@ src/
 #### 2.1 CLI 框架搭建
 
 **任务**:
+
 - [x] 初始化 CLI 包 (`packages/cli`)
 - [x] 配置 commander.js 或 picocolors
 - [x] 实现核心命令
 
 **命令设计**:
+
 ```
 unify-ai <command> [options]
 
@@ -112,6 +119,7 @@ Options:
 ```
 
 **文件**:
+
 ```
 packages/cli/
 ├── bin/
@@ -141,6 +149,7 @@ packages/cli/
 #### 2.2 CLI 功能实现
 
 **任务**:
+
 - [x] 实现 init 命令 - 创建 unified.json
 - [x] 实现 detect 命令 - 自动检测工具
 - [x] 实现 import/export 命令
@@ -156,12 +165,14 @@ packages/cli/
 #### 3.1 项目初始化
 
 **任务**:
+
 - [x] 初始化 Electron + React + Vite 项目
 - [x] 配置 Tailwind CSS
 - [x] 配置 Electron Builder
 - [x] 设置 IPC 通信机制
 
 **文件**:
+
 ```
 packages/gui/
 ├── electron/
@@ -187,6 +198,7 @@ packages/gui/
 #### 3.2 布局组件
 
 **任务**:
+
 - [x] 实现侧边栏组件 (Sidebar)
 - [x] 实现主内容区布局
 - [x] 实现工具栏 (Toolbar)
@@ -195,6 +207,7 @@ packages/gui/
 #### 3.3 页面实现
 
 **任务**:
+
 - [x] 首页/项目视图
 - [x] 工具配置详情页
 - [x] 同步预览对话框
@@ -203,6 +216,7 @@ packages/gui/
 #### 3.4 IPC 集成
 
 **任务**:
+
 - [x] 实现主进程命令处理
 - [x] 实现渲染进程 API 调用
 - [x] 实现文件选择对话框
@@ -214,6 +228,7 @@ packages/gui/
 #### 4.1 单元测试
 
 **任务**:
+
 - [ ] 适配器测试
 - [ ] 转换器测试
 - [ ] CLI 测试
@@ -222,6 +237,7 @@ packages/gui/
 #### 4.2 发布准备
 
 **任务**:
+
 - [ ] 版本号管理
 - [ ] 发布 npm 包
 - [ ] 构建 Electron 安装包
@@ -439,5 +455,5 @@ packages/gui/
 
 ---
 
-*计划版本: 1.0.0*
-*最后更新: 2026-02-17*
+_计划版本: 1.0.0_
+_最后更新: 2026-02-17_

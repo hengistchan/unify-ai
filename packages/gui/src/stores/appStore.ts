@@ -243,7 +243,7 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       // Project
       currentProject: null,
-      setProject: (path) => {
+      setProject: path => {
         set({ currentProject: path });
         // Auto-load saved config when project is set
         get().loadSavedConfig();
@@ -252,7 +252,7 @@ export const useAppStore = create<AppState>()(
 
       // Tools
       detectedTools: [],
-      setDetectedTools: (tools) => set({ detectedTools: tools }),
+      setDetectedTools: tools => set({ detectedTools: tools }),
 
       refreshTools: async () => {
         const { currentProject } = get();
@@ -285,8 +285,8 @@ export const useAppStore = create<AppState>()(
       // Sync
       syncStatus: 'idle',
       lastSyncTime: null,
-      setSyncStatus: (status) => set({ syncStatus: status }),
-      setLastSyncTime: (time) => set({ lastSyncTime: time }),
+      setSyncStatus: status => set({ syncStatus: status }),
+      setLastSyncTime: time => set({ lastSyncTime: time }),
 
       // Sync Preview & Execution
       unifiedConfig: null,
@@ -341,12 +341,15 @@ export const useAppStore = create<AppState>()(
           }
 
           // Build sync details from imported config
-          const syncDetails = importResult.success && importResult.config ? {
-            rulesCount: importResult.config.rules?.length || 0,
-            mcpServersCount: importResult.config.mcp?.servers?.length || 0,
-            hasSettings: !!importResult.config.settings,
-            commandsCount: importResult.config.commands?.length || 0,
-          } : undefined;
+          const syncDetails =
+            importResult.success && importResult.config
+              ? {
+                  rulesCount: importResult.config.rules?.length || 0,
+                  mcpServersCount: importResult.config.mcp?.servers?.length || 0,
+                  hasSettings: !!importResult.config.settings,
+                  commandsCount: importResult.config.commands?.length || 0,
+                }
+              : undefined;
 
           const preview: SyncPreview = {
             sourceTool,
@@ -479,7 +482,10 @@ export const useAppStore = create<AppState>()(
           if (result.success && result.config) {
             set({ unifiedConfig: result.config as UnifiedConfig, importLoading: false });
             // Auto-save to unified.json
-            await window.electronAPI.saveUnifiedConfig(currentProject, result.config as UnifiedConfig);
+            await window.electronAPI.saveUnifiedConfig(
+              currentProject,
+              result.config as UnifiedConfig
+            );
             get().addToast({
               type: 'success',
               title: 'Import Complete',
@@ -623,13 +629,13 @@ export const useAppStore = create<AppState>()(
 
       // UI
       sidebarCollapsed: false,
-      toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+      toggleSidebar: () => set(state => ({ sidebarCollapsed: !state.sidebarCollapsed })),
 
       // Notifications
       toasts: [],
-      addToast: (toast) => {
+      addToast: toast => {
         const id = generateId();
-        set((state) => ({
+        set(state => ({
           toasts: [...state.toasts, { ...toast, id }],
         }));
 
@@ -637,29 +643,29 @@ export const useAppStore = create<AppState>()(
         const duration = toast.duration ?? 5000;
         if (duration > 0) {
           setTimeout(() => {
-            set((state) => ({
-              toasts: state.toasts.filter((t) => t.id !== id),
+            set(state => ({
+              toasts: state.toasts.filter(t => t.id !== id),
             }));
           }, duration);
         }
       },
-      removeToast: (id) =>
-        set((state) => ({
-          toasts: state.toasts.filter((t) => t.id !== id),
+      removeToast: id =>
+        set(state => ({
+          toasts: state.toasts.filter(t => t.id !== id),
         })),
 
       // Recent projects
       recentProjects: [],
-      addRecentProject: (project) =>
-        set((state) => {
-          const filtered = state.recentProjects.filter((p) => p.path !== project.path);
+      addRecentProject: project =>
+        set(state => {
+          const filtered = state.recentProjects.filter(p => p.path !== project.path);
           return {
             recentProjects: [project, ...filtered].slice(0, 10), // Keep last 10
           };
         }),
-      removeRecentProject: (path) =>
-        set((state) => ({
-          recentProjects: state.recentProjects.filter((p) => p.path !== path),
+      removeRecentProject: path =>
+        set(state => ({
+          recentProjects: state.recentProjects.filter(p => p.path !== path),
         })),
 
       // Settings
@@ -668,8 +674,8 @@ export const useAppStore = create<AppState>()(
         backupEnabled: true,
         animationsEnabled: true,
       },
-      updateSettings: (newSettings) =>
-        set((state) => ({
+      updateSettings: newSettings =>
+        set(state => ({
           settings: { ...state.settings, ...newSettings },
         })),
 
@@ -678,14 +684,14 @@ export const useAppStore = create<AppState>()(
         sourceTool: null,
         targetTools: [],
       },
-      updateSyncPreferences: (newPreferences) =>
-        set((state) => ({
+      updateSyncPreferences: newPreferences =>
+        set(state => ({
           syncPreferences: { ...state.syncPreferences, ...newPreferences },
         })),
     }),
     {
       name: 'unify-ai-storage',
-      partialize: (state) => ({
+      partialize: state => ({
         recentProjects: state.recentProjects,
         settings: state.settings,
         sidebarCollapsed: state.sidebarCollapsed,

@@ -3,12 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  DiffEngine,
-  DiffType,
-  type DiffEntry,
-  type DiffResult,
-} from '../../converter/DiffEngine';
+import { DiffEngine, DiffType, type DiffEntry, type DiffResult } from '../../converter/DiffEngine';
 import type { UnifiedConfig, RuleConfig, MCPServerConfig } from '../../core/types';
 
 describe('DiffEngine', () => {
@@ -106,17 +101,13 @@ describe('DiffEngine', () => {
 
     it('should handle complex nested objects', () => {
       const unified = {
-        rules: [
-          { id: 'rule-1', content: 'old content' },
-        ],
+        rules: [{ id: 'rule-1', content: 'old content' }],
         settings: {
           model: { default: 'gpt-4' },
         },
       };
       const generated = {
-        rules: [
-          { id: 'rule-1', content: 'new content' },
-        ],
+        rules: [{ id: 'rule-1', content: 'new content' }],
         settings: {
           model: { default: 'claude-3' },
         },

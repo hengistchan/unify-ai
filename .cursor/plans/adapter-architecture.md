@@ -47,16 +47,16 @@ unify-ai/
 
 ## 各工具配置格式对比
 
-| 工具 | 配置文件 | 格式 | 支持的功能 |
-|------|----------|------|------------|
-| Cursor | `.cursor/rules/*.md` | Markdown + frontmatter | Rules, MCP |
-| Claude Code | `CLAUDE.md`, `settings.json`, `.mcp.json` | Markdown/JSON | Rules, MCP, Settings, Commands |
-| OpenAI Codex | `.codex/config.toml`, `AGENTS.md` | TOML/Markdown | Rules, MCP, Settings |
-| GitHub Copilot | `.github/copilot-instructions.md` | Markdown | Rules only |
-| Windsurf | `.windsurfrules` | Markdown | Rules, MCP |
-| Cline | `.clinerules/`, `globalState.json` | JSON | Rules, MCP |
-| Aider | `.aider.conf.yml` | YAML | Rules, Settings |
-| Continue.dev | `config.yaml` | YAML | Rules, MCP, Settings, Prompts |
+| 工具           | 配置文件                                  | 格式                   | 支持的功能                     |
+| -------------- | ----------------------------------------- | ---------------------- | ------------------------------ |
+| Cursor         | `.cursor/rules/*.md`                      | Markdown + frontmatter | Rules, MCP                     |
+| Claude Code    | `CLAUDE.md`, `settings.json`, `.mcp.json` | Markdown/JSON          | Rules, MCP, Settings, Commands |
+| OpenAI Codex   | `.codex/config.toml`, `AGENTS.md`         | TOML/Markdown          | Rules, MCP, Settings           |
+| GitHub Copilot | `.github/copilot-instructions.md`         | Markdown               | Rules only                     |
+| Windsurf       | `.windsurfrules`                          | Markdown               | Rules, MCP                     |
+| Cline          | `.clinerules/`, `globalState.json`        | JSON                   | Rules, MCP                     |
+| Aider          | `.aider.conf.yml`                         | YAML                   | Rules, Settings                |
+| Continue.dev   | `config.yaml`                             | YAML                   | Rules, MCP, Settings, Prompts  |
 
 ---
 
@@ -66,21 +66,21 @@ unify-ai/
 
 ```typescript
 enum ConfigCapability {
-  RULES = 'rules',              // 自定义规则/指令
-  MCP_SERVERS = 'mcp_servers',  // MCP 服务器配置
-  SETTINGS = 'settings',        // 工具设置
-  COMMANDS = 'commands',        // 自定义命令
-  PROMPTS = 'prompts',          // 提示词模板
-  CONTEXT = 'context',          // 上下文文件引用
-  ENV_VARS = 'env_vars',        // 环境变量
-  IGNORE_PATTERNS = 'ignore',   // 忽略模式
+  RULES = 'rules', // 自定义规则/指令
+  MCP_SERVERS = 'mcp_servers', // MCP 服务器配置
+  SETTINGS = 'settings', // 工具设置
+  COMMANDS = 'commands', // 自定义命令
+  PROMPTS = 'prompts', // 提示词模板
+  CONTEXT = 'context', // 上下文文件引用
+  ENV_VARS = 'env_vars', // 环境变量
+  IGNORE_PATTERNS = 'ignore', // 忽略模式
 }
 
 enum CapabilityLevel {
-  FULL = 'full',       // 完全支持
+  FULL = 'full', // 完全支持
   PARTIAL = 'partial', // 部分支持
-  READ_ONLY = 'read_only',   // 只能 import
-  NONE = 'none',       // 不支持
+  READ_ONLY = 'read_only', // 只能 import
+  NONE = 'none', // 不支持
 }
 ```
 
@@ -160,7 +160,11 @@ interface IAdapter {
 
   // 生成 (Export)
   generate(config: UnifiedConfig, options?: ConvertOptions): Promise<GenerateResult>;
-  generateTo(config: UnifiedConfig, targetDir: string, options?: ConvertOptions): Promise<GenerateResult>;
+  generateTo(
+    config: UnifiedConfig,
+    targetDir: string,
+    options?: ConvertOptions
+  ): Promise<GenerateResult>;
 
   // 验证
   validate(config: UnifiedConfig): Promise<ValidationResult>;
@@ -194,7 +198,11 @@ abstract class BaseAdapter implements IAdapter {
   discoverFiles(projectRoot: string): Promise<FileInfo[]>;
   detect(projectRoot: string): Promise<boolean>;
   parseFile(filePath: string, options?: ConvertOptions): Promise<ParseResult>;
-  generateTo(config: UnifiedConfig, targetDir: string, options?: ConvertOptions): Promise<GenerateResult>;
+  generateTo(
+    config: UnifiedConfig,
+    targetDir: string,
+    options?: ConvertOptions
+  ): Promise<GenerateResult>;
   validate(config: UnifiedConfig): Promise<ValidationResult>;
 
   // 辅助方法
@@ -218,10 +226,16 @@ class CursorAdapter extends BaseAdapter {
   getCapabilities(): CapabilityDeclaration[] {
     return [
       { capability: ConfigCapability.RULES, level: CapabilityLevel.FULL },
-      { capability: ConfigCapability.MCP_SERVERS, level: CapabilityLevel.PARTIAL,
-        notes: 'Cursor supports MCP but format differs from standard' },
-      { capability: ConfigCapability.SETTINGS, level: CapabilityLevel.PARTIAL,
-        notes: 'Via .cursor/settings' },
+      {
+        capability: ConfigCapability.MCP_SERVERS,
+        level: CapabilityLevel.PARTIAL,
+        notes: 'Cursor supports MCP but format differs from standard',
+      },
+      {
+        capability: ConfigCapability.SETTINGS,
+        level: CapabilityLevel.PARTIAL,
+        notes: 'Via .cursor/settings',
+      },
     ];
   }
 }
@@ -251,10 +265,7 @@ const result = await fileDiscovery.discover(projectRoot, {
 });
 
 // 发现特定能力的文件
-const ruleFiles = await fileDiscovery.discoverByCapability(
-  projectRoot,
-  ConfigCapability.RULES
-);
+const ruleFiles = await fileDiscovery.discoverByCapability(projectRoot, ConfigCapability.RULES);
 ```
 
 ---
@@ -273,10 +284,7 @@ if (result.success) {
 }
 
 // 从特定工具导入
-const claudeResult = await importer.importFrom(
-  '/path/to/project',
-  ToolId.CLAUDE_CODE
-);
+const claudeResult = await importer.importFrom('/path/to/project', ToolId.CLAUDE_CODE);
 
 // 合并多个工具的配置
 const mergedResult = await importer.import('/path/to/project', {
@@ -318,7 +326,7 @@ import { createConflictResolver, ConflictStrategy } from 'unify-ai';
 const resolver = createConflictResolver('merge'); // 'skip' | 'overwrite' | 'merge' | 'ask'
 
 // 自定义解决策略
-const customResolver = createConflictResolver('ask', (conflict) => {
+const customResolver = createConflictResolver('ask', conflict => {
   if (conflict.type === ConflictType.RULE_CONTENT_DIFF) {
     // 总是使用较长的内容
     const existing = conflict.data.existing as RuleConfig;
@@ -335,16 +343,16 @@ const customResolver = createConflictResolver('ask', (conflict) => {
 
 ## 实现状态
 
-| 适配器 | 状态 | 备注 |
-|--------|------|------|
-| Cursor | 已完成 | 支持 rules, mcp, settings |
-| Claude Code | 已完成 | 支持 rules, mcp, settings, commands |
-| OpenAI Codex | 待实现 | 需要 TOML 解析 |
-| GitHub Copilot | 待实现 | 仅支持 rules |
-| Windsurf | 待实现 | 需要 .windsurfrules 解析 |
-| Cline | 待实现 | 需要 JSON 解析 |
-| Aider | 待实现 | 需要 YAML 解析 |
-| Continue.dev | 待实现 | 需要 YAML 解析 |
+| 适配器         | 状态   | 备注                                |
+| -------------- | ------ | ----------------------------------- |
+| Cursor         | 已完成 | 支持 rules, mcp, settings           |
+| Claude Code    | 已完成 | 支持 rules, mcp, settings, commands |
+| OpenAI Codex   | 待实现 | 需要 TOML 解析                      |
+| GitHub Copilot | 待实现 | 仅支持 rules                        |
+| Windsurf       | 待实现 | 需要 .windsurfrules 解析            |
+| Cline          | 待实现 | 需要 JSON 解析                      |
+| Aider          | 待实现 | 需要 YAML 解析                      |
+| Continue.dev   | 待实现 | 需要 YAML 解析                      |
 
 ---
 

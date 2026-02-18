@@ -37,7 +37,7 @@ export function ThemeSwitcher() {
     <div className="space-y-3">
       <label className="text-sm font-medium text-text-secondary">Theme</label>
       <div className="grid grid-cols-3 gap-2">
-        {themeOptions.map((option) => (
+        {themeOptions.map(option => (
           <button
             key={option.value}
             onClick={() => setMode(option.value)}
@@ -45,21 +45,23 @@ export function ThemeSwitcher() {
               'flex flex-col items-center gap-2 p-4 rounded-lg border transition-all',
               'hover:border-border-hover hover:bg-bg-hover',
               'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-bg-primary',
-              mode === option.value
-                ? 'border-primary bg-primary-muted'
-                : 'border-border'
+              mode === option.value ? 'border-primary bg-primary-muted' : 'border-border'
             )}
           >
-            <div className={clsx(
-              'transition-colors',
-              mode === option.value ? 'text-primary' : 'text-text-secondary'
-            )}>
+            <div
+              className={clsx(
+                'transition-colors',
+                mode === option.value ? 'text-primary' : 'text-text-secondary'
+              )}
+            >
               {option.icon}
             </div>
-            <span className={clsx(
-              'text-sm font-medium',
-              mode === option.value ? 'text-primary' : 'text-text-primary'
-            )}>
+            <span
+              className={clsx(
+                'text-sm font-medium',
+                mode === option.value ? 'text-primary' : 'text-text-primary'
+              )}
+            >
               {option.label}
             </span>
           </button>

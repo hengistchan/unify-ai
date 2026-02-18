@@ -34,4 +34,4 @@ export const IPC_CHANNELS = {
   WRITE_FILE: 'write-file',
 } as const;
 
-export type IpcChannel = typeof IPC_CHANNELS[keyof typeof IPC_CHANNELS];
+export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

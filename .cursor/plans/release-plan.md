@@ -9,43 +9,47 @@
 ## 1. Test Coverage Summary
 
 ### Core Package (@unify-ai/core)
+
 - **Test Files**: 7
 - **Total Tests**: 185
 - **Status**: ✅ PASSED
 
-| Test Suite | Tests | Status | Coverage |
-|------------|-------|--------|----------|
-| ConflictResolver.test.ts | 30 | ✅ | Converter logic |
-| Importer.test.ts | 26 | ✅ | Import operations |
-| Exporter.test.ts | 18 | ✅ | Export operations |
-| BaseAdapter.test.ts | 28 | ✅ | Adapter base |
-| ClaudeCodeAdapter.test.ts | 30 | ✅ | Claude adapter |
-| registry.test.ts | 23 | ✅ | Adapter registry |
-| DiffEngine.test.ts | 30 | ✅ | Diff detection |
+| Test Suite                | Tests | Status | Coverage          |
+| ------------------------- | ----- | ------ | ----------------- |
+| ConflictResolver.test.ts  | 30    | ✅     | Converter logic   |
+| Importer.test.ts          | 26    | ✅     | Import operations |
+| Exporter.test.ts          | 18    | ✅     | Export operations |
+| BaseAdapter.test.ts       | 28    | ✅     | Adapter base      |
+| ClaudeCodeAdapter.test.ts | 30    | ✅     | Claude adapter    |
+| registry.test.ts          | 23    | ✅     | Adapter registry  |
+| DiffEngine.test.ts        | 30    | ✅     | Diff detection    |
 
 ### CLI Package (@unify-ai/cli)
+
 - **Test Files**: 3
 - **Total Tests**: 47
 - **Status**: ✅ PASSED
 
-| Test Suite | Tests | Status | Coverage |
-|------------|-------|--------|----------|
-| init.test.ts | 14 | ✅ | Init command |
-| detect.test.ts | 12 | ✅ | Detect command |
-| sync.test.ts | 21 | ✅ | Sync command |
+| Test Suite     | Tests | Status | Coverage       |
+| -------------- | ----- | ------ | -------------- |
+| init.test.ts   | 14    | ✅     | Init command   |
+| detect.test.ts | 12    | ✅     | Detect command |
+| sync.test.ts   | 21    | ✅     | Sync command   |
 
 ### GUI Package (@unify-ai/gui)
+
 - **Test Files**: 3
 - **Total Tests**: 85
 - **Status**: ✅ PASSED
 
-| Test Suite | Tests | Status | Coverage |
-|------------|-------|--------|----------|
-| appStore.test.ts | 38 | ✅ | State management |
-| Button.test.tsx | 25 | ✅ | Button component |
-| SyncPreviewDialog.test.tsx | 22 | ✅ | Sync dialog |
+| Test Suite                 | Tests | Status | Coverage         |
+| -------------------------- | ----- | ------ | ---------------- |
+| appStore.test.ts           | 38    | ✅     | State management |
+| Button.test.tsx            | 25    | ✅     | Button component |
+| SyncPreviewDialog.test.tsx | 22    | ✅     | Sync dialog      |
 
 ### Total Test Coverage
+
 - **Total Test Files**: 13
 - **Total Tests**: 317
 - **Pass Rate**: 100%
@@ -56,6 +60,7 @@
 ## 2. Release Checklist
 
 ### Pre-Release ✅
+
 - [x] All tests passing (317/317)
 - [x] Core library implemented
 - [x] CLI commands implemented
@@ -65,6 +70,7 @@
 - [x] 8 adapters implemented
 
 ### Version Management
+
 - [ ] Update version in root package.json
 - [ ] Update version in packages/core/package.json
 - [ ] Update version in packages/cli/package.json
@@ -72,12 +78,14 @@
 - [ ] Create git tag for release
 
 ### NPM Release (CLI)
+
 - [ ] Build CLI package
 - [ ] Test global installation
 - [ ] Publish to npm registry
 - [ ] Verify npm package page
 
 ### Electron Release (GUI)
+
 - [ ] Configure electron-builder
 - [ ] Build for macOS (dmg)
 - [ ] Build for Windows (exe)
@@ -85,6 +93,7 @@
 - [ ] Create GitHub release
 
 ### Documentation
+
 - [ ] Update README with installation instructions
 - [ ] Create CHANGELOG.md
 - [ ] Write release notes
@@ -95,6 +104,7 @@
 ## 3. Release Scripts
 
 ### Core Package
+
 ```bash
 # Build
 pnpm build
@@ -108,6 +118,7 @@ pnpm publish --access public
 ```
 
 ### CLI Package
+
 ```bash
 # Build
 cd packages/cli
@@ -126,6 +137,7 @@ pnpm publish --access public
 ```
 
 ### GUI Package
+
 ```bash
 # Build
 cd packages/gui
@@ -215,11 +227,13 @@ git push origin v0.1.0
 # Release v0.1.0
 
 ## Overview
+
 First public release of unify-ai - unified configuration management for AI coding assistants.
 
 ## Features
 
 ### Core Library (@unify-ai/core)
+
 - ✅ 8 AI tool adapters (Cursor, Claude Code, Copilot, Windsurf, Codex, Cline, Aider, Continue)
 - ✅ Import/Export configuration converters
 - ✅ Diff detection engine
@@ -227,6 +241,7 @@ First public release of unify-ai - unified configuration management for AI codin
 - ✅ 185 unit tests
 
 ### CLI Tool (@unify-ai/cli)
+
 - ✅ `init` - Initialize unified.json
 - ✅ `detect` - Detect AI tools in project
 - ✅ `import` - Import configs from tools
@@ -238,6 +253,7 @@ First public release of unify-ai - unified configuration management for AI codin
 - ✅ 47 unit tests
 
 ### GUI Application (@unify-ai/gui)
+
 - ✅ Electron + React desktop app
 - ✅ Project management interface
 - ✅ Auto-detection of AI tools
@@ -248,45 +264,52 @@ First public release of unify-ai - unified configuration management for AI codin
 ## Installation
 
 ### NPM (CLI)
+
 \`\`\`bash
 npm install -g @unify-ai/cli
 unify-ai --help
 \`\`\`
 
 ### GUI Application
+
 Download from GitHub Releases:
+
 - macOS: `unify-ai-0.1.0.dmg`
 - Windows: `unify-ai-0.1.0.exe`
 - Linux: `unify-ai-0.1.0.AppImage`
 
 ## Supported Tools
 
-| Tool | Rules | MCP | Settings | Config Format |
-|------|-------|-----|----------|---------------|
-| Cursor | ✅ | ⚠️ | ⚠️ | Markdown + JSON |
-| Claude Code | ✅ | ✅ | ✅ | Markdown + JSON |
-| Codex | ✅ | ✅ | ✅ | TOML + Markdown |
-| Copilot | ✅ | ❌ | ❌ | Markdown |
-| Windsurf | ✅ | ⚠️ | ⚠️ | Text |
-| Cline | ✅ | ✅ | ⚠️ | Markdown + JSON |
-| Aider | ✅ | ❌ | ✅ | YAML |
-| Continue | ✅ | ⚠️ | ✅ | YAML |
+| Tool        | Rules | MCP | Settings | Config Format   |
+| ----------- | ----- | --- | -------- | --------------- |
+| Cursor      | ✅    | ⚠️  | ⚠️       | Markdown + JSON |
+| Claude Code | ✅    | ✅  | ✅       | Markdown + JSON |
+| Codex       | ✅    | ✅  | ✅       | TOML + Markdown |
+| Copilot     | ✅    | ❌  | ❌       | Markdown        |
+| Windsurf    | ✅    | ⚠️  | ⚠️       | Text            |
+| Cline       | ✅    | ✅  | ⚠️       | Markdown + JSON |
+| Aider       | ✅    | ❌  | ✅       | YAML            |
+| Continue    | ✅    | ⚠️  | ✅       | YAML            |
 
 ## Test Coverage
+
 - **Total Tests**: 317
 - **Pass Rate**: 100%
 - **Packages**: 3 (core, cli, gui)
 
 ## Known Limitations
+
 - CLI `sync` command advanced merge strategies (tool-wins, timestamp comparison) are partially implemented
 - GUI is in beta - some features may change in future releases
 
 ## Documentation
+
 - [README](./README.md)
 - [Contributing Guide](./CONTRIBUTING.md)
 - [Architecture](./CLAUDE.md)
 
 ## Next Steps (v0.2.0)
+
 - Complete sync merge strategies
 - Add configuration templates
 - Team configuration sharing

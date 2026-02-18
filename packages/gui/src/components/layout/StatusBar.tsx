@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  CheckCircle,
-  RefreshCw,
-  AlertCircle,
-  Clock,
-  AlertTriangle,
-  XCircle,
-} from 'lucide-react';
+import { CheckCircle, RefreshCw, AlertCircle, Clock, AlertTriangle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { StatusBarProps, SyncStatus } from '@/types/layout';
 
@@ -96,14 +89,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({ status }) => {
         {status.errorCount > 0 && (
           <div className="flex items-center gap-1.5 text-error">
             <XCircle className="w-3 h-3" />
-            <span>{status.errorCount} error{status.errorCount !== 1 ? 's' : ''}</span>
+            <span>
+              {status.errorCount} error{status.errorCount !== 1 ? 's' : ''}
+            </span>
           </div>
         )}
 
         {status.warningCount > 0 && (
           <div className="flex items-center gap-1.5 text-warning">
             <AlertTriangle className="w-3 h-3" />
-            <span>{status.warningCount} warning{status.warningCount !== 1 ? 's' : ''}</span>
+            <span>
+              {status.warningCount} warning{status.warningCount !== 1 ? 's' : ''}
+            </span>
           </div>
         )}
 

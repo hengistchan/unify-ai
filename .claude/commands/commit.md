@@ -5,19 +5,23 @@ Create a git commit with proper commit message.
 ## Instructions
 
 1. **Check git status** to see all changes:
+
    ```bash
    git status
    ```
 
 2. **Review the diff** to understand what changed:
+
    ```bash
    git diff
    ```
 
 3. **Stage files** appropriately:
+
    ```bash
    git add <files>
    ```
+
    - Only stage meaningful changes
    - Avoid staging unrelated files
 
@@ -32,6 +36,7 @@ Create a git commit with proper commit message.
    ```
 
    ### Type
+
    Use one of:
    - `feat`: New feature
    - `fix`: Bug fix
@@ -41,6 +46,7 @@ Create a git commit with proper commit message.
    - `chore`: Maintenance
 
    ### Scope
+
    Use meaningful scope:
    - `core`: Core library changes
    - `cli`: CLI tool changes
@@ -62,6 +68,7 @@ Create a git commit with proper commit message.
    - List key changes with file/method names
 
 5. **Create commit**:
+
    ```bash
    git commit -m "$(cat <<'EOF'
    <type>(<scope>): <subject>
@@ -81,6 +88,7 @@ Create a git commit with proper commit message.
 ## Examples
 
 ### Feature commit
+
 ```
 feat(core): add config backup and restore functionality
 
@@ -93,6 +101,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 ```
 
 ### Refactor commit
+
 ```
 refactor(adapter): simplify CursorAdapter parse method
 

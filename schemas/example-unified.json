@@ -129,16 +129,8 @@
       "Bash(git status)",
       "Bash(git diff*)"
     ],
-    "deny": [
-      "Read(**/.env*)",
-      "Read(**/secrets/**)",
-      "Write(**/.env*)"
-    ],
-    "ask": [
-      "Bash(git push*)",
-      "Bash(npm publish)",
-      "Write(**/package.json)"
-    ],
+    "deny": ["Read(**/.env*)", "Read(**/secrets/**)", "Write(**/.env*)"],
+    "ask": ["Bash(git push*)", "Bash(npm publish)", "Write(**/package.json)"],
     "file_system": {
       "protected": ["**/.env*", "**/credentials*"],
       "forbidden": ["**/.git/**"]

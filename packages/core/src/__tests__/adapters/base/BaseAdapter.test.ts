@@ -34,10 +34,7 @@ class TestAdapter extends BaseAdapter {
   private capabilities: CapabilityDeclaration[];
   private filePatterns: FilePattern[];
 
-  constructor(
-    capabilities?: CapabilityDeclaration[],
-    filePatterns?: FilePattern[]
-  ) {
+  constructor(capabilities?: CapabilityDeclaration[], filePatterns?: FilePattern[]) {
     super();
     this.capabilities = capabilities ?? [
       { capability: CC.RULES, level: CL.FULL },
@@ -93,7 +90,10 @@ class TestAdapter extends BaseAdapter {
     return this.createSuccessResult(data, metadata);
   }
 
-  testCreateErrorResult(errors: ParseResult['errors'], warnings?: ParseResult['warnings']): ParseResult {
+  testCreateErrorResult(
+    errors: ParseResult['errors'],
+    warnings?: ParseResult['warnings']
+  ): ParseResult {
     return this.createErrorResult(errors as any, warnings as any);
   }
 }

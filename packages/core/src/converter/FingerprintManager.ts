@@ -263,13 +263,11 @@ export class FingerprintManager {
    * Compute hash for content
    */
   private computeHash(content: unknown): string {
-    const normalized = typeof content === 'string'
-      ? content
-      : JSON.stringify(content, Object.keys(content as object).sort());
-    return crypto
-      .createHash('sha256')
-      .update(normalized)
-      .digest('hex');
+    const normalized =
+      typeof content === 'string'
+        ? content
+        : JSON.stringify(content, Object.keys(content as object).sort());
+    return crypto.createHash('sha256').update(normalized).digest('hex');
   }
 
   /**

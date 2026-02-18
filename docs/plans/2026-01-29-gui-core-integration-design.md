@@ -11,6 +11,7 @@ Integrate `@unify-ai/core` into the GUI application to make detection/import/exp
 ## Current State
 
 ### What's Done
+
 - Electron + React + Vite setup complete
 - Tailwind CSS configured with dark theme
 - Electron Builder configured
@@ -20,6 +21,7 @@ Integrate `@unify-ai/core` into the GUI application to make detection/import/exp
 - Zustand store with project/sync state
 
 ### What's Missing
+
 - IPC handlers use custom logic instead of @unify-ai/core
 - syncConfig is a placeholder (returns mock success)
 - No Sync Preview Dialog
@@ -47,18 +49,21 @@ Renderer Process                    Main Process
 ### Task 1: IPC Handlers Refactor (Agent 1)
 
 **Files to modify:**
+
 - `packages/gui/electron/ipc/tool-detection.ts` - Replace with @unify-ai/core
 - `packages/gui/electron/ipc/sync.ts` - Replace with @unify-ai/core
 - `packages/gui/electron/ipc/channels.ts` - Add new channels
 - `packages/gui/electron/ipc/index.ts` - Register new handlers
 
 **New channels:**
+
 ```typescript
-PREVIEW_SYNC      // Preview sync changes (dry-run)
-GET_TOOL_CONFIG   // Get detailed config for a single tool
+PREVIEW_SYNC; // Preview sync changes (dry-run)
+GET_TOOL_CONFIG; // Get detailed config for a single tool
 ```
 
 **Implementation:**
+
 ```typescript
 // tool-detection.ts
 import { fileDiscovery, adapterRegistry } from '@unify-ai/core';
@@ -80,15 +85,18 @@ export async function detectTools(folderPath: string): Promise<DetectedTool[]> {
 ### Task 2: Sync Preview Dialog (Agent 2)
 
 **New files:**
+
 - `packages/gui/src/components/SyncPreviewDialog.tsx`
 
 **Features:**
+
 - Show diff summary (files to create/update/delete)
 - List affected tools
 - Show conflicts if any
 - Confirm/Cancel buttons
 
 **Props:**
+
 ```typescript
 interface SyncPreviewDialogProps {
   open: boolean;
@@ -116,9 +124,11 @@ interface FileChange {
 ### Task 3: Store & Hooks Update (Agent 3)
 
 **Files to modify:**
+
 - `packages/gui/src/stores/appStore.ts`
 
 **New state:**
+
 ```typescript
 interface AppState {
   // Existing
@@ -138,11 +148,13 @@ interface AppState {
 ### Task 4: UI Pages Update (Agent 4)
 
 **Files to modify:**
+
 - `packages/gui/src/pages/Project.tsx` - Connect to real data
 - `packages/gui/src/pages/ToolDetail.tsx` - Load real config
 - `packages/gui/src/pages/HomePage.tsx` - Fix sync button
 
 **Changes:**
+
 - Remove mock data
 - Add loading states
 - Connect to store actions
@@ -151,12 +163,14 @@ interface AppState {
 ### Task 5: Code Cleanup & Verification (Agent 5)
 
 **Files to remove:**
+
 - `packages/gui/src/pages/Home.tsx` (duplicate)
 - `packages/gui/src/pages/SettingsPage.tsx` (duplicate)
 - `packages/gui/src/pages/ToolsPage.tsx` (unused)
 - `packages/gui/src/components/layout/MainLayout.tsx` (unused)
 
 **Tasks:**
+
 1. Remove duplicate/unused files
 2. Ensure all imports are correct
 3. Run `pnpm build` in packages/gui

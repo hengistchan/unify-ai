@@ -5,18 +5,21 @@ Use this checklist for every release.
 ## Pre-Release
 
 ### Code Quality
+
 - [ ] All tests passing (core, cli, gui)
 - [ ] No TypeScript errors
 - [ ] No linting errors
 - [ ] Code reviewed
 
 ### Documentation
+
 - [ ] README.md updated
 - [ ] CHANGELOG.md updated with release notes
 - [ ] CLAUDE.md updated if architecture changed
 - [ ] Inline code comments clear
 
 ### Version Management
+
 - [ ] Version updated in root package.json
 - [ ] Version updated in packages/core/package.json
 - [ ] Version updated in packages/cli/package.json
@@ -26,6 +29,7 @@ Use this checklist for every release.
 ## Testing
 
 ### Automated Tests
+
 - [ ] Core tests: `pnpm test` (185 tests)
 - [ ] CLI tests: `pnpm test -w @unify-ai/cli` (47 tests)
 - [ ] GUI tests: `pnpm test -w @unify-ai/gui` (85 tests)
@@ -34,6 +38,7 @@ Use this checklist for every release.
 ### Manual Testing
 
 #### CLI
+
 - [ ] Global install: `pnpm link --global`
 - [ ] Help command: `unify-ai --help`
 - [ ] Init command: `unify-ai init /tmp/test`
@@ -44,6 +49,7 @@ Use this checklist for every release.
 - [ ] Uninstall: `pnpm unlink --global @unify-ai/cli`
 
 #### GUI
+
 - [ ] Dev mode: `pnpm gui`
 - [ ] Window opens correctly
 - [ ] Can select project folder
@@ -52,6 +58,7 @@ Use this checklist for every release.
 - [ ] Can perform sync
 
 #### Core
+
 - [ ] Import from real tool configs
 - [ ] Export to real tool configs
 - [ ] Diff detection works
@@ -60,16 +67,19 @@ Use this checklist for every release.
 ## Build
 
 ### Core
+
 - [ ] Build: `pnpm build`
 - [ ] No build errors
 - [ ] Output in packages/core/dist/
 
 ### CLI
+
 - [ ] Build: `cd packages/cli && pnpm build`
 - [ ] Binary created: packages/cli/bin/unify-ai.js
 - [ ] Binary executable
 
 ### GUI
+
 - [ ] Build: `cd packages/gui && pnpm build`
 - [ ] No build errors
 - [ ] Electron build: `pnpm electron:build`
@@ -80,12 +90,14 @@ Use this checklist for every release.
 ## NPM Publishing
 
 ### Core Package
+
 - [ ] Login: `npm login`
 - [ ] Publish: `cd packages/core && pnpm publish --access public`
 - [ ] Verify: https://www.npmjs.com/package/@unify-ai/core
 - [ ] Install test: `npm install -g @unify-ai/core`
 
 ### CLI Package
+
 - [ ] Publish: `cd packages/cli && pnpm publish --access public`
 - [ ] Verify: https://www.npmjs.com/package/@unify-ai/cli
 - [ ] Install test: `npm install -g @unify-ai/cli`
@@ -94,12 +106,14 @@ Use this checklist for every release.
 ## Git & GitHub
 
 ### Git Operations
+
 - [ ] Commit version update: `git commit -m "chore: release vX.Y.Z"`
 - [ ] Create tag: `git tag vX.Y.Z`
 - [ ] Push commit: `git push origin main`
 - [ ] Push tag: `git push origin vX.Y.Z`
 
 ### GitHub Release
+
 - [ ] Go to: https://github.com/yourusername/unify-ai/releases/new
 - [ ] Select tag: vX.Y.Z
 - [ ] Release title: `vX.Y.Z`
@@ -113,6 +127,7 @@ Use this checklist for every release.
 ## Post-Release
 
 ### Verification
+
 - [ ] npm packages accessible
 - [ ] GitHub release visible
 - [ ] Download links work
@@ -120,6 +135,7 @@ Use this checklist for every release.
 - [ ] GUI downloads work
 
 ### Communication
+
 - [ ] Tweet announcement
 - [ ] Reddit post (r/javascript, r/typescript, r/programming)
 - [ ] Hacker News submission
@@ -127,6 +143,7 @@ Use this checklist for every release.
 - [ ] Update website (if applicable)
 
 ### Monitoring
+
 - [ ] Watch GitHub issues for bug reports
 - [ ] Monitor npm download stats
 - [ ] Check social media mentions
@@ -137,6 +154,7 @@ Use this checklist for every release.
 If critical issues found:
 
 1. Deprecate npm packages:
+
    ```bash
    npm deprecate @unify-ai/core@X.Y.Z "Critical bug, please upgrade to X.Y.Z+1"
    npm deprecate @unify-ai/cli@X.Y.Z "Critical bug, please upgrade to X.Y.Z+1"
@@ -145,12 +163,14 @@ If critical issues found:
 2. Delete GitHub release
 
 3. Delete git tag:
+
    ```bash
    git tag -d vX.Y.Z
    git push origin :refs/tags/vX.Y.Z
    ```
 
 4. Create hotfix branch:
+
    ```bash
    git checkout -b hotfix/X.Y.Z+1
    ```

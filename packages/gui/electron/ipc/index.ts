@@ -6,7 +6,14 @@
 import { ipcMain, app } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
-import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig, previewExport } from './sync';
+import {
+  syncConfig,
+  previewSync,
+  getToolConfig,
+  importConfig,
+  exportConfig,
+  previewExport,
+} from './sync';
 import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
 
 /**
@@ -30,17 +37,32 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(IPC_CHANNELS.DETECT_TOOLS, async (_event, folderPath: string) => {
     console.log('[IPC] Detecting tools in:', folderPath);
     const result = await detectTools(folderPath);
-    console.log('[IPC] Detected tools:', result.filter(t => t.detected).map(t => t.id).join(', ') || 'none');
+    console.log(
+      '[IPC] Detected tools:',
+      result
+        .filter(t => t.detected)
+        .map(t => t.id)
+        .join(', ') || 'none'
+    );
     return result;
   });
 
   // Sync configuration
   ipcMain.handle(
     IPC_CHANNELS.SYNC_CONFIG,
-    async (_event, sourceFolder: string, targetTools: string[], options?: { createBackup?: boolean; overwrite?: boolean }) => {
+    async (
+      _event,
+      sourceFolder: string,
+      targetTools: string[],
+      options?: { createBackup?: boolean; overwrite?: boolean }
+    ) => {
       console.log('[IPC] Syncing config:', { sourceFolder, targetTools, options });
       const result = await syncConfig(sourceFolder, targetTools, options);
-      console.log('[IPC] Sync result:', result.success ? 'success' : 'failed', `- ${result.syncedTools.length} tools`);
+      console.log(
+        '[IPC] Sync result:',
+        result.success ? 'success' : 'failed',
+        `- ${result.syncedTools.length} tools`
+      );
       return result;
     }
   );
@@ -70,7 +92,11 @@ export function registerIpcHandlers(): void {
   // Import configuration
   ipcMain.handle(
     IPC_CHANNELS.IMPORT_CONFIG,
-    async (_event, folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => {
+    async (
+      _event,
+      folderPath: string,
+      options?: { mergeMultiple?: boolean; sourceTool?: string }
+    ) => {
       console.log('[IPC] Importing config:', { folderPath, options });
       const result = await importConfig(folderPath, options);
       console.log('[IPC] Import result:', result.success ? 'success' : 'failed');
@@ -81,10 +107,20 @@ export function registerIpcHandlers(): void {
   // Export configuration
   ipcMain.handle(
     IPC_CHANNELS.EXPORT_CONFIG,
-    async (_event, config: unknown, folderPath: string, targetTools: string[], options?: { createBackup?: boolean; overwrite?: boolean }) => {
+    async (
+      _event,
+      config: unknown,
+      folderPath: string,
+      targetTools: string[],
+      options?: { createBackup?: boolean; overwrite?: boolean }
+    ) => {
       console.log('[IPC] Exporting config:', { folderPath, targetTools, options });
       const result = await exportConfig(config as any, folderPath, targetTools, options);
-      console.log('[IPC] Export result:', result.success ? 'success' : 'failed', `- ${result.exportedTools.length} tools`);
+      console.log(
+        '[IPC] Export result:',
+        result.success ? 'success' : 'failed',
+        `- ${result.exportedTools.length} tools`
+      );
       return result;
     }
   );
@@ -101,15 +137,12 @@ export function registerIpcHandlers(): void {
   );
 
   // Load unified config from file
-  ipcMain.handle(
-    IPC_CHANNELS.LOAD_UNIFIED_CONFIG,
-    async (_event, folderPath: string) => {
-      console.log('[IPC] Loading unified config from:', folderPath);
-      const result = await loadUnifiedConfig(folderPath);
-      console.log('[IPC] Load result:', result.success ? 'success' : 'no config found');
-      return result;
-    }
-  );
+  ipcMain.handle(IPC_CHANNELS.LOAD_UNIFIED_CONFIG, async (_event, folderPath: string) => {
+    console.log('[IPC] Loading unified config from:', folderPath);
+    const result = await loadUnifiedConfig(folderPath);
+    console.log('[IPC] Load result:', result.success ? 'success' : 'no config found');
+    return result;
+  });
 
   console.log('[IPC] All handlers registered');
 }
@@ -118,7 +151,7 @@ export function registerIpcHandlers(): void {
  * Unregister all IPC handlers (for cleanup)
  */
 export function unregisterIpcHandlers(): void {
-  Object.values(IPC_CHANNELS).forEach((channel) => {
+  Object.values(IPC_CHANNELS).forEach(channel => {
     ipcMain.removeHandler(channel);
   });
 }

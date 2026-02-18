@@ -72,6 +72,7 @@ git push origin v0.0.2-beta.1
 ```
 
 This will:
+
 - Run tests ✅
 - Build GUI ✅
 - **NOT publish to npm** (pre-release)
@@ -82,12 +83,14 @@ This will:
 ### CI Workflow (`ci.yml`)
 
 Required permissions:
+
 - `contents: read` - Checkout repository
 - `pull-requests: write` - Comment on PRs (optional)
 
 ### Release Workflow (`release.yml`)
 
 Required permissions:
+
 - `contents: write` - Create releases, push tags
 - `packages: write` - Publish to GitHub Packages (optional)
 
@@ -100,6 +103,7 @@ These permissions are configured in the workflow files.
 **Cause:** NPM_TOKEN not configured or invalid
 
 **Solution:**
+
 1. Verify NPM_TOKEN is set in GitHub Secrets
 2. Verify token has "Automation" permissions
 3. Verify token is for the correct npm account
@@ -115,6 +119,7 @@ These permissions are configured in the workflow files.
 **Cause:** Insufficient permissions
 
 **Solution:**
+
 1. Go to Settings → Actions → General
 2. Scroll to "Workflow permissions"
 3. Select "Read and write permissions"
@@ -125,6 +130,7 @@ These permissions are configured in the workflow files.
 **Cause:** CODECOV_TOKEN not configured
 
 **Solution:**
+
 - Either add CODECOV_TOKEN secret
 - Or remove codecov step from workflow (coverage still runs, just not uploaded)
 
@@ -150,6 +156,7 @@ Recommended settings for `main` branch:
    - ✅ Include administrators
 
 Required status checks:
+
 - `test` (from CI workflow)
 - `lint` (from CI workflow)
 
@@ -167,6 +174,7 @@ Set up notifications for workflow failures:
 ### Monitoring Dashboard
 
 Use GitHub's insights:
+
 - Actions → Usage: Monitor workflow runs
 - Actions → Caching: Monitor cache usage
 - Insights → Pulse: Overview of activity
@@ -176,11 +184,13 @@ Use GitHub's insights:
 ### GitHub Actions Minutes
 
 Free tier includes:
+
 - 2,000 minutes/month (free)
 - 3,000 minutes/month (Team)
 - 50,000 minutes/month (Enterprise)
 
 **Tips to reduce usage:**
+
 - Use caching for pnpm
 - Only run tests on relevant changes
 - Use matrix builds selectively
@@ -188,6 +198,7 @@ Free tier includes:
 ### npm Bandwidth
 
 Free tier includes:
+
 - Unlimited bandwidth for public packages
 
 ## Next Steps
@@ -203,6 +214,7 @@ After setting up secrets:
 ## Support
 
 For issues:
+
 1. Check GitHub Actions logs
 2. Review this guide
 3. Check GitHub Actions documentation

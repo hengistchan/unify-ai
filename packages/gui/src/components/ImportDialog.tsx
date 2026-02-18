@@ -27,7 +27,7 @@ export function ImportDialog({
   const [mergeMultiple, setMergeMultiple] = useState(true);
   const [selectedSource, setSelectedSource] = useState<string>('');
 
-  const detectedList = detectedTools.filter((t) => t.detected);
+  const detectedList = detectedTools.filter(t => t.detected);
 
   // Initialize with first detected tool
   useEffect(() => {
@@ -48,10 +48,7 @@ export function ImportDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden animate-fade-in">
@@ -74,8 +71,8 @@ export function ImportDialog({
         <div className="p-6 overflow-y-auto space-y-6">
           {/* Description */}
           <p className="text-text-secondary text-sm">
-            Import AI tool configuration from your project. The imported configuration
-            can then be synced to other tools or exported.
+            Import AI tool configuration from your project. The imported configuration can then be
+            synced to other tools or exported.
           </p>
 
           {/* Merge Option */}
@@ -84,7 +81,7 @@ export function ImportDialog({
               <input
                 type="checkbox"
                 checked={mergeMultiple}
-                onChange={(e) => setMergeMultiple(e.target.checked)}
+                onChange={e => setMergeMultiple(e.target.checked)}
                 className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 disabled={loading}
               />
@@ -93,8 +90,8 @@ export function ImportDialog({
                   Merge from all detected tools
                 </span>
                 <p className="text-xs text-text-tertiary mt-1">
-                  Combine configurations from all detected tools into a unified config.
-                  Disable to import from a single source.
+                  Combine configurations from all detected tools into a unified config. Disable to
+                  import from a single source.
                 </p>
               </div>
             </label>
@@ -105,7 +102,7 @@ export function ImportDialog({
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-text-primary">Source Tool</h3>
               <div className="grid grid-cols-2 gap-2">
-                {detectedList.map((tool) => (
+                {detectedList.map(tool => (
                   <button
                     key={tool.id}
                     onClick={() => setSelectedSource(tool.id)}
@@ -120,9 +117,7 @@ export function ImportDialog({
                     <div className="flex-1 text-left">
                       <div className="font-medium text-sm">{tool.name}</div>
                     </div>
-                    {selectedSource === tool.id && (
-                      <Check className="w-4 h-4 text-primary" />
-                    )}
+                    {selectedSource === tool.id && <Check className="w-4 h-4 text-primary" />}
                   </button>
                 ))}
               </div>
@@ -135,11 +130,8 @@ export function ImportDialog({
               Detected Tools ({detectedList.length})
             </h4>
             <div className="space-y-1">
-              {detectedList.map((tool) => (
-                <div
-                  key={tool.id}
-                  className="flex items-center gap-2 text-xs text-text-secondary"
-                >
+              {detectedList.map(tool => (
+                <div key={tool.id} className="flex items-center gap-2 text-xs text-text-secondary">
                   <Check className="w-3 h-3 text-success" />
                   <span>{tool.name}</span>
                   <span className="text-text-tertiary">({tool.configPath})</span>
@@ -153,8 +145,8 @@ export function ImportDialog({
             <div className="flex items-start gap-2 p-3 bg-warning-muted border border-warning/20 rounded-lg">
               <AlertCircle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
               <p className="text-sm text-warning">
-                No AI tools detected in this project. Make sure you have tool
-                configuration files in your project directory.
+                No AI tools detected in this project. Make sure you have tool configuration files in
+                your project directory.
               </p>
             </div>
           )}

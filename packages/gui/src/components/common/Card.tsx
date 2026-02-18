@@ -24,40 +24,16 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   className,
 }) => {
   return (
-    <div
-      className={cn(
-        'flex items-center gap-3 p-4',
-        'border-b border-border',
-        className
-      )}
-    >
-      {icon && (
-        <span className="flex-shrink-0 text-primary">
-          {icon}
-        </span>
-      )}
+    <div className={cn('flex items-center gap-3 p-4', 'border-b border-border', className)}>
+      {icon && <span className="flex-shrink-0 text-primary">{icon}</span>}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-text-primary truncate">
-            {title}
-          </h3>
-          {badge && (
-            <Badge variant={badge.variant}>
-              {badge.text}
-            </Badge>
-          )}
+          <h3 className="text-sm font-medium text-text-primary truncate">{title}</h3>
+          {badge && <Badge variant={badge.variant}>{badge.text}</Badge>}
         </div>
-        {subtitle && (
-          <p className="text-xs text-text-tertiary mt-0.5 truncate">
-            {subtitle}
-          </p>
-        )}
+        {subtitle && <p className="text-xs text-text-tertiary mt-0.5 truncate">{subtitle}</p>}
       </div>
-      {action && (
-        <div className="flex-shrink-0">
-          {action}
-        </div>
-      )}
+      {action && <div className="flex-shrink-0">{action}</div>}
     </div>
   );
 };
@@ -68,15 +44,8 @@ export interface CardBodyProps {
   className?: string;
 }
 
-export const CardBody: React.FC<CardBodyProps> = ({
-  children,
-  className,
-}) => {
-  return (
-    <div className={cn('p-4', className)}>
-      {children}
-    </div>
-  );
+export const CardBody: React.FC<CardBodyProps> = ({ children, className }) => {
+  return <div className={cn('p-4', className)}>{children}</div>;
 };
 
 // Card Footer
@@ -85,10 +54,7 @@ export interface CardFooterProps {
   className?: string;
 }
 
-export const CardFooter: React.FC<CardFooterProps> = ({
-  children,
-  className,
-}) => {
+export const CardFooter: React.FC<CardFooterProps> = ({ children, className }) => {
   return (
     <div
       className={cn(
@@ -116,12 +82,7 @@ export const Card: React.FC<CardProps> & {
   Header: typeof CardHeader;
   Body: typeof CardBody;
   Footer: typeof CardFooter;
-} = ({
-  children,
-  className,
-  hoverable = true,
-  onClick,
-}) => {
+} = ({ children, className, hoverable = true, onClick }) => {
   return (
     <div
       onClick={onClick}

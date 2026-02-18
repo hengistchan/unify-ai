@@ -29,12 +29,12 @@ export function ExportDialog({
   const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
   const [createBackup, setCreateBackup] = useState(true);
 
-  const detectedList = detectedTools.filter((t) => t.detected);
+  const detectedList = detectedTools.filter(t => t.detected);
 
   // Initialize with all tools selected
   useEffect(() => {
     if (open && detectedList.length > 0 && selectedTools.size === 0) {
-      setSelectedTools(new Set(detectedList.map((t) => t.id)));
+      setSelectedTools(new Set(detectedList.map(t => t.id)));
     }
   }, [open, detectedList, selectedTools.size]);
 
@@ -54,21 +54,18 @@ export function ExportDialog({
     }
   };
 
-  const hasConfig = unifiedConfig && (
-    (unifiedConfig.rules && unifiedConfig.rules.length > 0) ||
-    (unifiedConfig.mcp && unifiedConfig.mcp.servers.length > 0) ||
-    unifiedConfig.settings
-  );
+  const hasConfig =
+    unifiedConfig &&
+    ((unifiedConfig.rules && unifiedConfig.rules.length > 0) ||
+      (unifiedConfig.mcp && unifiedConfig.mcp.servers.length > 0) ||
+      unifiedConfig.settings);
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] overflow-hidden animate-fade-in">
@@ -101,15 +98,15 @@ export function ExportDialog({
 
           {/* Description */}
           <p className="text-text-secondary text-sm">
-            Export your unified configuration to selected AI tools. This will write
-            configuration files to the appropriate locations for each tool.
+            Export your unified configuration to selected AI tools. This will write configuration
+            files to the appropriate locations for each tool.
           </p>
 
           {/* Target Tools Selection */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-text-primary">Target Tools</h3>
             <div className="grid grid-cols-2 gap-2">
-              {detectedList.map((tool) => {
+              {detectedList.map(tool => {
                 const isSelected = selectedTools.has(tool.id);
 
                 return (
@@ -127,9 +124,7 @@ export function ExportDialog({
                     <div className="flex-1 text-left">
                       <div className="font-medium text-sm">{tool.name}</div>
                     </div>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-primary" />
-                    )}
+                    {isSelected && <Check className="w-4 h-4 text-primary" />}
                   </button>
                 );
               })}
@@ -142,7 +137,7 @@ export function ExportDialog({
               <input
                 type="checkbox"
                 checked={createBackup}
-                onChange={(e) => setCreateBackup(e.target.checked)}
+                onChange={e => setCreateBackup(e.target.checked)}
                 className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
                 disabled={loading}
               />
@@ -201,7 +196,10 @@ export function ExportDialog({
           {/* Selection Summary */}
           {selectedTools.size > 0 && (
             <div className="text-sm text-text-secondary">
-              Will export to <strong className="text-text-primary">{selectedTools.size} tool{selectedTools.size > 1 ? 's' : ''}</strong>
+              Will export to{' '}
+              <strong className="text-text-primary">
+                {selectedTools.size} tool{selectedTools.size > 1 ? 's' : ''}
+              </strong>
             </div>
           )}
         </div>

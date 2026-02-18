@@ -29,8 +29,16 @@ interface SyncResult {
 export const syncCommand = new Command('sync')
   .description('Bidirectional sync between unified and tool configs')
   .argument('[tools...]', 'Tools to sync (default: all)')
-  .option('-m, --mode <mode>', 'Sync mode: one-way-export, one-way-import, two-way-auto, two-way-interactive', 'two-way-interactive')
-  .option('-s, --strategy <strategy>', 'Conflict strategy: unified-wins, tool-wins, latest, merge, ask', 'ask')
+  .option(
+    '-m, --mode <mode>',
+    'Sync mode: one-way-export, one-way-import, two-way-auto, two-way-interactive',
+    'two-way-interactive'
+  )
+  .option(
+    '-s, --strategy <strategy>',
+    'Conflict strategy: unified-wins, tool-wins, latest, merge, ask',
+    'ask'
+  )
   .option('-w, --watch', 'Watch mode')
   .option('--debounce <ms>', 'Debounce delay for watch mode', '1000')
   .option('-b, --backup', 'Create backup', true)
@@ -55,7 +63,15 @@ export const syncCommand = new Command('sync')
       }
 
       // Determine tools to sync
-      const allTools = ['claude-code', 'cursor', 'copilot', 'windsurf', 'cline', 'aider', 'continue'];
+      const allTools = [
+        'claude-code',
+        'cursor',
+        'copilot',
+        'windsurf',
+        'cline',
+        'aider',
+        'continue',
+      ];
       const toolsToSync = _tools.length > 0 ? _tools : allTools;
 
       // Execute sync
@@ -85,7 +101,12 @@ async function executeSync(
   config: UnifiedConfig,
   projectRoot: string,
   tools: string[],
-  options: { mode: SyncMode; strategy: ResolutionStrategy; dryRun?: boolean; parent?: { dryRun?: boolean } },
+  options: {
+    mode: SyncMode;
+    strategy: ResolutionStrategy;
+    dryRun?: boolean;
+    parent?: { dryRun?: boolean };
+  },
   logger: ReturnType<typeof getLogger>
 ): Promise<SyncResult> {
   const result: SyncResult = {
@@ -98,12 +119,12 @@ async function executeSync(
 
   const toolIdMap: Record<string, ToolId> = {
     'claude-code': ToolId.CLAUDE_CODE,
-    'cursor': ToolId.CURSOR,
-    'copilot': ToolId.COPILOT,
-    'windsurf': ToolId.WINDSURF,
-    'cline': ToolId.CLINE,
-    'aider': ToolId.AIDER,
-    'continue': ToolId.CONTINUE,
+    cursor: ToolId.CURSOR,
+    copilot: ToolId.COPILOT,
+    windsurf: ToolId.WINDSURF,
+    cline: ToolId.CLINE,
+    aider: ToolId.AIDER,
+    continue: ToolId.CONTINUE,
   };
 
   for (const toolId of tools) {
@@ -132,15 +153,30 @@ async function executeSync(
       logger.subSection(`${adapter.toolMeta.name}`);
 
       // Handle different sync modes
-      if (options.mode === 'one-way-export' || options.mode === 'two-way-auto' || options.mode === 'two-way-interactive') {
+      if (
+        options.mode === 'one-way-export' ||
+        options.mode === 'two-way-auto' ||
+        options.mode === 'two-way-interactive'
+      ) {
         // Export mode
         const exported = await handleExport(config, projectRoot, adapter, diff, options, logger);
         result.exported += exported;
       }
 
-      if (options.mode === 'one-way-import' || options.mode === 'two-way-auto' || options.mode === 'two-way-interactive') {
+      if (
+        options.mode === 'one-way-import' ||
+        options.mode === 'two-way-auto' ||
+        options.mode === 'two-way-interactive'
+      ) {
         // Import mode - detect user modifications
-        const { imported, hasConflicts } = await handleImport(config, projectRoot, adapter, diff, options, logger);
+        const { imported, hasConflicts } = await handleImport(
+          config,
+          projectRoot,
+          adapter,
+          diff,
+          options,
+          logger
+        );
         result.imported += imported;
         if (hasConflicts) {
           result.conflicts++;
@@ -165,9 +201,7 @@ async function handleExport(
   logger: ReturnType<typeof getLogger>
 ): Promise<number> {
   // Filter entries that need export (where unified has the value)
-  const exportEntries = diff.entries.filter(e =>
-    e.source === 'unified' || e.source === 'both'
-  );
+  const exportEntries = diff.entries.filter(e => e.source === 'unified' || e.source === 'both');
 
   if (exportEntries.length === 0) {
     return 0;
@@ -202,15 +236,23 @@ async function handleExport(
 async function handleImport(
   config: UnifiedConfig,
   projectRoot: string,
-  adapter: { toolMeta: { name: string; id: string }; parse: (projectRoot: string) => Promise<{ success: boolean; data?: UnifiedConfig; errors?: any[] }> },
+  adapter: {
+    toolMeta: { name: string; id: string };
+    parse: (
+      projectRoot: string
+    ) => Promise<{ success: boolean; data?: UnifiedConfig; errors?: any[] }>;
+  },
   diff: { entries: DiffEntry[] },
-  options: { mode: SyncMode; strategy: ResolutionStrategy; dryRun?: boolean; parent?: { dryRun?: boolean } },
+  options: {
+    mode: SyncMode;
+    strategy: ResolutionStrategy;
+    dryRun?: boolean;
+    parent?: { dryRun?: boolean };
+  },
   logger: ReturnType<typeof getLogger>
 ): Promise<{ imported: number; hasConflicts: boolean }> {
   // Filter entries that need import (where tool has the value)
-  const importEntries = diff.entries.filter(e =>
-    e.source === 'tool' || e.source === 'both'
-  );
+  const importEntries = diff.entries.filter(e => e.source === 'tool' || e.source === 'both');
 
   if (importEntries.length === 0) {
     return { imported: 0, hasConflicts: false };

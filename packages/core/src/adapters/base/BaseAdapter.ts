@@ -176,7 +176,11 @@ export abstract class BaseAdapter implements IAdapter {
    * Parse from content string
    * Default implementation, must be overridden by subclasses
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     throw new Error('parseContent must be implemented by subclass');
   }
 
@@ -205,9 +209,7 @@ export abstract class BaseAdapter implements IAdapter {
       await fs.promises.mkdir(dir, { recursive: true });
 
       // Write file
-      const content = typeof file.content === 'string'
-        ? file.content
-        : file.content;
+      const content = typeof file.content === 'string' ? file.content : file.content;
       await fs.promises.writeFile(fullPath, content, { encoding: file.encoding });
     }
 
@@ -333,7 +335,10 @@ export abstract class BaseAdapter implements IAdapter {
         if (!mergedData) {
           mergedData = result.data;
         } else {
-          mergedData = this.deepMerge(mergedData as unknown as Record<string, unknown>, result.data as unknown as Record<string, unknown>) as unknown as UnifiedConfig;
+          mergedData = this.deepMerge(
+            mergedData as unknown as Record<string, unknown>,
+            result.data as unknown as Record<string, unknown>
+          ) as unknown as UnifiedConfig;
         }
       }
     }
@@ -372,7 +377,10 @@ export abstract class BaseAdapter implements IAdapter {
           ) as T[Extract<keyof T, string>];
         } else if (Array.isArray(source[key]) && Array.isArray(target[key])) {
           // Arrays use concatenation strategy
-          result[key] = [...(target[key] as unknown[]), ...(source[key] as unknown[])] as T[Extract<keyof T, string>];
+          result[key] = [...(target[key] as unknown[]), ...(source[key] as unknown[])] as T[Extract<
+            keyof T,
+            string
+          >];
         } else {
           result[key] = source[key];
         }

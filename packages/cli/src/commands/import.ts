@@ -46,12 +46,12 @@ export const importCommand = new Command('import')
         // Map string to ToolId
         const toolIdMap: Record<string, ToolId> = {
           'claude-code': ToolId.CLAUDE_CODE,
-          'cursor': ToolId.CURSOR,
-          'copilot': ToolId.COPILOT,
-          'windsurf': ToolId.WINDSURF,
-          'cline': ToolId.CLINE,
-          'aider': ToolId.AIDER,
-          'continue': ToolId.CONTINUE,
+          cursor: ToolId.CURSOR,
+          copilot: ToolId.COPILOT,
+          windsurf: ToolId.WINDSURF,
+          cline: ToolId.CLINE,
+          aider: ToolId.AIDER,
+          continue: ToolId.CONTINUE,
         };
 
         const tid = toolIdMap[toolId];

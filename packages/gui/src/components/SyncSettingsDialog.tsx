@@ -29,16 +29,16 @@ export function SyncSettingsDialog({
   const [sourceTool, setSourceTool] = useState<string>('');
   const [targetTools, setTargetTools] = useState<Set<string>>(new Set());
 
-  const detectedList = detectedTools.filter((t) => t.detected);
+  const detectedList = detectedTools.filter(t => t.detected);
 
   // Initialize with default values
   useEffect(() => {
     if (open && detectedTools.length > 0) {
-      const detected = detectedTools.filter((t) => t.detected);
+      const detected = detectedTools.filter(t => t.detected);
       if (detected.length > 0) {
         // Use initial values if provided, otherwise use first as source and rest as targets
         const defaultSource = initialSource || detected[0].id;
-        const defaultTargets = initialTargets || detected.slice(1).map((t) => t.id);
+        const defaultTargets = initialTargets || detected.slice(1).map(t => t.id);
 
         setSourceTool(defaultSource);
         setTargetTools(new Set(defaultTargets));
@@ -79,10 +79,7 @@ export function SyncSettingsDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
       <div className="relative bg-bg-secondary border border-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden animate-fade-in">
@@ -92,10 +89,7 @@ export function SyncSettingsDialog({
             <RefreshCw className="w-5 h-5 text-primary" />
             Sync Configuration
           </h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-bg-hover rounded transition-colors"
-          >
+          <button onClick={onClose} className="p-1 hover:bg-bg-hover rounded transition-colors">
             <X className="w-5 h-5 text-text-tertiary" />
           </button>
         </div>
@@ -144,9 +138,7 @@ export function SyncSettingsDialog({
             {/* Targets */}
             <div className="flex flex-col items-center gap-2">
               <div className="w-24 h-16 bg-success-muted border-2 border-success rounded-lg flex items-center justify-center">
-                <span className="text-2xl">
-                  {targetTools.size > 0 ? '📁' : '?'}
-                </span>
+                <span className="text-2xl">{targetTools.size > 0 ? '📁' : '?'}</span>
               </div>
               <span className="text-xs text-text-secondary">
                 {targetTools.size > 0 ? `${targetTools.size} tool(s)` : 'Select targets'}
@@ -158,11 +150,13 @@ export function SyncSettingsDialog({
           {/* Source Tool Selection */}
           <div>
             <h3 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">1</span>
+              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                1
+              </span>
               Select source tool (configuration origin)
             </h3>
             <div className="grid grid-cols-2 gap-2">
-              {detectedList.map((tool) => (
+              {detectedList.map(tool => (
                 <button
                   key={tool.id}
                   onClick={() => handleSelectSource(tool.id)}
@@ -175,9 +169,7 @@ export function SyncSettingsDialog({
                 >
                   <ToolIcon toolId={tool.id} size="sm" />
                   <span className="font-medium">{tool.name}</span>
-                  {sourceTool === tool.id && (
-                    <Check className="w-5 h-5 text-primary ml-auto" />
-                  )}
+                  {sourceTool === tool.id && <Check className="w-5 h-5 text-primary ml-auto" />}
                 </button>
               ))}
             </div>
@@ -186,11 +178,13 @@ export function SyncSettingsDialog({
           {/* Target Tools Selection */}
           <div>
             <h3 className="text-sm font-medium text-text-primary mb-3 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">2</span>
+              <span className="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                2
+              </span>
               Select target tools (will receive configuration)
             </h3>
             <div className="grid grid-cols-2 gap-2">
-              {detectedList.map((tool) => {
+              {detectedList.map(tool => {
                 const isSource = tool.id === sourceTool;
                 const isSelected = targetTools.has(tool.id);
 
@@ -208,10 +202,10 @@ export function SyncSettingsDialog({
                     )}
                   >
                     <ToolIcon toolId={tool.id} size="sm" className={isSource ? 'opacity-50' : ''} />
-                    <span className="font-medium">{isSource ? `${tool.name} (Source)` : tool.name}</span>
-                    {isSelected && !isSource && (
-                      <Check className="w-5 h-5 text-success ml-auto" />
-                    )}
+                    <span className="font-medium">
+                      {isSource ? `${tool.name} (Source)` : tool.name}
+                    </span>
+                    {isSelected && !isSource && <Check className="w-5 h-5 text-success ml-auto" />}
                   </button>
                 );
               })}
@@ -223,13 +217,15 @@ export function SyncSettingsDialog({
             <div className="p-4 bg-success-muted border border-success/30 rounded-lg">
               <p className="text-sm text-success font-medium mb-1">Ready to sync</p>
               <p className="text-sm text-text-secondary">
-                Configuration from <strong className="text-text-primary">{sourceToolInfo?.name}</strong> will be synced to{' '}
-                <strong className="text-text-primary">{targetTools.size} tool(s)</strong>:{' '}
+                Configuration from{' '}
+                <strong className="text-text-primary">{sourceToolInfo?.name}</strong> will be synced
+                to <strong className="text-text-primary">{targetTools.size} tool(s)</strong>:{' '}
                 {Array.from(targetTools).map((id, i) => {
                   const tool = detectedList.find(t => t.id === id);
                   return (
                     <span key={id}>
-                      {i > 0 && ', '}<strong>{tool?.name}</strong>
+                      {i > 0 && ', '}
+                      <strong>{tool?.name}</strong>
                     </span>
                   );
                 })}
@@ -243,11 +239,7 @@ export function SyncSettingsDialog({
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleConfirm}
-            disabled={!canConfirm}
-          >
+          <Button variant="primary" onClick={handleConfirm} disabled={!canConfirm}>
             <RefreshCw className="w-4 h-4 mr-1" />
             Start Sync
           </Button>

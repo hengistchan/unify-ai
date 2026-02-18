@@ -38,14 +38,17 @@ import { ToolCapabilities } from '../base/Capability';
  * Cline state.json format
  */
 interface ClineState {
-  mcpServers: Record<string, {
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-    disabled?: boolean;
-    autoApprove?: string[];
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      disabled?: boolean;
+      autoApprove?: string[];
+    }
+  >;
   [key: string]: unknown;
 }
 
@@ -193,7 +196,11 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
     // Determine file type
@@ -209,11 +216,13 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -231,22 +240,26 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -257,16 +270,18 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
     const pattern = path.join(projectRoot, '.clinerules/*.md');
     const matches = await glob(pattern, { nodir: true });
 
-    return Promise.all(matches.map(async (absolutePath) => {
-      const stats = await fs.stat(absolutePath);
-      return {
-        path: path.relative(projectRoot, absolutePath),
-        absolutePath,
-        exists: true,
-        size: stats.size,
-        lastModified: stats.mtime,
-      };
-    }));
+    return Promise.all(
+      matches.map(async absolutePath => {
+        const stats = await fs.stat(absolutePath);
+        return {
+          path: path.relative(projectRoot, absolutePath),
+          absolutePath,
+          exists: true,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
   }
 
   private async parseRuleFile(filePath: string): Promise<{
@@ -279,17 +294,22 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseRuleContent(content: string, filePath: string): Promise<{
+  private async parseRuleContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {
@@ -350,12 +370,14 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
       return this.parseStateContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read state file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read state file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -387,11 +409,13 @@ export class ClineAdapter extends BaseAdapter implements IAdapter {
       };
     } catch (error) {
       return {
-        errors: [{
-          code: 'JSON_PARSE_ERROR',
-          message: `Failed to parse state JSON: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'JSON_PARSE_ERROR',
+            message: `Failed to parse state JSON: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }

@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture
 
 This is a pnpm monorepo with three packages:
+
 - `@unify-ai/core` - Core library with adapters and converters
 - `@unify-ai/cli` - Command-line interface (in development)
 - `@unify-ai/gui` - Electron + React GUI (in development)
@@ -38,16 +39,16 @@ pnpm test path/to/testfile.ts
 
 ## Supported AI Tools
 
-| Tool | Config Format | Rules | MCP | Settings |
-|------|---------------|-------|-----|----------|
-| Cursor | Markdown + JSON | Full | Partial | Partial |
-| Claude Code | Markdown + JSON | Full | Full | Full |
-| Codex | TOML + Markdown | Full | Full | Full |
-| Copilot | Markdown | Full | None | None |
-| Windsurf | Text | | Partial |
-| Full | Partial Cline | Markdown + JSON | Full | Full | Partial |
-| Aider | YAML | Full | None | Full |
-| Continue | YAML | Full | Partial | Full |
+| Tool        | Config Format   | Rules           | MCP     | Settings |
+| ----------- | --------------- | --------------- | ------- | -------- | ------- |
+| Cursor      | Markdown + JSON | Full            | Partial | Partial  |
+| Claude Code | Markdown + JSON | Full            | Full    | Full     |
+| Codex       | TOML + Markdown | Full            | Full    | Full     |
+| Copilot     | Markdown        | Full            | None    | None     |
+| Windsurf    | Text            |                 | Partial |
+| Full        | Partial Cline   | Markdown + JSON | Full    | Full     | Partial |
+| Aider       | YAML            | Full            | None    | Full     |
+| Continue    | YAML            | Full            | Partial | Full     |
 
 ## Key Files
 

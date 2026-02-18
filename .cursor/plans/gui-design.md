@@ -21,16 +21,16 @@
 
 ### 1.3 支持的工具
 
-| 工具 | 配置文件 | 主要能力 |
-|------|----------|----------|
-| Cursor | `.cursor/rules/*.md`, `.cursor/mcp.json` | Rules, MCP, Settings |
-| Claude Code | `.claude/settings.json`, `.claude/rules/*` | Rules, MCP, Settings |
-| Copilot | `.github/copilot-instructions.md` | Rules only |
-| Windsurf | `.windsurfrules`, `.windsurf/mcp.json` | Rules, MCP |
-| Codex | `AGENTS.md`, `.codex/config.toml` | Rules, MCP, Settings |
-| Cline | `.clinerules/`, `.cline/state.json` | Rules, MCP, Settings |
-| Aider | `.aider.conf.yml` | Rules, Settings |
-| Continue | `.continue/config.yaml` | Rules, MCP, Settings, Prompts |
+| 工具        | 配置文件                                   | 主要能力                      |
+| ----------- | ------------------------------------------ | ----------------------------- |
+| Cursor      | `.cursor/rules/*.md`, `.cursor/mcp.json`   | Rules, MCP, Settings          |
+| Claude Code | `.claude/settings.json`, `.claude/rules/*` | Rules, MCP, Settings          |
+| Copilot     | `.github/copilot-instructions.md`          | Rules only                    |
+| Windsurf    | `.windsurfrules`, `.windsurf/mcp.json`     | Rules, MCP                    |
+| Codex       | `AGENTS.md`, `.codex/config.toml`          | Rules, MCP, Settings          |
+| Cline       | `.clinerules/`, `.cline/state.json`        | Rules, MCP, Settings          |
+| Aider       | `.aider.conf.yml`                          | Rules, Settings               |
+| Continue    | `.continue/config.yaml`                    | Rules, MCP, Settings, Prompts |
 
 ---
 
@@ -56,39 +56,39 @@
   /* 背景色 */
   --bg-primary: #000000;
   --bg-secondary: #121212;
-  --bg-tertiary: #1E1E1E;
+  --bg-tertiary: #1e1e1e;
   --bg-elevated: #252525;
-  --bg-hover: #2A2A2A;
+  --bg-hover: #2a2a2a;
 
   /* 文字色 */
-  --text-primary: #FFFFFF;
-  --text-secondary: #A1A1AA;
-  --text-tertiary: #71717A;
-  --text-disabled: #52525B;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-disabled: #52525b;
 
   /* 主题色 */
-  --color-primary: #7C3AED;
-  --color-primary-hover: #8B5CF6;
+  --color-primary: #7c3aed;
+  --color-primary-hover: #8b5cf6;
   --color-primary-muted: rgba(124, 58, 237, 0.15);
 
-  --color-secondary: #A78BFA;
+  --color-secondary: #a78bfa;
 
   /* 强调色 */
-  --color-accent: #F97316;
-  --color-accent-hover: #FB923C;
+  --color-accent: #f97316;
+  --color-accent-hover: #fb923c;
 
   /* 状态色 */
-  --color-success: #10B981;
+  --color-success: #10b981;
   --color-success-muted: rgba(16, 185, 129, 0.15);
-  --color-warning: #F59E0B;
+  --color-warning: #f59e0b;
   --color-warning-muted: rgba(245, 158, 11, 0.15);
-  --color-error: #EF4444;
+  --color-error: #ef4444;
   --color-error-muted: rgba(239, 68, 68, 0.15);
 
   /* 边框 */
-  --border-default: #27272A;
-  --border-hover: #3F3F46;
-  --border-focus: #7C3AED;
+  --border-default: #27272a;
+  --border-hover: #3f3f46;
+  --border-focus: #7c3aed;
 
   /* 阴影 */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -116,11 +116,13 @@
 ### 2.3 字体排版
 
 **字体选择**:
+
 - **Heading**: Space Grotesk (Google Fonts)
 - **Body**: Inter (系统字体)
 - **Code**: JetBrains Mono
 
 **字号系统**:
+
 ```css
 --text-xs: 12px;
 --text-sm: 14px;
@@ -133,6 +135,7 @@
 ```
 
 **行高**:
+
 - 标题: 1.2
 - 正文: 1.5
 - 代码: 1.6
@@ -146,6 +149,7 @@ npm install lucide-react
 ```
 
 **核心图标**:
+
 - `Settings` - 设置
 - `RefreshCw` - 同步
 - `FolderOpen` - 打开项目
@@ -173,12 +177,14 @@ npm install lucide-react
 ### 3.1 窗口模型
 
 **主窗口**:
+
 - 尺寸: 1200x800 (最小: 900x600)
 - 可调整大小
 - 居中显示
 - 使用系统原生窗口控件
 
 **对话框**:
+
 - 模态对话框 (设置、同步预览)
 - 非模态通知 (Toast)
 
@@ -206,6 +212,7 @@ npm install lucide-react
 **宽度**: 220px (可折叠至 60px)
 
 **结构**:
+
 ```
 ┌────────────────────┐
 │ [Logo] unify-ai   │
@@ -233,11 +240,13 @@ npm install lucide-react
 ### 3.4 主内容区
 
 **工具栏**:
+
 - 面包屑导航
 - 操作按钮 (同步、导入、导出)
 - 视图切换 (列表/卡片)
 
 **内容面板**:
+
 - 配置文件列表
 - 详情编辑器
 - 预览面板
@@ -356,6 +365,7 @@ npm install lucide-react
 ### 5.1 按钮
 
 **主按钮**:
+
 ```tsx
 <button className="btn-primary">
   <Icon name="RefreshCw" size={16} />
@@ -389,6 +399,7 @@ npm install lucide-react
 ```
 
 **次按钮**:
+
 ```tsx
 <button className="btn-secondary">
   取消
@@ -613,14 +624,14 @@ npm install lucide-react
 
 ### 6.1 动画
 
-| 场景 | 动画 | 时长 |
-|------|------|------|
-| 按钮悬停 | scale(1.02) + glow | 150ms |
-| 卡片悬停 | translateY(-2px) + shadow | 200ms |
-| 侧边栏折叠 | width 变化 | 200ms |
-| 页面切换 | fade + slide | 250ms |
-| 模态框 | fade + scale | 200ms |
-| Toast 通知 | slide-in from right | 300ms |
+| 场景       | 动画                      | 时长  |
+| ---------- | ------------------------- | ----- |
+| 按钮悬停   | scale(1.02) + glow        | 150ms |
+| 卡片悬停   | translateY(-2px) + shadow | 200ms |
+| 侧边栏折叠 | width 变化                | 200ms |
+| 页面切换   | fade + slide              | 250ms |
+| 模态框     | fade + scale              | 200ms |
+| Toast 通知 | slide-in from right       | 300ms |
 
 ### 6.2 键盘导航
 
@@ -743,17 +754,19 @@ unify-ai/
 ## 9. 后续规划
 
 ### Phase 2 (后续迭代)
+
 - [ ] 导入/导出统一配置
 - [ ] 配置模板系统
 - [ ] 团队配置共享
 - [ ] 云端同步
 
 ### Phase 3
+
 - [ ] CLI 工具
 - [ ] VS Code 插件
 - [ ] Web 版本
 
 ---
 
-*文档版本: 1.0.0*
-*最后更新: 2026-02-14*
+_文档版本: 1.0.0_
+_最后更新: 2026-02-14_

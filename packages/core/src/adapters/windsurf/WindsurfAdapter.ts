@@ -37,14 +37,17 @@ import { ToolCapabilities } from '../base/Capability';
  * Windsurf MCP configuration format (same as Cursor)
  */
 interface WindsurfMCPConfig {
-  mcpServers: Record<string, {
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-    disabled?: boolean;
-    autoApprove?: string[];
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      disabled?: boolean;
+      autoApprove?: string[];
+    }
+  >;
 }
 
 /**
@@ -197,7 +200,11 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     // Determine file type
     if (filePath === '.windsurfrules' || filePath.endsWith('.windsurfrules')) {
       const result = await this.parseRuleContent(content, filePath);
@@ -210,11 +217,13 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -232,22 +241,26 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -264,17 +277,22 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseRuleContent(content: string, filePath: string): Promise<{
+  private async parseRuleContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {
@@ -327,12 +345,14 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
       return this.parseMCPContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -364,11 +384,13 @@ export class WindsurfAdapter extends BaseAdapter implements IAdapter {
       };
     } catch (error) {
       return {
-        errors: [{
-          code: 'JSON_PARSE_ERROR',
-          message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'JSON_PARSE_ERROR',
+            message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }

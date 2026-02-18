@@ -19,9 +19,9 @@ function getIconPath(): string | undefined {
   // In production, the icon is in the build folder relative to dist/electron/
   // In development, it's in the build folder relative to electron/
   const possiblePaths = [
-    path.join(__dirname, '../build/icon.png'),  // Production: dist/electron/../build/
+    path.join(__dirname, '../build/icon.png'), // Production: dist/electron/../build/
     path.join(__dirname, '../../build/icon.png'), // Alternative production path
-    path.join(__dirname, '../public/icon.png'),  // Development fallback
+    path.join(__dirname, '../public/icon.png'), // Development fallback
   ];
 
   const fs = require('fs');

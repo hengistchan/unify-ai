@@ -136,7 +136,11 @@ export class CopilotAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content string
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
     if (fileName === 'copilot-instructions.md' || filePath.endsWith('.md')) {
@@ -150,22 +154,26 @@ export class CopilotAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -182,17 +190,22 @@ export class CopilotAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read copilot-instructions.md: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read copilot-instructions.md: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseMarkdownContent(content: string, filePath: string): Promise<{
+  private async parseMarkdownContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {

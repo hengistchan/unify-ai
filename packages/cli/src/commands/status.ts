@@ -15,7 +15,7 @@ export const statusCommand = new Command('status')
   .description('Show current sync status')
   .option('-d, --detailed', 'Show detailed information')
   .option('--json', 'Output as JSON')
-  .action(async (options) => {
+  .action(async options => {
     const logger = getLogger({ color: options.parent?.color ?? true });
 
     try {
@@ -39,9 +39,7 @@ export const statusCommand = new Command('status')
 
       // Build status data
       const tools = diffResults.map(diff => {
-        const status = diff.entries.length === 0
-          ? 'Synced'
-          : 'Modified';
+        const status = diff.entries.length === 0 ? 'Synced' : 'Modified';
 
         const pendingChanges = diff.summary.added + diff.summary.modified + diff.summary.removed;
 
@@ -55,14 +53,20 @@ export const statusCommand = new Command('status')
       });
 
       if (options.json) {
-        console.log(JSON.stringify({
-          config: {
-            path: configManager.getConfigPath(),
-            version: config.version,
-            lastModified: config.lastModified,
-          },
-          tools,
-        }, null, 2));
+        console.log(
+          JSON.stringify(
+            {
+              config: {
+                path: configManager.getConfigPath(),
+                version: config.version,
+                lastModified: config.lastModified,
+              },
+              tools,
+            },
+            null,
+            2
+          )
+        );
         return;
       }
 
@@ -77,7 +81,12 @@ export const statusCommand = new Command('status')
 
       // Tools table
       const table = new Table({
-        head: [String(chalk.cyan('Tool')), String(chalk.cyan('Status')), String(chalk.cyan('Config')), String(chalk.cyan('Pending Changes'))],
+        head: [
+          String(chalk.cyan('Tool')),
+          String(chalk.cyan('Status')),
+          String(chalk.cyan('Config')),
+          String(chalk.cyan('Pending Changes')),
+        ],
         style: {
           head: [],
           border: [],
@@ -87,12 +96,7 @@ export const statusCommand = new Command('status')
       for (const tool of tools) {
         const statusCol = tool.status;
 
-        table.push([
-          tool.name,
-          statusCol,
-          tool.configPath || '-',
-          String(tool.pendingChanges),
-        ]);
+        table.push([tool.name, statusCol, tool.configPath || '-', String(tool.pendingChanges)]);
       }
 
       console.log(table.toString());

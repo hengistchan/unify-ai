@@ -28,29 +28,24 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
   // Tools with Bootstrap Icons
   const bootstrapIconMap: Record<string, string> = {
     'claude-code': 'bi-claude',
-    'copilot': 'bi-github', // Copilot is GitHub's product
+    copilot: 'bi-github', // Copilot is GitHub's product
   };
 
   // Tools with emoji fallbacks
   const emojiMap: Record<string, string> = {
-    'cursor': '⚡',
-    'windsurf': '🌊',
-    'codex': '📝',
-    'cline': '📋',
-    'aider': '🤝',
-    'continue': '▶️',
+    cursor: '⚡',
+    windsurf: '🌊',
+    codex: '📝',
+    cline: '📋',
+    aider: '🤝',
+    continue: '▶️',
   };
 
   const bootstrapIcon = bootstrapIconMap[toolId];
   const emoji = emojiMap[toolId];
 
   if (bootstrapIcon) {
-    return (
-      <i
-        className={`bi ${bootstrapIcon} ${sizeClass} ${className}`}
-        aria-hidden="true"
-      />
-    );
+    return <i className={`bi ${bootstrapIcon} ${sizeClass} ${className}`} aria-hidden="true" />;
   }
 
   if (emoji) {
@@ -75,13 +70,13 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
 export function getToolName(toolId: string): string {
   const names: Record<string, string> = {
     'claude-code': 'Claude Code',
-    'cursor': 'Cursor',
-    'copilot': 'GitHub Copilot',
-    'windsurf': 'Windsurf',
-    'codex': 'Codex',
-    'cline': 'Cline',
-    'aider': 'Aider',
-    'continue': 'Continue',
+    cursor: 'Cursor',
+    copilot: 'GitHub Copilot',
+    windsurf: 'Windsurf',
+    codex: 'Codex',
+    cline: 'Cline',
+    aider: 'Aider',
+    continue: 'Continue',
   };
   return names[toolId] || toolId;
 }

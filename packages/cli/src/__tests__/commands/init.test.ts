@@ -145,9 +145,9 @@ describe('init command', () => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        initCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow('process.exit');
+      await expect(initCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow(
+        'process.exit'
+      );
 
       expect(mockExit).toHaveBeenCalledWith(1);
       mockExit.mockRestore();
@@ -223,9 +223,7 @@ describe('init command', () => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        initCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow();
+      await expect(initCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow();
 
       mockExit.mockRestore();
     });

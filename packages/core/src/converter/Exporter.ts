@@ -98,10 +98,12 @@ export class Exporter {
     // Get target adapter
     const adapter = adapterRegistry.get(options.targetTool);
     if (!adapter) {
-      return this.createErrorResult([{
-        code: 'UNKNOWN_TOOL',
-        message: `Unknown target tool: ${options.targetTool}`,
-      }]);
+      return this.createErrorResult([
+        {
+          code: 'UNKNOWN_TOOL',
+          message: `Unknown target tool: ${options.targetTool}`,
+        },
+      ]);
     }
 
     // Validate configuration
@@ -169,9 +171,8 @@ export class Exporter {
           await fs.mkdir(path.dirname(absolutePath), { recursive: true });
 
           // Write file
-          const content = typeof file.content === 'string'
-            ? file.content
-            : Buffer.from(file.content);
+          const content =
+            typeof file.content === 'string' ? file.content : Buffer.from(file.content);
           await fs.writeFile(absolutePath, content, { encoding: file.encoding });
 
           const stats = await fs.stat(absolutePath);
@@ -238,7 +239,7 @@ export class Exporter {
     const results = new Map<ToolId, ExportResult>();
 
     await Promise.all(
-      targetTools.map(async (toolId) => {
+      targetTools.map(async toolId => {
         const result = await this.export(config, projectRoot, {
           ...options,
           targetTool: toolId,
@@ -263,10 +264,12 @@ export class Exporter {
       return {
         success: false,
         files: [],
-        errors: [{
-          code: 'UNKNOWN_TOOL',
-          message: `Unknown target tool: ${targetTool}`,
-        }],
+        errors: [
+          {
+            code: 'UNKNOWN_TOOL',
+            message: `Unknown target tool: ${targetTool}`,
+          },
+        ],
       };
     }
 

@@ -174,37 +174,27 @@ describe('sync command', () => {
 
   describe('--strategy options', () => {
     it('should accept unified-wins strategy', async () => {
-      await syncCommand.parseAsync(
-        ['node', 'test', '--strategy', 'unified-wins'],
-        { from: 'user' }
-      );
+      await syncCommand.parseAsync(['node', 'test', '--strategy', 'unified-wins'], {
+        from: 'user',
+      });
 
       expect(mockConfigManager.load).toHaveBeenCalled();
     });
 
     it('should accept tool-wins strategy', async () => {
-      await syncCommand.parseAsync(
-        ['node', 'test', '--strategy', 'tool-wins'],
-        { from: 'user' }
-      );
+      await syncCommand.parseAsync(['node', 'test', '--strategy', 'tool-wins'], { from: 'user' });
 
       expect(mockConfigManager.load).toHaveBeenCalled();
     });
 
     it('should accept latest strategy', async () => {
-      await syncCommand.parseAsync(
-        ['node', 'test', '--strategy', 'latest'],
-        { from: 'user' }
-      );
+      await syncCommand.parseAsync(['node', 'test', '--strategy', 'latest'], { from: 'user' });
 
       expect(mockConfigManager.load).toHaveBeenCalled();
     });
 
     it('should accept merge strategy', async () => {
-      await syncCommand.parseAsync(
-        ['node', 'test', '--strategy', 'merge'],
-        { from: 'user' }
-      );
+      await syncCommand.parseAsync(['node', 'test', '--strategy', 'merge'], { from: 'user' });
 
       expect(mockConfigManager.load).toHaveBeenCalled();
     });
@@ -218,9 +208,9 @@ describe('sync command', () => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        syncCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow('process.exit');
+      await expect(syncCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow(
+        'process.exit'
+      );
 
       expect(mockExit).toHaveBeenCalledWith(1);
       mockExit.mockRestore();
@@ -241,9 +231,9 @@ describe('sync command', () => {
         throw new Error('process.exit');
       });
 
-      await expect(
-        syncCommand.parseAsync(['node', 'test'], { from: 'user' })
-      ).rejects.toThrow('process.exit');
+      await expect(syncCommand.parseAsync(['node', 'test'], { from: 'user' })).rejects.toThrow(
+        'process.exit'
+      );
 
       mockExit.mockRestore();
     });

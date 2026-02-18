@@ -81,7 +81,15 @@ describe('AppStore', () => {
         act(() => {
           setProject('/path/to/project');
           setDetectedTools([
-            { id: 'cursor', name: 'Cursor', configPath: '/.cursorrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
+            {
+              id: 'cursor',
+              name: 'Cursor',
+              configPath: '/.cursorrules',
+              detected: true,
+              hasRules: true,
+              hasMcp: false,
+              hasSettings: false,
+            },
           ]);
         });
 
@@ -102,8 +110,24 @@ describe('AppStore', () => {
     describe('setDetectedTools', () => {
       it('should set detected tools', () => {
         const tools: DetectedTool[] = [
-          { id: 'cursor', name: 'Cursor', configPath: '/.cursorrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
-          { id: 'claude-code', name: 'Claude Code', configPath: '/CLAUDE.md', detected: true, hasRules: true, hasMcp: true, hasSettings: true },
+          {
+            id: 'cursor',
+            name: 'Cursor',
+            configPath: '/.cursorrules',
+            detected: true,
+            hasRules: true,
+            hasMcp: false,
+            hasSettings: false,
+          },
+          {
+            id: 'claude-code',
+            name: 'Claude Code',
+            configPath: '/CLAUDE.md',
+            detected: true,
+            hasRules: true,
+            hasMcp: true,
+            hasSettings: true,
+          },
         ];
         const { setDetectedTools } = useAppStore.getState();
 
@@ -116,11 +140,35 @@ describe('AppStore', () => {
 
       it('should replace existing tools', () => {
         const tools1: DetectedTool[] = [
-          { id: 'cursor', name: 'Cursor', configPath: '/.cursorrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
+          {
+            id: 'cursor',
+            name: 'Cursor',
+            configPath: '/.cursorrules',
+            detected: true,
+            hasRules: true,
+            hasMcp: false,
+            hasSettings: false,
+          },
         ];
         const tools2: DetectedTool[] = [
-          { id: 'copilot', name: 'Copilot', configPath: '/.github/copilot-instructions.md', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
-          { id: 'windsurf', name: 'Windsurf', configPath: '/.windsurfrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
+          {
+            id: 'copilot',
+            name: 'Copilot',
+            configPath: '/.github/copilot-instructions.md',
+            detected: true,
+            hasRules: true,
+            hasMcp: false,
+            hasSettings: false,
+          },
+          {
+            id: 'windsurf',
+            name: 'Windsurf',
+            configPath: '/.windsurfrules',
+            detected: true,
+            hasRules: true,
+            hasMcp: false,
+            hasSettings: false,
+          },
         ];
         const { setDetectedTools } = useAppStore.getState();
 
@@ -219,7 +267,12 @@ describe('AppStore', () => {
           config: { version: '1.0.0' },
         });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
-          { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
+          {
+            success: true,
+            toolId: 'claude-code',
+            files: [{ path: '.claude/CLAUDE.md', content: 'content' }],
+            warnings: [],
+          },
         ]);
 
         act(() => {
@@ -230,7 +283,10 @@ describe('AppStore', () => {
           await previewSync('cursor', ['claude-code', 'copilot']);
         });
 
-        expect(mockElectronAPI.previewSync).toHaveBeenCalledWith('/test/project', ['claude-code', 'copilot']);
+        expect(mockElectronAPI.previewSync).toHaveBeenCalledWith('/test/project', [
+          'claude-code',
+          'copilot',
+        ]);
       });
 
       it('should set syncPreview with aggregated results', async () => {
@@ -242,8 +298,18 @@ describe('AppStore', () => {
           config: { version: '1.0.0', rules: [], mcp: { servers: [] } },
         });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
-          { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'line1\nline2\nline3' }], warnings: [] },
-          { success: true, toolId: 'copilot', files: [{ path: '.github/copilot-instructions.md', content: 'content' }], warnings: ['Warning 1'] },
+          {
+            success: true,
+            toolId: 'claude-code',
+            files: [{ path: '.claude/CLAUDE.md', content: 'line1\nline2\nline3' }],
+            warnings: [],
+          },
+          {
+            success: true,
+            toolId: 'copilot',
+            files: [{ path: '.github/copilot-instructions.md', content: 'content' }],
+            warnings: ['Warning 1'],
+          },
         ]);
 
         act(() => {
@@ -308,7 +374,12 @@ describe('AppStore', () => {
           config: { version: '1.0.0' },
         });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
-          { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
+          {
+            success: true,
+            toolId: 'claude-code',
+            files: [{ path: '.claude/CLAUDE.md', content: 'content' }],
+            warnings: [],
+          },
         ]);
         mockElectronAPI.syncConfig.mockResolvedValueOnce({
           success: true,
@@ -327,11 +398,10 @@ describe('AppStore', () => {
           await executeSync();
         });
 
-        expect(mockElectronAPI.syncConfig).toHaveBeenCalledWith(
-          '/test/project',
-          ['claude-code'],
-          { createBackup: true, overwrite: true }
-        );
+        expect(mockElectronAPI.syncConfig).toHaveBeenCalledWith('/test/project', ['claude-code'], {
+          createBackup: true,
+          overwrite: true,
+        });
       });
 
       it('should clear sync preview and show success toast on success', async () => {
@@ -343,7 +413,12 @@ describe('AppStore', () => {
           config: { version: '1.0.0' },
         });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
-          { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
+          {
+            success: true,
+            toolId: 'claude-code',
+            files: [{ path: '.claude/CLAUDE.md', content: 'content' }],
+            warnings: [],
+          },
         ]);
         mockElectronAPI.syncConfig.mockResolvedValueOnce({
           success: true,
@@ -382,7 +457,12 @@ describe('AppStore', () => {
           config: { version: '1.0.0' },
         });
         mockElectronAPI.previewSync.mockResolvedValueOnce([
-          { success: true, toolId: 'claude-code', files: [{ path: '.claude/CLAUDE.md', content: 'content' }], warnings: [] },
+          {
+            success: true,
+            toolId: 'claude-code',
+            files: [{ path: '.claude/CLAUDE.md', content: 'content' }],
+            warnings: [],
+          },
         ]);
         mockElectronAPI.syncConfig.mockResolvedValueOnce({
           success: false,
@@ -654,7 +734,9 @@ describe('AppStore', () => {
           removeRecentProject('/path/to/project');
         });
 
-        expect(useAppStore.getState().recentProjects.some(p => p.path === '/path/to/project')).toBe(false);
+        expect(useAppStore.getState().recentProjects.some(p => p.path === '/path/to/project')).toBe(
+          false
+        );
       });
 
       it('should only remove specified project', () => {
@@ -737,7 +819,15 @@ describe('AppStore', () => {
 
     it('selectDetectedTools should return detected tools', () => {
       const tools: DetectedTool[] = [
-        { id: 'cursor', name: 'Cursor', configPath: '/.cursorrules', detected: true, hasRules: true, hasMcp: false, hasSettings: false },
+        {
+          id: 'cursor',
+          name: 'Cursor',
+          configPath: '/.cursorrules',
+          detected: true,
+          hasRules: true,
+          hasMcp: false,
+          hasSettings: false,
+        },
       ];
       const { setDetectedTools } = useAppStore.getState();
 

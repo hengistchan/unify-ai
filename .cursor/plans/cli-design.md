@@ -204,14 +204,14 @@ unify [command] [options]
 
 ### 2.2 环境变量
 
-| 环境变量 | 说明 | 默认值 |
-|---------|------|--------|
+| 环境变量            | 说明         | 默认值           |
+| ------------------- | ------------ | ---------------- |
 | `UNIFY_CONFIG_PATH` | 配置文件路径 | `./unified.json` |
-| `UNIFY_FORMAT` | 输出格式 | `table` |
-| `UNIFY_NO_COLOR` | 禁用颜色 | `false` |
-| `UNIFY_VERBOSE` | 详细模式 | `false` |
-| `UNIFY_QUIET` | 静默模式 | `false` |
-| `UNIFY_DEBUG` | 调试模式 | `false` |
+| `UNIFY_FORMAT`      | 输出格式     | `table`          |
+| `UNIFY_NO_COLOR`    | 禁用颜色     | `false`          |
+| `UNIFY_VERBOSE`     | 详细模式     | `false`          |
+| `UNIFY_QUIET`       | 静默模式     | `false`          |
+| `UNIFY_DEBUG`       | 调试模式     | `false`          |
 
 ---
 
@@ -229,13 +229,13 @@ unify init [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--from <tool>` | `-f` | string | - | 从指定工具导入初始配置 |
-| `--interactive` | `-i` | boolean | false | 交互式引导模式 |
-| `--template <name>` | `-t` | string | default | 使用模板创建 |
-| `--force` | | boolean | false | 强制覆盖现有配置 |
-| `--skip-hooks` | | boolean | false | 跳过钩子执行 |
+| 选项                | 别名 | 类型    | 默认值  | 说明                   |
+| ------------------- | ---- | ------- | ------- | ---------------------- |
+| `--from <tool>`     | `-f` | string  | -       | 从指定工具导入初始配置 |
+| `--interactive`     | `-i` | boolean | false   | 交互式引导模式         |
+| `--template <name>` | `-t` | string  | default | 使用模板创建           |
+| `--force`           |      | boolean | false   | 强制覆盖现有配置       |
+| `--skip-hooks`      |      | boolean | false   | 跳过钩子执行           |
 
 #### 交互式流程
 
@@ -309,6 +309,7 @@ unify init --config ./configs/ai/unified.json
 #### 输出格式
 
 **表格格式 (默认)**
+
 ```
   Initializing unified configuration...
 
@@ -325,6 +326,7 @@ unify init --config ./configs/ai/unified.json
 ```
 
 **JSON 格式**
+
 ```json
 {
   "success": true,
@@ -343,12 +345,12 @@ unify init --config ./configs/ai/unified.json
 
 #### 错误处理
 
-| 错误码 | 说明 | 解决方案 |
-|--------|------|---------|
-| `CONFIG_EXISTS` | 配置文件已存在 | 使用 `--force` 覆盖 |
-| `TOOL_NOT_FOUND` | 指定的工具未检测到 | 检查工具是否已安装 |
-| `PARSE_ERROR` | 配置解析失败 | 检查配置文件格式 |
-| `PERMISSION_DENIED` | 无写入权限 | 检查文件/目录权限 |
+| 错误码              | 说明               | 解决方案            |
+| ------------------- | ------------------ | ------------------- |
+| `CONFIG_EXISTS`     | 配置文件已存在     | 使用 `--force` 覆盖 |
+| `TOOL_NOT_FOUND`    | 指定的工具未检测到 | 检查工具是否已安装  |
+| `PARSE_ERROR`       | 配置解析失败       | 检查配置文件格式    |
+| `PERMISSION_DENIED` | 无写入权限         | 检查文件/目录权限   |
 
 ---
 
@@ -365,34 +367,34 @@ unify sync <tools...> [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--mode <mode>` | `-m` | string | two-way-interactive | 同步模式 |
-| `--direction <dir>` | | string | - | 同步方向: export, import, both |
-| `--strategy <strategy>` | `-s` | string | - | 冲突解决策略 |
-| `--watch` | `-w` | boolean | false | 监听模式 |
-| `--debounce <ms>` | | number | 1000 | 防抖延迟 (watch 模式) |
-| `--backup` | `-b` | boolean | true | 创建备份 |
-| `--skip-hooks` | | boolean | false | 跳过钩子执行 |
+| 选项                    | 别名 | 类型    | 默认值              | 说明                           |
+| ----------------------- | ---- | ------- | ------------------- | ------------------------------ |
+| `--mode <mode>`         | `-m` | string  | two-way-interactive | 同步模式                       |
+| `--direction <dir>`     |      | string  | -                   | 同步方向: export, import, both |
+| `--strategy <strategy>` | `-s` | string  | -                   | 冲突解决策略                   |
+| `--watch`               | `-w` | boolean | false               | 监听模式                       |
+| `--debounce <ms>`       |      | number  | 1000                | 防抖延迟 (watch 模式)          |
+| `--backup`              | `-b` | boolean | true                | 创建备份                       |
+| `--skip-hooks`          |      | boolean | false               | 跳过钩子执行                   |
 
 #### 同步模式
 
-| 模式 | 说明 |
-|------|------|
-| `one-way-export` | 单向导出: unified -> 工具配置 |
-| `one-way-import` | 单向导入: 工具配置 -> unified |
-| `two-way-auto` | 双向自动: 自动合并，冲突时保留两者 |
-| `two-way-interactive` | 双向交互: 冲突时询问用户 (默认) |
+| 模式                  | 说明                               |
+| --------------------- | ---------------------------------- |
+| `one-way-export`      | 单向导出: unified -> 工具配置      |
+| `one-way-import`      | 单向导入: 工具配置 -> unified      |
+| `two-way-auto`        | 双向自动: 自动合并，冲突时保留两者 |
+| `two-way-interactive` | 双向交互: 冲突时询问用户 (默认)    |
 
 #### 冲突解决策略
 
-| 策略 | 说明 |
-|------|------|
-| `unified-wins` | 统一配置优先 |
-| `tool-wins` | 工具配置优先 |
-| `latest` | 最新修改优先 |
-| `merge` | 尝试合并 |
-| `ask` | 询问用户 (默认) |
+| 策略           | 说明            |
+| -------------- | --------------- |
+| `unified-wins` | 统一配置优先    |
+| `tool-wins`    | 工具配置优先    |
+| `latest`       | 最新修改优先    |
+| `merge`        | 尝试合并        |
+| `ask`          | 询问用户 (默认) |
 
 #### 交互式流程
 
@@ -485,6 +487,7 @@ unify sync --format json
 #### 输出格式
 
 **表格格式**
+
 ```
   Sync Results
   ────────────────────────────────────────────────────────
@@ -505,6 +508,7 @@ unify sync --format json
 ```
 
 **JSON 格式**
+
 ```json
 {
   "success": true,
@@ -541,12 +545,12 @@ unify sync --format json
 
 #### 错误处理
 
-| 错误码 | 说明 | 解决方案 |
-|--------|------|---------|
-| `NO_CONFIG` | 未找到统一配置 | 先运行 `unify init` |
+| 错误码          | 说明             | 解决方案                     |
+| --------------- | ---------------- | ---------------------------- |
+| `NO_CONFIG`     | 未找到统一配置   | 先运行 `unify init`          |
 | `SYNC_CONFLICT` | 存在未解决的冲突 | 使用 `--strategy` 或交互模式 |
-| `WRITE_ERROR` | 写入失败 | 检查权限和磁盘空间 |
-| `HOOK_FAILED` | 钩子执行失败 | 检查钩子脚本 |
+| `WRITE_ERROR`   | 写入失败         | 检查权限和磁盘空间           |
+| `HOOK_FAILED`   | 钩子执行失败     | 检查钩子脚本                 |
 
 ---
 
@@ -562,13 +566,13 @@ unify import [tools...] [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--merge` | `-m` | boolean | false | 合并到现有配置 |
-| `--strategy <strategy>` | `-s` | string | ask | 冲突策略 |
-| `--capabilities <caps...>` | | string[] | all | 导入的能力类型 |
-| `--strict` | | boolean | false | 严格模式 |
-| `--skip-hooks` | | boolean | false | 跳过钩子 |
+| 选项                       | 别名 | 类型     | 默认值 | 说明           |
+| -------------------------- | ---- | -------- | ------ | -------------- |
+| `--merge`                  | `-m` | boolean  | false  | 合并到现有配置 |
+| `--strategy <strategy>`    | `-s` | string   | ask    | 冲突策略       |
+| `--capabilities <caps...>` |      | string[] | all    | 导入的能力类型 |
+| `--strict`                 |      | boolean  | false  | 严格模式       |
+| `--skip-hooks`             |      | boolean  | false  | 跳过钩子       |
 
 #### 交互式流程
 
@@ -657,13 +661,13 @@ unify export [tools...] [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--backup` | `-b` | boolean | true | 备份现有配置 |
-| `--backup-dir <path>` | | string | .unify/backup | 备份目录 |
-| `--overwrite` | `-o` | boolean | true | 覆盖现有文件 |
-| `--capabilities <caps...>` | | string[] | all | 导出的能力类型 |
-| `--skip-hooks` | | boolean | false | 跳过钩子 |
+| 选项                       | 别名 | 类型     | 默认值        | 说明           |
+| -------------------------- | ---- | -------- | ------------- | -------------- |
+| `--backup`                 | `-b` | boolean  | true          | 备份现有配置   |
+| `--backup-dir <path>`      |      | string   | .unify/backup | 备份目录       |
+| `--overwrite`              | `-o` | boolean  | true          | 覆盖现有文件   |
+| `--capabilities <caps...>` |      | string[] | all           | 导出的能力类型 |
+| `--skip-hooks`             |      | boolean  | false         | 跳过钩子       |
 
 #### 交互式流程
 
@@ -759,16 +763,17 @@ unify diff [tool] [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--format <format>` | `-f` | string | table | 输出格式 |
-| `--color` | | boolean | true | 彩色输出 |
-| `--context <lines>` | `-C` | number | 3 | 上下文行数 |
-| `--show-unchanged` | | boolean | false | 显示未变更项 |
+| 选项                | 别名 | 类型    | 默认值 | 说明         |
+| ------------------- | ---- | ------- | ------ | ------------ |
+| `--format <format>` | `-f` | string  | table  | 输出格式     |
+| `--color`           |      | boolean | true   | 彩色输出     |
+| `--context <lines>` | `-C` | number  | 3      | 上下文行数   |
+| `--show-unchanged`  |      | boolean | false  | 显示未变更项 |
 
 #### 输出格式
 
 **表格格式 (默认)**
+
 ```
 $ unify diff claude-code
 
@@ -810,6 +815,7 @@ $ unify diff claude-code
 ```
 
 **Unified Diff 格式**
+
 ```
 $ unify diff --format unified
 
@@ -831,6 +837,7 @@ $ unify diff --format unified
 ```
 
 **JSON 格式**
+
 ```json
 {
   "tool": "claude-code",
@@ -905,13 +912,13 @@ unify watch [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--debounce <ms>` | `-d` | number | 1000 | 防抖延迟 |
-| `--mode <mode>` | `-m` | string | two-way-auto | 同步模式 |
-| `--strategy <strategy>` | `-s` | string | latest | 冲突策略 |
-| `--poll` | | boolean | false | 使用轮询模式 |
-| `--ignore <patterns...>` | | string[] | - | 忽略的模式 |
+| 选项                     | 别名 | 类型     | 默认值       | 说明         |
+| ------------------------ | ---- | -------- | ------------ | ------------ |
+| `--debounce <ms>`        | `-d` | number   | 1000         | 防抖延迟     |
+| `--mode <mode>`          | `-m` | string   | two-way-auto | 同步模式     |
+| `--strategy <strategy>`  | `-s` | string   | latest       | 冲突策略     |
+| `--poll`                 |      | boolean  | false        | 使用轮询模式 |
+| `--ignore <patterns...>` |      | string[] | -            | 忽略的模式   |
 
 #### 交互式输出
 
@@ -986,14 +993,15 @@ unify status [options]
 
 #### 选项
 
-| 选项 | 别名 | 类型 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `--detailed` | `-d` | boolean | false | 详细信息 |
-| `--json` | | boolean | false | JSON 输出 |
+| 选项         | 别名 | 类型    | 默认值 | 说明      |
+| ------------ | ---- | ------- | ------ | --------- |
+| `--detailed` | `-d` | boolean | false  | 详细信息  |
+| `--json`     |      | boolean | false  | JSON 输出 |
 
 #### 输出格式
 
 **默认格式**
+
 ```
 $ unify status
 
@@ -1020,6 +1028,7 @@ $ unify status
 ```
 
 **详细格式**
+
 ```
 $ unify status --detailed
 
@@ -1084,6 +1093,7 @@ $ unify status --detailed
 ```
 
 **JSON 格式**
+
 ```json
 {
   "config": {
@@ -1150,15 +1160,15 @@ unify config <action> [key] [value] [options]
 
 #### 子命令
 
-| 命令 | 说明 |
-|------|------|
-| `config list` | 列出所有配置 |
-| `config get <key>` | 获取配置值 |
-| `config set <key> <value>` | 设置配置值 |
-| `config delete <key>` | 删除配置 |
-| `config path` | 显示配置文件路径 |
-| `config edit` | 在编辑器中打开配置 |
-| `config validate` | 验证配置 |
+| 命令                       | 说明               |
+| -------------------------- | ------------------ |
+| `config list`              | 列出所有配置       |
+| `config get <key>`         | 获取配置值         |
+| `config set <key> <value>` | 设置配置值         |
+| `config delete <key>`      | 删除配置           |
+| `config path`              | 显示配置文件路径   |
+| `config edit`              | 在编辑器中打开配置 |
+| `config validate`          | 验证配置           |
 
 #### 示例
 
@@ -1226,18 +1236,18 @@ Updated: sync.mode = "two-way-auto"
 
 ### 4.1 支持的钩子
 
-| 钩子 | 触发时机 | 用途 |
-|------|---------|------|
-| `preInit` | init 命令执行前 | 验证环境、准备数据 |
-| `postInit` | init 命令执行后 | 初始化后续任务 |
-| `preSync` | sync 命令执行前 | 备份检查、锁定验证 |
-| `postSync` | sync 命令执行后 | 通知、日志记录 |
-| `preImport` | import 命令执行前 | 数据验证 |
-| `postImport` | import 命令执行后 | 清理、通知 |
-| `preExport` | export 命令执行前 | 备份验证 |
-| `postExport` | export 命令执行后 | 部署、通知 |
-| `onConflict` | 冲突检测时 | 自定义冲突处理 |
-| `onError` | 错误发生时 | 错误报告、回滚 |
+| 钩子         | 触发时机          | 用途               |
+| ------------ | ----------------- | ------------------ |
+| `preInit`    | init 命令执行前   | 验证环境、准备数据 |
+| `postInit`   | init 命令执行后   | 初始化后续任务     |
+| `preSync`    | sync 命令执行前   | 备份检查、锁定验证 |
+| `postSync`   | sync 命令执行后   | 通知、日志记录     |
+| `preImport`  | import 命令执行前 | 数据验证           |
+| `postImport` | import 命令执行后 | 清理、通知         |
+| `preExport`  | export 命令执行前 | 备份验证           |
+| `postExport` | export 命令执行后 | 部署、通知         |
+| `onConflict` | 冲突检测时        | 自定义冲突处理     |
+| `onError`    | 错误发生时        | 错误报告、回滚     |
 
 ### 4.2 钩子上下文
 
@@ -1275,6 +1285,7 @@ interface HookContext {
 ### 4.3 钩子示例
 
 **Shell 脚本钩子 (.unify/hooks/pre-sync.sh)**
+
 ```bash
 #!/bin/bash
 # 确保没有未提交的更改
@@ -1289,6 +1300,7 @@ echo "Pre-sync check passed"
 ```
 
 **JavaScript 钩子 (.unify/hooks/on-conflict.mjs)**
+
 ```javascript
 #!/usr/bin/env node
 
@@ -1312,11 +1324,12 @@ export default async function onConflict(context) {
 ```
 
 **TypeScript 钩子配置**
+
 ```typescript
 // .unify/hooks.ts
 import type { HookFunction } from '@unify-ai/cli';
 
-export const preSync: HookFunction = async (context) => {
+export const preSync: HookFunction = async context => {
   const { utils, abort } = context;
 
   // 检查是否有锁定的配置
@@ -1330,7 +1343,7 @@ export const preSync: HookFunction = async (context) => {
   }
 };
 
-export const postSync: HookFunction = async (context) => {
+export const postSync: HookFunction = async context => {
   const { result, utils } = context;
 
   // 发送通知
@@ -1386,7 +1399,7 @@ export const postSync: HookFunction = async (context) => {
 
 ```yaml
 success: true
-timestamp: "2024-01-15T10:30:00.000Z"
+timestamp: '2024-01-15T10:30:00.000Z'
 command: sync
 result:
   changes: 3
@@ -1409,22 +1422,23 @@ Error: Configuration file not found
 
 ### 6.1 错误类型
 
-| 类型 | 说明 | 退出码 |
-|------|------|--------|
-| `ConfigError` | 配置相关错误 | 10 |
-| `ValidationError` | 验证失败 | 11 |
-| `SyncError` | 同步错误 | 20 |
-| `ConflictError` | 冲突错误 | 21 |
-| `ImportError` | 导入错误 | 30 |
-| `ExportError` | 导出错误 | 31 |
-| `HookError` | 钩子执行错误 | 40 |
-| `PermissionError` | 权限错误 | 50 |
-| `NetworkError` | 网络错误 | 51 |
-| `UnknownError` | 未知错误 | 1 |
+| 类型              | 说明         | 退出码 |
+| ----------------- | ------------ | ------ |
+| `ConfigError`     | 配置相关错误 | 10     |
+| `ValidationError` | 验证失败     | 11     |
+| `SyncError`       | 同步错误     | 20     |
+| `ConflictError`   | 冲突错误     | 21     |
+| `ImportError`     | 导入错误     | 30     |
+| `ExportError`     | 导出错误     | 31     |
+| `HookError`       | 钩子执行错误 | 40     |
+| `PermissionError` | 权限错误     | 50     |
+| `NetworkError`    | 网络错误     | 51     |
+| `UnknownError`    | 未知错误     | 1      |
 
 ### 6.2 错误输出格式
 
 **表格格式**
+
 ```
   Error: Failed to sync configurations
   ══════════════════════════════════════════════════════════
@@ -1449,6 +1463,7 @@ Error: Configuration file not found
 ```
 
 **JSON 格式**
+
 ```json
 {
   "success": false,
@@ -1718,17 +1733,20 @@ packages/cli/
 ## 10. 实现优先级
 
 ### Phase 1: 核心命令 (P0)
+
 1. `init` - 初始化配置
 2. `export` - 导出到工具
 3. `import` - 从工具导入
 4. `status` - 查看状态
 
 ### Phase 2: 同步功能 (P1)
+
 5. `sync` - 双向同步
 6. `diff` - 查看差异
 7. `config` - 管理配置
 
 ### Phase 3: 高级功能 (P2)
+
 8. `watch` - 监听变化
 9. 钩子系统
 10. 备份恢复

@@ -6,10 +6,7 @@
 import { promises as fs } from 'fs';
 
 import type { IAdapter } from '../adapters/base/IAdapter';
-import type {
-  UnifiedConfig,
-  ToolId,
-} from '../core/types';
+import type { UnifiedConfig, ToolId } from '../core/types';
 import { adapterRegistry } from '../adapters/registry';
 
 // ============================================
@@ -106,11 +103,7 @@ export class DiffEngine {
    * @param path Current path (optional)
    * @returns Diff entry array
    */
-  deepDiff(
-    unified: unknown,
-    generated: unknown,
-    path?: string
-  ): DiffEntry[] {
+  deepDiff(unified: unknown, generated: unknown, path?: string): DiffEntry[] {
     const diffs: DiffEntry[] = [];
     const currentPath = path ?? '';
     const timestamp = new Date().toISOString();
@@ -275,10 +268,7 @@ export class DiffEngine {
    * @param toolId Specific tool ID (optional, if not specified compute all tools)
    * @returns Diff result array
    */
-  async computeAllDiffs(
-    unified: UnifiedConfig,
-    toolId?: string
-  ): Promise<DiffResult[]> {
+  async computeAllDiffs(unified: UnifiedConfig, toolId?: string): Promise<DiffResult[]> {
     const results: DiffResult[] = [];
     const adapters = this.getAdaptersToCompare(toolId);
 
@@ -313,10 +303,7 @@ export class DiffEngine {
    * @param adapter Tool adapter
    * @returns Diff result
    */
-  async computeDiffForTool(
-    unified: UnifiedConfig,
-    adapter: IAdapter
-  ): Promise<DiffResult> {
+  async computeDiffForTool(unified: UnifiedConfig, adapter: IAdapter): Promise<DiffResult> {
     const toolId = adapter.toolMeta.id;
     const toolName = adapter.toolMeta.name;
     const timestamp = new Date().toISOString();
@@ -399,10 +386,7 @@ export class DiffEngine {
    * @param unified2 Second Unified config
    * @returns Array of diff entries
    */
-  compareUnified(
-    unified1: UnifiedConfig,
-    unified2: UnifiedConfig
-  ): DiffEntry[] {
+  compareUnified(unified1: UnifiedConfig, unified2: UnifiedConfig): DiffEntry[] {
     return this.deepDiff(unified1, unified2);
   }
 
@@ -424,7 +408,9 @@ export class DiffEngine {
   /**
    * Extract config from generation result
    */
-  private extractGeneratedConfig(generateResult: { files: { content: string | Buffer }[] }): unknown {
+  private extractGeneratedConfig(generateResult: {
+    files: { content: string | Buffer }[];
+  }): unknown {
     if (generateResult.files.length === 0) {
       return {};
     }
@@ -455,12 +441,7 @@ export class DiffEngine {
     if (unified.rules?.length) {
       const toolRules = (toolConfig as Record<string, unknown>)?.rules;
       if (Array.isArray(toolRules)) {
-        const ruleDiffs = this.diffArrays(
-          unified.rules,
-          toolRules,
-          'rules',
-          'id'
-        );
+        const ruleDiffs = this.diffArrays(unified.rules, toolRules, 'rules', 'id');
         diffs.push(...ruleDiffs);
       }
     }
@@ -471,12 +452,7 @@ export class DiffEngine {
       if (toolMcp && typeof toolMcp === 'object') {
         const toolServers = (toolMcp as Record<string, unknown>)?.servers;
         if (Array.isArray(toolServers)) {
-          const mcpDiffs = this.diffArrays(
-            unified.mcp.servers,
-            toolServers,
-            'mcp.servers',
-            'name'
-          );
+          const mcpDiffs = this.diffArrays(unified.mcp.servers, toolServers, 'mcp.servers', 'name');
           diffs.push(...mcpDiffs);
         }
       }
@@ -574,7 +550,9 @@ export class DiffEngine {
       }
 
       for (const key of aKeys) {
-        if (!this.isEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])) {
+        if (
+          !this.isEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])
+        ) {
           return false;
         }
       }

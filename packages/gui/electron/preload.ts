@@ -11,11 +11,23 @@ export interface ElectronAPI {
   getAppVersion: () => Promise<string>;
   openFolder: () => Promise<string | null>;
   detectTools: (folderPath: string) => Promise<DetectedTool[]>;
-  syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) => Promise<SyncResult>;
+  syncConfig: (
+    sourceFolder: string,
+    targetTools: string[],
+    options?: SyncOptions
+  ) => Promise<SyncResult>;
   previewSync: (sourceFolder: string, targetTools: string[]) => Promise<PreviewResult[]>;
   getToolConfig: (folderPath: string, toolId: string) => Promise<ToolConfigResult>;
-  importConfig: (folderPath: string, options?: { mergeMultiple?: boolean; sourceTool?: string }) => Promise<ToolConfigResult>;
-  exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) => Promise<ExportResult>;
+  importConfig: (
+    folderPath: string,
+    options?: { mergeMultiple?: boolean; sourceTool?: string }
+  ) => Promise<ToolConfigResult>;
+  exportConfig: (
+    config: UnifiedConfig,
+    folderPath: string,
+    targetTools: string[],
+    options?: SyncOptions
+  ) => Promise<ExportResult>;
   saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) => Promise<SaveResult>;
   loadUnifiedConfig: (folderPath: string) => Promise<LoadResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
@@ -166,8 +178,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_FOLDER),
 
   // Detect AI tools in a folder
-  detectTools: (folderPath: string) =>
-    ipcRenderer.invoke(IPC_CHANNELS.DETECT_TOOLS, folderPath),
+  detectTools: (folderPath: string) => ipcRenderer.invoke(IPC_CHANNELS.DETECT_TOOLS, folderPath),
 
   // Sync configuration to specified tools
   syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) =>
@@ -186,8 +197,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(IPC_CHANNELS.IMPORT_CONFIG, folderPath, options),
 
   // Export configuration to target tools
-  exportConfig: (config: UnifiedConfig, folderPath: string, targetTools: string[], options?: SyncOptions) =>
-    ipcRenderer.invoke(IPC_CHANNELS.EXPORT_CONFIG, config, folderPath, targetTools, options),
+  exportConfig: (
+    config: UnifiedConfig,
+    folderPath: string,
+    targetTools: string[],
+    options?: SyncOptions
+  ) => ipcRenderer.invoke(IPC_CHANNELS.EXPORT_CONFIG, config, folderPath, targetTools, options),
 
   // Save unified config to file
   saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) =>

@@ -8,8 +8,8 @@ import type { Toast as ToastType } from './stores/appStore';
 import { Toast } from './components/common';
 
 function App() {
-  const toasts = useAppStore((state) => state.toasts);
-  const removeToast = useAppStore((state) => state.removeToast);
+  const toasts = useAppStore(state => state.toasts);
+  const removeToast = useAppStore(state => state.removeToast);
   const { mode, setMode } = useThemeStore();
 
   // Initialize theme on mount

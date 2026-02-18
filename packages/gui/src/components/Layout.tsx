@@ -1,12 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import {
-  Home,
-  FolderOpen,
-  Settings,
-  RefreshCw,
-  Sparkles,
-} from 'lucide-react';
+import { Home, FolderOpen, Settings, RefreshCw, Sparkles } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
 interface LayoutProps {
@@ -22,9 +16,15 @@ export function Layout({ children }: LayoutProps) {
     console.log('  Unify AI - State');
     console.log('========================================');
     console.log('📁 Project:', currentProject || 'No project selected');
-    console.log('🔧 Detected Tools:', detectedTools.length > 0
-      ? detectedTools.filter(t => t.detected).map(t => `${t.name} (${t.id})`).join(', ') || 'none'
-      : 'Not scanned yet');
+    console.log(
+      '🔧 Detected Tools:',
+      detectedTools.length > 0
+        ? detectedTools
+            .filter(t => t.detected)
+            .map(t => `${t.name} (${t.id})`)
+            .join(', ') || 'none'
+        : 'Not scanned yet'
+    );
     console.log('📊 Sync Status:', syncStatus);
     console.log('📝 Config Loaded:', unifiedConfig ? 'Yes' : 'No');
     if (unifiedConfig) {
@@ -65,7 +65,7 @@ export function Layout({ children }: LayoutProps) {
         {/* Navigation */}
         <nav className="flex-1 p-2">
           <ul className="space-y-1">
-            {navItems.map((item) => (
+            {navItems.map(item => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
@@ -106,9 +106,7 @@ export function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-bg-primary">
-        {children}
-      </main>
+      <main className="flex-1 overflow-auto bg-bg-primary">{children}</main>
     </div>
   );
 }

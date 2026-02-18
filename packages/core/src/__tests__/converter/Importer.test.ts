@@ -74,7 +74,9 @@ describe('Importer', () => {
       const mockAdapter = createMockAdapter('claude-code', mockConfig);
       vi.mocked(adapterRegistry.get).mockReturnValue(mockAdapter);
 
-      const result = await importer.import(mockProjectRoot, { sourceTool: 'claude-code' as ToolId });
+      const result = await importer.import(mockProjectRoot, {
+        sourceTool: 'claude-code' as ToolId,
+      });
 
       expect(result.success).toBe(true);
       expect(result.config).toEqual(mockConfig);
@@ -208,7 +210,10 @@ describe('Importer', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockAdapter.parse).toHaveBeenCalledWith(mockProjectRoot, { strict: true, sourceTool: 'claude-code' });
+      expect(mockAdapter.parse).toHaveBeenCalledWith(mockProjectRoot, {
+        strict: true,
+        sourceTool: 'claude-code',
+      });
     });
   });
 
@@ -216,7 +221,13 @@ describe('Importer', () => {
     it('should merge rules with deduplication', async () => {
       const configs: UnifiedConfig[] = [
         { version: '1.0', rules: [{ id: 'rule-1', content: 'Rule 1' }] },
-        { version: '1.0', rules: [{ id: 'rule-1', content: 'Duplicate' }, { id: 'rule-2', content: 'Rule 2' }] },
+        {
+          version: '1.0',
+          rules: [
+            { id: 'rule-1', content: 'Duplicate' },
+            { id: 'rule-2', content: 'Rule 2' },
+          ],
+        },
       ];
 
       // Access private method through any
@@ -237,7 +248,12 @@ describe('Importer', () => {
         {
           version: '1.0',
           rules: [],
-          mcp: { servers: [{ name: 'server1', command: 'duplicate' }, { name: 'server2', command: 'cmd2' }] },
+          mcp: {
+            servers: [
+              { name: 'server1', command: 'duplicate' },
+              { name: 'server2', command: 'cmd2' },
+            ],
+          },
         },
       ];
 
@@ -423,7 +439,10 @@ function createMockAdapter(toolId: string, config: UnifiedConfig) {
   };
 }
 
-function createMockAdapterWithErrors(toolId: string, errors: Array<{ code: string; message: string; recoverable: boolean }>) {
+function createMockAdapterWithErrors(
+  toolId: string,
+  errors: Array<{ code: string; message: string; recoverable: boolean }>
+) {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({
@@ -434,7 +453,10 @@ function createMockAdapterWithErrors(toolId: string, errors: Array<{ code: strin
   };
 }
 
-function createMockAdapterWithWarnings(toolId: string, warnings: Array<{ code: string; message: string }>) {
+function createMockAdapterWithWarnings(
+  toolId: string,
+  warnings: Array<{ code: string; message: string }>
+) {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({
@@ -446,7 +468,11 @@ function createMockAdapterWithWarnings(toolId: string, warnings: Array<{ code: s
   };
 }
 
-function createMockAdapterWithFiles(toolId: string, config: UnifiedConfig, files: Array<{ path: string; absolutePath: string; exists: boolean }>) {
+function createMockAdapterWithFiles(
+  toolId: string,
+  config: UnifiedConfig,
+  files: Array<{ path: string; absolutePath: string; exists: boolean }>
+) {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({

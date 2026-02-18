@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTools = tools.filter((tool) =>
+  const filteredTools = tools.filter(tool =>
     tool.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               type="text"
               placeholder="Search..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full h-9 pl-9 pr-3 bg-bg-tertiary border border-border rounded-md text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-border-focus focus:ring-1 focus:ring-primary-muted transition-colors"
             />
           </div>
@@ -134,9 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="text-text-primary text-sm font-medium truncate">
               {currentProject.name}
             </div>
-            <div className="text-text-tertiary text-xs truncate mt-0.5">
-              {currentProject.path}
-            </div>
+            <div className="text-text-tertiary text-xs truncate mt-0.5">{currentProject.path}</div>
           </div>
         </div>
       )}
@@ -144,12 +142,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Tools List */}
       <div className="flex-1 overflow-y-auto py-2">
         {!collapsed && (
-          <div className="px-3 mb-2 text-text-tertiary text-xs uppercase tracking-wider">
-            Tools
-          </div>
+          <div className="px-3 mb-2 text-text-tertiary text-xs uppercase tracking-wider">Tools</div>
         )}
         <nav className="space-y-0.5 px-2">
-          {filteredTools.map((tool) => (
+          {filteredTools.map(tool => (
             <button
               key={tool.id}
               onClick={() => onSelectTool?.(tool.id)}

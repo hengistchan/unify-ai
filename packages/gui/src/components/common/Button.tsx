@@ -17,9 +17,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-white hover:bg-primary-hover hover:shadow-glow active:scale-[0.98]',
-  secondary: 'bg-transparent text-text-secondary border border-border hover:bg-bg-hover hover:border-border-hover hover:text-text-primary',
+  secondary:
+    'bg-transparent text-text-secondary border border-border hover:bg-bg-hover hover:border-border-hover hover:text-text-primary',
   ghost: 'bg-transparent text-text-secondary hover:bg-bg-hover hover:text-text-primary',
-  danger: 'bg-error text-white hover:bg-red-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-[0.98]',
+  danger:
+    'bg-error text-white hover:bg-red-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-[0.98]',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -77,7 +79,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {icon && iconPosition === 'left' && (
               <span className="flex-shrink-0">
                 {React.isValidElement(icon)
-                  ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: iconSize })
+                  ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, {
+                      size: iconSize,
+                    })
                   : icon}
               </span>
             )}
@@ -85,7 +89,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             {icon && iconPosition === 'right' && (
               <span className="flex-shrink-0">
                 {React.isValidElement(icon)
-                  ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: iconSize })
+                  ? React.cloneElement(icon as React.ReactElement<{ size?: number }>, {
+                      size: iconSize,
+                    })
                   : icon}
               </span>
             )}

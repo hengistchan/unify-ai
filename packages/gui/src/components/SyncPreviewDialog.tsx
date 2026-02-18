@@ -72,7 +72,7 @@ const LoadingSkeleton: React.FC = () => (
       <div className="h-6 w-16 bg-bg-tertiary rounded-full" />
     </div>
     <div className="space-y-2">
-      {[1, 2, 3].map((i) => (
+      {[1, 2, 3].map(i => (
         <div key={i} className="flex items-center gap-3 p-3 bg-bg-tertiary rounded-lg">
           <div className="h-4 w-16 bg-border rounded" />
           <div className="h-4 flex-1 bg-border rounded" />
@@ -104,25 +104,17 @@ const FileChangeRow: React.FC<{ change: FileChange }> = ({ change }) => {
             {fileName}
           </span>
           {dirPath && (
-            <span className="text-xs text-text-tertiary truncate max-w-[200px]">
-              {dirPath}
-            </span>
+            <span className="text-xs text-text-tertiary truncate max-w-[200px]">{dirPath}</span>
           )}
         </div>
       </td>
       <td className="py-3 px-4">
-        <Badge variant={actionVariantMap[change.action]}>
-          {actionLabelMap[change.action]}
-        </Badge>
+        <Badge variant={actionVariantMap[change.action]}>{actionLabelMap[change.action]}</Badge>
       </td>
       <td className="py-3 px-4 text-right">
         <div className="flex items-center justify-end gap-2 text-xs font-mono">
-          {change.linesAdded > 0 && (
-            <span className="text-success">+{change.linesAdded}</span>
-          )}
-          {change.linesRemoved > 0 && (
-            <span className="text-error">-{change.linesRemoved}</span>
-          )}
+          {change.linesAdded > 0 && <span className="text-success">+{change.linesAdded}</span>}
+          {change.linesRemoved > 0 && <span className="text-error">-{change.linesRemoved}</span>}
           {change.linesAdded === 0 && change.linesRemoved === 0 && (
             <span className="text-text-tertiary">-</span>
           )}
@@ -147,12 +139,8 @@ const SyncDetailItem: React.FC<{
         {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
       </p>
     </div>
-    {typeof value === 'number' && value > 0 && (
-      <CheckCircle2 className="w-5 h-5 text-success" />
-    )}
-    {typeof value === 'boolean' && value && (
-      <CheckCircle2 className="w-5 h-5 text-success" />
-    )}
+    {typeof value === 'number' && value > 0 && <CheckCircle2 className="w-5 h-5 text-success" />}
+    {typeof value === 'boolean' && value && <CheckCircle2 className="w-5 h-5 text-success" />}
   </div>
 );
 
@@ -164,26 +152,17 @@ const ConflictsSection: React.FC<{ conflicts: Conflict[] }> = ({ conflicts }) =>
     <div className="mt-4">
       <div className="flex items-center gap-2 mb-3">
         <AlertTriangle size={16} className="text-warning" />
-        <h4 className="text-sm font-medium text-warning">
-          Conflicts ({conflicts.length})
-        </h4>
+        <h4 className="text-sm font-medium text-warning">Conflicts ({conflicts.length})</h4>
       </div>
       <Card hoverable={false} className="border-warning/30">
         <Card.Body className="p-0">
           <ul className="divide-y divide-border">
             {conflicts.map((conflict, index) => (
-              <li
-                key={`${conflict.path}-${index}`}
-                className="p-3 flex items-start gap-3"
-              >
+              <li key={`${conflict.path}-${index}`} className="p-3 flex items-start gap-3">
                 <AlertTriangle size={14} className="text-warning flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">
-                    {conflict.path}
-                  </p>
-                  <p className="text-xs text-text-tertiary mt-0.5">
-                    {conflict.description}
-                  </p>
+                  <p className="text-sm font-medium text-text-primary truncate">{conflict.path}</p>
+                  <p className="text-xs text-text-tertiary mt-0.5">{conflict.description}</p>
                 </div>
               </li>
             ))}
@@ -263,7 +242,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
               <ArrowRight size={24} className="text-primary" />
               <div className="text-center">
                 <div className="flex flex-wrap gap-1.5 justify-center">
-                  {preview.targetTools.map((tool) => (
+                  {preview.targetTools.map(tool => (
                     <Badge key={tool} variant="success" size="lg">
                       {getToolName(tool)}
                     </Badge>
@@ -279,9 +258,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
           {/* What will be synced */}
           {preview.syncDetails && (
             <div>
-              <h4 className="text-sm font-medium text-text-primary mb-3">
-                What will be synced:
-              </h4>
+              <h4 className="text-sm font-medium text-text-primary mb-3">What will be synced:</h4>
               <div className="grid grid-cols-2 gap-3">
                 <SyncDetailItem
                   icon={<FileCode className="w-4 h-4" />}
@@ -342,10 +319,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
                     </thead>
                     <tbody>
                       {preview.changes.map((change, index) => (
-                        <FileChangeRow
-                          key={`${change.path}-${index}`}
-                          change={change}
-                        />
+                        <FileChangeRow key={`${change.path}-${index}`} change={change} />
                       ))}
                     </tbody>
                   </table>

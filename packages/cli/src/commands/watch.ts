@@ -30,24 +30,32 @@ interface WatchOptions {
 // Tool config file patterns
 const TOOL_CONFIG_PATTERNS: Record<string, string[]> = {
   'claude-code': ['CLAUDE.md', '.claude/**/*'],
-  'cursor': ['.cursorrules', '.cursor/**/*'],
-  'copilot': ['.github/copilot-instructions.md'],
-  'windsurf': ['.windsurfrules', '.windsurf/**/*'],
-  'codex': ['CODEX.md', 'codex.toml'],
-  'cline': ['.clinerules', '.cline/**/*'],
-  'aider': ['.aider.conf.yml', 'aider.conf.yml'],
-  'continue': ['.continue/config.json', 'continue.json'],
+  cursor: ['.cursorrules', '.cursor/**/*'],
+  copilot: ['.github/copilot-instructions.md'],
+  windsurf: ['.windsurfrules', '.windsurf/**/*'],
+  codex: ['CODEX.md', 'codex.toml'],
+  cline: ['.clinerules', '.cline/**/*'],
+  aider: ['.aider.conf.yml', 'aider.conf.yml'],
+  continue: ['.continue/config.json', 'continue.json'],
 };
 
 export const watchCommand = new Command('watch')
   .description('Watch for config file changes and auto-sync')
   .option('-d, --debounce <ms>', 'Debounce delay', '1000')
-  .option('-m, --mode <mode>', 'Sync mode: one-way-export, one-way-import, two-way-auto', 'two-way-auto')
-  .option('-s, --strategy <strategy>', 'Conflict strategy: unified-wins, tool-wins, latest, merge', 'latest')
+  .option(
+    '-m, --mode <mode>',
+    'Sync mode: one-way-export, one-way-import, two-way-auto',
+    'two-way-auto'
+  )
+  .option(
+    '-s, --strategy <strategy>',
+    'Conflict strategy: unified-wins, tool-wins, latest, merge',
+    'latest'
+  )
   .option('--poll', 'Use polling mode (for network filesystems)')
   .option('--ignore <patterns...>', 'Ignore patterns')
   .option('-b, --backup', 'Create backup on sync', false)
-  .action(async (options) => {
+  .action(async options => {
     const logger = getLogger({ color: options.parent?.color ?? true });
 
     try {
@@ -84,7 +92,15 @@ export const watchCommand = new Command('watch')
       // Create debounced sync function
       const debouncedSync = debounce(
         async (event: string, path: string) => {
-          await handleFileChange(event, path, config, configManager, changeTracker, options, logger);
+          await handleFileChange(
+            event,
+            path,
+            config,
+            configManager,
+            changeTracker,
+            options,
+            logger
+          );
         },
         parseInt(options.debounce, 10)
       );
@@ -109,10 +125,10 @@ export const watchCommand = new Command('watch')
 
       // Event handlers
       watcher
-        .on('add', (path) => debouncedSync('add', path))
-        .on('change', (path) => debouncedSync('change', path))
-        .on('unlink', (path) => debouncedSync('unlink', path))
-        .on('error', (error) => logger.error(`Watcher error: ${error}`))
+        .on('add', path => debouncedSync('add', path))
+        .on('change', path => debouncedSync('change', path))
+        .on('unlink', path => debouncedSync('unlink', path))
+        .on('error', error => logger.error(`Watcher error: ${error}`))
         .on('ready', () => {
           console.log();
           logger.success('Ready! Watching for file changes.');
@@ -129,7 +145,6 @@ export const watchCommand = new Command('watch')
         logger.success('Watcher stopped.');
         process.exit(0);
       });
-
     } catch (error) {
       logger.error(`Failed to start watcher: ${error instanceof Error ? error.message : error}`);
       process.exit(1);
@@ -266,7 +281,9 @@ async function syncFromTool(
       }
     }
   } catch (error) {
-    logger.error(`Failed to import from ${toolId}: ${error instanceof Error ? error.message : error}`);
+    logger.error(
+      `Failed to import from ${toolId}: ${error instanceof Error ? error.message : error}`
+    );
   }
 }
 

@@ -32,9 +32,7 @@ export const diffCommand = new Command('diff')
       const diffResults = await diffEngine.computeAllDiffs(config, tool);
 
       // Filter results
-      const filteredResults = tool
-        ? diffResults.filter(r => r.toolId === tool)
-        : diffResults;
+      const filteredResults = tool ? diffResults.filter(r => r.toolId === tool) : diffResults;
 
       if (options.format === 'json') {
         console.log(JSON.stringify(filteredResults, null, 2));
@@ -56,13 +54,21 @@ export const diffCommand = new Command('diff')
           console.log(chalk.gray(`+++ ${diff.configPath}`));
 
           for (const entry of diff.entries) {
-            const prefix = entry.type === DiffType.ADDED ? '+' : entry.type === DiffType.REMOVED ? '-' : '~';
-            console.log(`${prefix} ${entry.path}: ${JSON.stringify(entry.toolValue || entry.unifiedValue)}`);
+            const prefix =
+              entry.type === DiffType.ADDED ? '+' : entry.type === DiffType.REMOVED ? '-' : '~';
+            console.log(
+              `${prefix} ${entry.path}: ${JSON.stringify(entry.toolValue || entry.unifiedValue)}`
+            );
           }
         } else {
           // Table format
           const table = new Table({
-            head: [String(chalk.cyan('Path')), String(chalk.cyan('Type')), String(chalk.cyan('Unified')), String(chalk.cyan('Tool'))],
+            head: [
+              String(chalk.cyan('Path')),
+              String(chalk.cyan('Type')),
+              String(chalk.cyan('Unified')),
+              String(chalk.cyan('Tool')),
+            ],
             style: {
               head: [],
               border: [],

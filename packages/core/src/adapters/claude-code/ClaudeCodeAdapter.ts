@@ -55,14 +55,17 @@ interface ClaudeCodeSettings {
  * MCP JSON format
  */
 interface MCPJsonConfig {
-  mcpServers: Record<string, {
-    command: string;
-    args?: string[];
-    env?: Record<string, string>;
-    cwd?: string;
-    disabled?: boolean;
-    autoApprove?: string[];
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+      disabled?: boolean;
+      autoApprove?: string[];
+    }
+  >;
 }
 
 /**
@@ -203,7 +206,9 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
         });
         const settingsResult = await this.parseSettingsFile(settingsPath);
         if (settingsResult.settings) {
-          settings = settings ? this.mergeSettings(settings, settingsResult.settings) : settingsResult.settings;
+          settings = settings
+            ? this.mergeSettings(settings, settingsResult.settings)
+            : settingsResult.settings;
         }
         if (settingsResult.errors) {
           errors.push(...settingsResult.errors);
@@ -271,9 +276,8 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       }
 
       // Generate CLAUDE.md as entry point with imports
-      const claudeMdContent = imports.length > 0
-        ? `# Project Rules\n\n${imports.join('\n')}\n`
-        : '';
+      const claudeMdContent =
+        imports.length > 0 ? `# Project Rules\n\n${imports.join('\n')}\n` : '';
       files.push({
         path: 'CLAUDE.md',
         content: claudeMdContent,
@@ -338,7 +342,11 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
     if (fileName === 'CLAUDE.md' || filePath.endsWith('.md')) {
@@ -352,11 +360,13 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -374,11 +384,13 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -396,22 +408,26 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -428,17 +444,22 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read CLAUDE.md: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read CLAUDE.md: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseMarkdownContent(content: string, filePath: string): Promise<{
+  private async parseMarkdownContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {
@@ -485,16 +506,18 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     const pattern = path.join(projectRoot, '.claude/rules/*.md');
     const matches = await glob(pattern, { nodir: true });
 
-    return Promise.all(matches.map(async (absolutePath) => {
-      const stats = await fs.stat(absolutePath);
-      return {
-        path: path.relative(projectRoot, absolutePath),
-        absolutePath,
-        exists: true,
-        size: stats.size,
-        lastModified: stats.mtime,
-      };
-    }));
+    return Promise.all(
+      matches.map(async absolutePath => {
+        const stats = await fs.stat(absolutePath);
+        return {
+          path: path.relative(projectRoot, absolutePath),
+          absolutePath,
+          exists: true,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
   }
 
   private async parseRuleFile(filePath: string): Promise<{
@@ -519,12 +542,14 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
@@ -546,12 +571,14 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       return this.parseMCPContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -581,11 +608,13 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       return { config: { servers } };
     } catch (error) {
       return {
-        errors: [{
-          code: 'JSON_PARSE_ERROR',
-          message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'JSON_PARSE_ERROR',
+            message: `Failed to parse MCP JSON: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -622,12 +651,14 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       return this.parseSettingsContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read settings file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read settings file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
@@ -651,11 +682,13 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       return { settings };
     } catch (error) {
       return {
-        errors: [{
-          code: 'JSON_PARSE_ERROR',
-          message: `Failed to parse settings JSON: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'JSON_PARSE_ERROR',
+            message: `Failed to parse settings JSON: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
@@ -701,16 +734,18 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
     const pattern = path.join(projectRoot, '.claude/commands/*.md');
     const matches = await glob(pattern, { nodir: true });
 
-    return Promise.all(matches.map(async (absolutePath) => {
-      const stats = await fs.stat(absolutePath);
-      return {
-        path: path.relative(projectRoot, absolutePath),
-        absolutePath,
-        exists: true,
-        size: stats.size,
-        lastModified: stats.mtime,
-      };
-    }));
+    return Promise.all(
+      matches.map(async absolutePath => {
+        const stats = await fs.stat(absolutePath);
+        return {
+          path: path.relative(projectRoot, absolutePath),
+          absolutePath,
+          exists: true,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
   }
 
   private async parseCommandFile(filePath: string): Promise<{
@@ -747,12 +782,14 @@ export class ClaudeCodeAdapter extends BaseAdapter implements IAdapter {
       return { command };
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read command file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read command file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }

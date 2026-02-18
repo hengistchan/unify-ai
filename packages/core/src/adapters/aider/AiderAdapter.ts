@@ -224,10 +224,7 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
         if (rule.enabled === false) continue;
         if (rule.metadata?.externalFile) {
           // External rule file
-          const externalRulePath = path.join(
-            '.',
-            rule.metadata.externalFile as string
-          );
+          const externalRulePath = path.join('.', rule.metadata.externalFile as string);
           files.push({
             path: externalRulePath,
             content: rule.content,
@@ -247,7 +244,11 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
     if (fileName === '.aider.conf.yml' || fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
@@ -262,11 +263,13 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -284,22 +287,26 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -316,17 +323,22 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       return this.parseConfigContent(content, filePath);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read config file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read config file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseConfigContent(content: string, filePath: string): Promise<{
+  private async parseConfigContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules?: RuleConfig[];
     settings?: ToolSettings;
     errors?: ParseError[];
@@ -382,12 +394,14 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
       return { rules, settings: Object.keys(settings).length > 0 ? settings : undefined };
     } catch (error) {
       return {
-        errors: [{
-          code: 'YAML_PARSE_ERROR',
-          message: `Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'YAML_PARSE_ERROR',
+            message: `Failed to parse YAML: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
@@ -412,16 +426,18 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
     const pattern = path.join(rulesDir, '*');
     const matches = await glob(pattern, { nodir: true });
 
-    return Promise.all(matches.map(async (absolutePath) => {
-      const stats = await fs.stat(absolutePath);
-      return {
-        path: path.relative(projectRoot, absolutePath),
-        absolutePath,
-        exists: true,
-        size: stats.size,
-        lastModified: stats.mtime,
-      };
-    }));
+    return Promise.all(
+      matches.map(async absolutePath => {
+        const stats = await fs.stat(absolutePath);
+        return {
+          path: path.relative(projectRoot, absolutePath),
+          absolutePath,
+          exists: true,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
   }
 
   private async parseRuleFile(filePath: string): Promise<{
@@ -434,17 +450,22 @@ export class AiderAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read rule file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
 
-  private parseRuleContent(content: string, filePath: string): {
+  private parseRuleContent(
+    content: string,
+    filePath: string
+  ): {
     rules: RuleConfig[];
     errors?: ParseError[];
   } {

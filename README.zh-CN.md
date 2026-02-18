@@ -20,16 +20,16 @@ unify-ai 是一个用于统一管理多种 AI 编码助手配置的工具。支�
 
 ## 支持的工具
 
-| 工具 | 规则 | MCP | 设置 | 配置格式 |
-|------|------|-----|------|----------|
-| Cursor | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | Markdown + JSON |
+| 工具        | 规则    | MCP     | 设置    | 配置格式        |
+| ----------- | ------- | ------- | ------- | --------------- |
+| Cursor      | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | Markdown + JSON |
 | Claude Code | ✅ 完整 | ✅ 完整 | ✅ 完整 | Markdown + JSON |
-| Codex | ✅ 完整 | ✅ 完整 | ✅ 完整 | TOML + Markdown |
-| Copilot | ✅ 完整 | ❌ 无 | ❌ 无 | Markdown |
-| Windsurf | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | 纯文本 |
-| Cline | ✅ 完整 | ✅ 完整 | ⚠️ 部分 | Markdown + JSON |
-| Aider | ✅ 完整 | ❌ 无 | ✅ 完整 | YAML |
-| Continue | ✅ 完整 | ⚠️ 部分 | ✅ 完整 | YAML |
+| Codex       | ✅ 完整 | ✅ 完整 | ✅ 完整 | TOML + Markdown |
+| Copilot     | ✅ 完整 | ❌ 无   | ❌ 无   | Markdown        |
+| Windsurf    | ✅ 完整 | ⚠️ 部分 | ⚠️ 部分 | 纯文本          |
+| Cline       | ✅ 完整 | ✅ 完整 | ⚠️ 部分 | Markdown + JSON |
+| Aider       | ✅ 完整 | ❌ 无   | ✅ 完整 | YAML            |
+| Continue    | ✅ 完整 | ⚠️ 部分 | ✅ 完整 | YAML            |
 
 ## 功能特性
 
@@ -92,6 +92,7 @@ pnpm gui
 ```
 
 图形界面功能：
+
 - 📁 项目管理，支持文件夹选择
 - 🔍 自动检测 AI 工具
 - 👁️ 同步预览，应用更改前可预览
@@ -131,15 +132,15 @@ const diffs = await diffEngine.computeAllDiffs(unifiedConfig, '/path/to/project'
 
 ### 核心组件
 
-| 组件 | 描述 |
-|------|------|
-| **Adapters** | 解析和生成工具特定的配置格式 |
-| **Importer** | 从工具配置导入到统一格式 |
-| **Exporter** | 从统一格式导出到工具配置 |
-| **DiffEngine** | 检测配置差异 |
-| **ConflictResolver** | 处理同步冲突 |
-| **ChangeTracker** | 追踪配置变更 |
-| **ConfigManager** | 加载、保存、验证配置 |
+| 组件                 | 描述                         |
+| -------------------- | ---------------------------- |
+| **Adapters**         | 解析和生成工具特定的配置格式 |
+| **Importer**         | 从工具配置导入到统一格式     |
+| **Exporter**         | 从统一格式导出到工具配置     |
+| **DiffEngine**       | 检测配置差异                 |
+| **ConflictResolver** | 处理同步冲突                 |
+| **ChangeTracker**    | 追踪配置变更                 |
+| **ConfigManager**    | 加载、保存、验证配置         |
 
 ## 开发
 
@@ -163,11 +164,11 @@ pnpm gui          # 开发模式启动 GUI
 
 ## 测试覆盖
 
-| 包 | 测试数 | 状态 |
-|---|--------|------|
-| @unify-ai/core | 167 | ✅ |
-| @unify-ai/cli | 47 | ✅ |
-| @unify-ai/gui | 85 | ✅ |
+| 包             | 测试数 | 状态 |
+| -------------- | ------ | ---- |
+| @unify-ai/core | 167    | ✅   |
+| @unify-ai/cli  | 47     | ✅   |
+| @unify-ai/gui  | 85     | ✅   |
 
 ## JSON Schema
 
@@ -181,16 +182,16 @@ pnpm gui          # 开发模式启动 GUI
 
 ## CLI 命令参考
 
-| 命令 | 描述 |
-|------|------|
-| `init [path]` | 创建 unified.json 配置文件 |
-| `detect [path]` | 检测项目中的 AI 工具 |
-| `import <tool> [path]` | 从指定工具导入配置 |
-| `export <tool> [path]` | 导出统一配置到指定工具 |
-| `sync [path]` | 同步各工具之间的配置 |
-| `diff <tool> [path]` | 显示统一配置与工具配置的差异 |
-| `status [path]` | 显示当前同步状态 |
-| `watch [path]` | 监听文件变化并自动同步 |
+| 命令                   | 描述                         |
+| ---------------------- | ---------------------------- |
+| `init [path]`          | 创建 unified.json 配置文件   |
+| `detect [path]`        | 检测项目中的 AI 工具         |
+| `import <tool> [path]` | 从指定工具导入配置           |
+| `export <tool> [path]` | 导出统一配置到指定工具       |
+| `sync [path]`          | 同步各工具之间的配置         |
+| `diff <tool> [path]`   | 显示统一配置与工具配置的差异 |
+| `status [path]`        | 显示当前同步状态             |
+| `watch [path]`         | 监听文件变化并自动同步       |
 
 ### CLI 选项
 

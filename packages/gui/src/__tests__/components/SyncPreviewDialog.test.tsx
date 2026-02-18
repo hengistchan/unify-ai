@@ -197,9 +197,7 @@ describe('SyncPreviewDialog', () => {
     it('should show conflicts section when conflicts exist', () => {
       const previewWithConflicts: SyncPreview = {
         ...defaultPreview,
-        conflicts: [
-          { path: 'conflicting-file.md', description: 'File has uncommitted changes' },
-        ],
+        conflicts: [{ path: 'conflicting-file.md', description: 'File has uncommitted changes' }],
       };
 
       render(
@@ -361,9 +359,7 @@ describe('SyncPreviewDialog', () => {
     it('should allow Confirm Sync when there are conflicts', () => {
       const previewWithConflicts: SyncPreview = {
         ...defaultPreview,
-        conflicts: [
-          { path: 'conflict.md', description: 'Has conflicts' },
-        ],
+        conflicts: [{ path: 'conflict.md', description: 'Has conflicts' }],
       };
 
       render(

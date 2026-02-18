@@ -13,26 +13,26 @@
  */
 export enum ConfigCapability {
   // Basic capabilities
-  RULES = 'rules',              // Custom rules/instructions
-  MCP_SERVERS = 'mcp_servers',  // MCP server configuration
-  SETTINGS = 'settings',        // Tool settings
+  RULES = 'rules', // Custom rules/instructions
+  MCP_SERVERS = 'mcp_servers', // MCP server configuration
+  SETTINGS = 'settings', // Tool settings
 
   // Extended capabilities
-  COMMANDS = 'commands',        // Custom commands
-  PROMPTS = 'prompts',          // Prompt templates
-  CONTEXT = 'context',          // Context file references
-  ENV_VARS = 'env_vars',        // Environment variables
-  IGNORE_PATTERNS = 'ignore',   // Ignore patterns
+  COMMANDS = 'commands', // Custom commands
+  PROMPTS = 'prompts', // Prompt templates
+  CONTEXT = 'context', // Context file references
+  ENV_VARS = 'env_vars', // Environment variables
+  IGNORE_PATTERNS = 'ignore', // Ignore patterns
 }
 
 /**
  * Capability support level
  */
 export enum CapabilityLevel {
-  FULL = 'full',           // Full support, can import and export
-  PARTIAL = 'partial',     // Partial support, some fields may be lost
+  FULL = 'full', // Full support, can import and export
+  PARTIAL = 'partial', // Partial support, some fields may be lost
   READ_ONLY = 'read_only', // Can only import, cannot fully export
-  NONE = 'none',           // Not supported
+  NONE = 'none', // Not supported
 }
 
 /**
@@ -41,7 +41,7 @@ export enum CapabilityLevel {
 export interface CapabilityDeclaration {
   capability: ConfigCapability;
   level: CapabilityLevel;
-  notes?: string;  // Special notes, e.g., reasons for partial support
+  notes?: string; // Special notes, e.g., reasons for partial support
 }
 
 // ============================================
@@ -82,29 +82,29 @@ export interface ToolMeta {
  * Custom instructions/rules for AI tools
  */
 export interface RuleConfig {
-  id: string;                    // Unique rule identifier
-  name?: string;                 // Rule name
-  description?: string;          // Rule description
-  content: string;              // Rule content (Markdown)
-  globs?: string[];              // Applicable file glob patterns
-  alwaysApply?: boolean;         // Whether to always apply
-  priority?: number;             // Priority (for sorting)
-  enabled?: boolean;             // Whether enabled
-  metadata?: Record<string, unknown>;  // Tool-specific metadata
+  id: string; // Unique rule identifier
+  name?: string; // Rule name
+  description?: string; // Rule description
+  content: string; // Rule content (Markdown)
+  globs?: string[]; // Applicable file glob patterns
+  alwaysApply?: boolean; // Whether to always apply
+  priority?: number; // Priority (for sorting)
+  enabled?: boolean; // Whether enabled
+  metadata?: Record<string, unknown>; // Tool-specific metadata
 }
 
 /**
  * MCP server configuration
  */
 export interface MCPServerConfig {
-  name: string;                  // Server name
-  command: string;               // Launch command
-  args?: string[];               // Command arguments
-  env?: Record<string, string>;  // Environment variables
-  cwd?: string;                  // Working directory
-  disabled?: boolean;            // Whether disabled
-  autoApprove?: string[];        // Auto-approved permissions list
-  metadata?: Record<string, unknown>;  // Tool-specific fields
+  name: string; // Server name
+  command: string; // Launch command
+  args?: string[]; // Command arguments
+  env?: Record<string, string>; // Environment variables
+  cwd?: string; // Working directory
+  disabled?: boolean; // Whether disabled
+  autoApprove?: string[]; // Auto-approved permissions list
+  metadata?: Record<string, unknown>; // Tool-specific fields
 }
 
 /**
@@ -150,7 +150,7 @@ export interface CommandConfig {
   id: string;
   name: string;
   description?: string;
-  template: string;              // Command template
+  template: string; // Command template
   arguments?: CommandArgument[];
   enabled?: boolean;
 }
@@ -187,9 +187,9 @@ export interface PromptVariable {
  */
 export interface UnifiedConfig {
   // Metadata
-  version: string;               // Config version
-  sourceTool?: ToolId;           // Source tool
-  lastModified?: string;         // Last modified time
+  version: string; // Config version
+  sourceTool?: ToolId; // Source tool
+  lastModified?: string; // Last modified time
 
   // Core configuration
   rules: RuleConfig[];
@@ -199,7 +199,7 @@ export interface UnifiedConfig {
   // Extended configuration
   commands?: CommandConfig[];
   prompts?: PromptTemplate[];
-  contextFiles?: string[];       // Context file paths
+  contextFiles?: string[]; // Context file paths
   envVars?: Record<string, string>;
   ignorePatterns?: string[];
 
@@ -215,8 +215,8 @@ export interface UnifiedConfig {
  * File information
  */
 export interface FileInfo {
-  path: string;                  // Path relative to project root
-  absolutePath: string;          // Absolute path
+  path: string; // Path relative to project root
+  absolutePath: string; // Absolute path
   exists: boolean;
   size?: number;
   lastModified?: Date;
@@ -242,7 +242,7 @@ export interface ParseError {
   message: string;
   file?: string;
   line?: number;
-  recoverable: boolean;          // Whether parsing can continue
+  recoverable: boolean; // Whether parsing can continue
 }
 
 export interface ParseWarning {
@@ -263,10 +263,10 @@ export interface GenerateResult {
 }
 
 export interface GeneratedFile {
-  path: string;                  // Relative path
+  path: string; // Relative path
   content: string | Buffer;
   encoding: 'utf-8' | 'binary';
-  overwrite: boolean;            // Whether to overwrite existing file
+  overwrite: boolean; // Whether to overwrite existing file
 }
 
 export interface GenerateError {
@@ -277,7 +277,7 @@ export interface GenerateError {
 export interface GenerateWarning {
   code: string;
   message: string;
-  suggestion?: string;           // Suggested solution
+  suggestion?: string; // Suggested solution
 }
 
 /**
@@ -285,14 +285,14 @@ export interface GenerateWarning {
  */
 export interface ConvertOptions {
   // Import options
-  includeRaw?: boolean;          // Whether to preserve raw data
-  validateSchema?: boolean;      // Whether to validate schema
-  strict?: boolean;              // Strict mode, any error interrupts
+  includeRaw?: boolean; // Whether to preserve raw data
+  validateSchema?: boolean; // Whether to validate schema
+  strict?: boolean; // Strict mode, any error interrupts
 
   // Export options
-  overwrite?: boolean;           // Whether to overwrite existing files
-  backupExisting?: boolean;      // Whether to backup existing files
-  dryRun?: boolean;              // Dry run, don't actually write
+  overwrite?: boolean; // Whether to overwrite existing files
+  backupExisting?: boolean; // Whether to backup existing files
+  dryRun?: boolean; // Dry run, don't actually write
 
   // Conflict resolution
   conflictStrategy?: 'skip' | 'overwrite' | 'merge' | 'ask';
@@ -331,7 +331,7 @@ export interface AdapterInfo {
  * File discovery pattern
  */
 export interface FilePattern {
-  pattern: string;               // Glob pattern
+  pattern: string; // Glob pattern
   type: 'required' | 'optional';
   capability: ConfigCapability;
   description?: string;

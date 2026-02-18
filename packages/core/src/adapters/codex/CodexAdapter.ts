@@ -37,13 +37,16 @@ import { ToolCapabilities } from '../base/Capability';
  * Codex MCP configuration format (TOML)
  */
 interface CodexMCPConfig {
-  mcpServers: Record<string, {
-    command?: string;
-    args?: string[];
-    env?: Record<string, string>;
-    url?: string;
-    disabled?: boolean;
-  }>;
+  mcpServers: Record<
+    string,
+    {
+      command?: string;
+      args?: string[];
+      env?: Record<string, string>;
+      url?: string;
+      disabled?: boolean;
+    }
+  >;
 }
 
 /**
@@ -222,7 +225,11 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   /**
    * Parse from content
    */
-  async parseContent(content: string, filePath: string, options?: ConvertOptions): Promise<ParseResult> {
+  async parseContent(
+    content: string,
+    filePath: string,
+    options?: ConvertOptions
+  ): Promise<ParseResult> {
     const fileName = path.basename(filePath);
 
     if (fileName === 'AGENTS.md' || filePath.endsWith('.md')) {
@@ -236,11 +243,13 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -258,11 +267,13 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
@@ -280,22 +291,26 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
         },
         errors: result.errors,
         metadata: {
-          sourceFiles: [{
-            path: filePath,
-            absolutePath: filePath,
-            exists: true,
-          }],
+          sourceFiles: [
+            {
+              path: filePath,
+              absolutePath: filePath,
+              exists: true,
+            },
+          ],
           parseTime: Date.now(),
         },
       };
     }
 
-    return this.createErrorResult([{
-      code: 'UNKNOWN_FILE_TYPE',
-      message: `Unknown file type: ${filePath}`,
-      file: filePath,
-      recoverable: false,
-    }]);
+    return this.createErrorResult([
+      {
+        code: 'UNKNOWN_FILE_TYPE',
+        message: `Unknown file type: ${filePath}`,
+        file: filePath,
+        recoverable: false,
+      },
+    ]);
   }
 
   // ============================================
@@ -312,17 +327,22 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
     } catch (error) {
       return {
         rules: [],
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read AGENTS.md: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read AGENTS.md: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
 
-  private async parseMarkdownContent(content: string, filePath: string): Promise<{
+  private async parseMarkdownContent(
+    content: string,
+    filePath: string
+  ): Promise<{
     rules: RuleConfig[];
     errors?: ParseError[];
   }> {
@@ -543,12 +563,14 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       return this.parseMCPContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read MCP file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -559,12 +581,20 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
   }> {
     try {
       const raw = this.parseTOML(content);
-      const toml = (raw as unknown as { mcpServers?: CodexMCPConfig['mcpServers'] }) || { mcpServers: {} };
+      const toml = (raw as unknown as { mcpServers?: CodexMCPConfig['mcpServers'] }) || {
+        mcpServers: {},
+      };
       const servers: MCPServerConfig[] = [];
 
       if (toml.mcpServers) {
         for (const [name, server] of Object.entries(toml.mcpServers)) {
-          const serverConfig = server as { command?: string; args?: string[]; env?: Record<string, string>; url?: string; disabled?: boolean };
+          const serverConfig = server as {
+            command?: string;
+            args?: string[];
+            env?: Record<string, string>;
+            url?: string;
+            disabled?: boolean;
+          };
           servers.push({
             name,
             command: serverConfig.command || '',
@@ -579,11 +609,13 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       return { config: { servers } };
     } catch (error) {
       return {
-        errors: [{
-          code: 'TOML_PARSE_ERROR',
-          message: `Failed to parse TOML: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: false,
-        }],
+        errors: [
+          {
+            code: 'TOML_PARSE_ERROR',
+            message: `Failed to parse TOML: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: false,
+          },
+        ],
       };
     }
   }
@@ -594,7 +626,13 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
     };
 
     for (const server of mcp.servers) {
-      const serverConfig: { command?: string; args?: string[]; env?: Record<string, string>; url?: string; disabled?: boolean } = {
+      const serverConfig: {
+        command?: string;
+        args?: string[];
+        env?: Record<string, string>;
+        url?: string;
+        disabled?: boolean;
+      } = {
         command: server.command,
         args: server.args,
         env: server.env,
@@ -623,12 +661,14 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       return this.parseSettingsContent(content);
     } catch (error) {
       return {
-        errors: [{
-          code: 'FILE_READ_ERROR',
-          message: `Failed to read settings file: ${error instanceof Error ? error.message : String(error)}`,
-          file: filePath,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'FILE_READ_ERROR',
+            message: `Failed to read settings file: ${error instanceof Error ? error.message : String(error)}`,
+            file: filePath,
+            recoverable: true,
+          },
+        ],
       };
     }
   }
@@ -661,11 +701,13 @@ export class CodexAdapter extends BaseAdapter implements IAdapter {
       return { settings };
     } catch (error) {
       return {
-        errors: [{
-          code: 'TOML_PARSE_ERROR',
-          message: `Failed to parse TOML: ${error instanceof Error ? error.message : String(error)}`,
-          recoverable: true,
-        }],
+        errors: [
+          {
+            code: 'TOML_PARSE_ERROR',
+            message: `Failed to parse TOML: ${error instanceof Error ? error.message : String(error)}`,
+            recoverable: true,
+          },
+        ],
       };
     }
   }

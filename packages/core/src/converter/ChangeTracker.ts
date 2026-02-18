@@ -238,9 +238,7 @@ export class ChangeTracker {
    */
   async getRecentChanges(filePath: string, limit: number = 10): Promise<ChangeRecord[]> {
     const normalizedPath = this.normalizePath(filePath);
-    return this.history
-      .filter(r => r.path === normalizedPath)
-      .slice(0, limit);
+    return this.history.filter(r => r.path === normalizedPath).slice(0, limit);
   }
 
   /**
@@ -356,13 +354,11 @@ export class ChangeTracker {
    * Compute hash for content
    */
   private computeHash(content: unknown): string {
-    const normalized = typeof content === 'string'
-      ? content
-      : JSON.stringify(content, Object.keys(content as object).sort());
-    return crypto
-      .createHash('sha256')
-      .update(normalized)
-      .digest('hex');
+    const normalized =
+      typeof content === 'string'
+        ? content
+        : JSON.stringify(content, Object.keys(content as object).sort());
+    return crypto.createHash('sha256').update(normalized).digest('hex');
   }
 
   /**
@@ -436,10 +432,18 @@ export class ChangeTracker {
   /**
    * Compute simple diff between two values
    */
-  private computeSimpleDiff(oldValue: unknown, newValue: unknown): { path: string; oldValue: unknown; newValue: unknown }[] {
+  private computeSimpleDiff(
+    oldValue: unknown,
+    newValue: unknown
+  ): { path: string; oldValue: unknown; newValue: unknown }[] {
     const diffs: { path: string; oldValue: unknown; newValue: unknown }[] = [];
 
-    if (typeof oldValue !== 'object' || typeof newValue !== 'object' || oldValue === null || newValue === null) {
+    if (
+      typeof oldValue !== 'object' ||
+      typeof newValue !== 'object' ||
+      oldValue === null ||
+      newValue === null
+    ) {
       if (oldValue !== newValue) {
         diffs.push({ path: '', oldValue, newValue });
       }
@@ -503,6 +507,9 @@ export function getChangeTracker(projectRoot?: string): ChangeTracker {
  * @param fingerprintManager Fingerprint manager instance
  * @returns New ChangeTracker instance
  */
-export function createChangeTracker(projectRoot: string, fingerprintManager?: FingerprintManager): ChangeTracker {
+export function createChangeTracker(
+  projectRoot: string,
+  fingerprintManager?: FingerprintManager
+): ChangeTracker {
   return new ChangeTracker(projectRoot, fingerprintManager);
 }

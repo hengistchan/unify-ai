@@ -32,7 +32,7 @@ export const useThemeStore = create<ThemeState>()(
     (set, get) => ({
       mode: 'dark',
       resolvedTheme: 'dark',
-      setMode: (mode) => {
+      setMode: mode => {
         const resolved = resolveTheme(mode);
         set({ mode, resolvedTheme: resolved });
 
@@ -48,7 +48,7 @@ export const useThemeStore = create<ThemeState>()(
     }),
     {
       name: 'theme-storage',
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => state => {
         // Re-apply theme on page load
         if (state) {
           const resolved = resolveTheme(state.mode);
@@ -65,7 +65,7 @@ export const useThemeStore = create<ThemeState>()(
 
 // Listen for system theme changes
 if (typeof window !== 'undefined') {
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
     const state = useThemeStore.getState();
     if (state.mode === 'system') {
       const newTheme = e.matches ? 'dark' : 'light';

@@ -13,17 +13,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
-    {
-      label,
-      error,
-      hint,
-      icon,
-      iconPosition = 'left',
-      fullWidth = false,
-      className,
-      id,
-      ...props
-    },
+    { label, error, hint, icon, iconPosition = 'left', fullWidth = false, className, id, ...props },
     ref
   ) => {
     const generatedId = React.useId();
@@ -33,10 +23,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn(fullWidth && 'w-full', className)}>
         {label && (
-          <label
-            htmlFor={inputId}
-            className="block text-sm font-medium text-text-primary mb-1.5"
-          >
+          <label htmlFor={inputId} className="block text-sm font-medium text-text-primary mb-1.5">
             {label}
           </label>
         )}
@@ -83,9 +70,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             <p className="text-xs text-error">{error}</p>
           </div>
         )}
-        {hint && !error && (
-          <p className="text-xs text-text-tertiary mt-1.5">{hint}</p>
-        )}
+        {hint && !error && <p className="text-xs text-text-tertiary mt-1.5">{hint}</p>}
       </div>
     );
   }

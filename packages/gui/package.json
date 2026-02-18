@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/electron-dev.js\"",
     "electron:dev:manual": "node scripts/build-electron.js && concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "node scripts/build-electron.js && vite build && electron-builder",
+    "electron:build": "rm -rf dist && node scripts/build-electron.js && vite build && electron-builder",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",

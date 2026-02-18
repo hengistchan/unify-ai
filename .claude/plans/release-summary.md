@@ -53,7 +53,7 @@
 
 1. **update-version.sh**
    ```bash
-   ./scripts/update-version.sh 0.1.0
+   ./scripts/update-version.sh 0.0.1
    ```
    - 更新所有 package.json 中的版本号
    - 自动更新 root, core, cli, gui 包
@@ -69,7 +69,7 @@
 
 3. **release.sh**
    ```bash
-   ./scripts/release.sh 0.1.0
+   ./scripts/release.sh 0.0.1
    ```
    - 完整发布流程
    - 运行测试
@@ -87,7 +87,7 @@
 ./scripts/test-release.sh
 
 # 2. 如果测试通过，执行真实发布
-./scripts/release.sh 0.1.0
+./scripts/release.sh 0.0.1
 
 # 3. 在 GitHub 创建 release，上传 GUI 二进制文件
 ```
@@ -98,7 +98,7 @@
 
 #### 1. 更新版本
 ```bash
-./scripts/update-version.sh 0.1.0
+./scripts/update-version.sh 0.0.1
 ```
 
 #### 2. 运行所有测试
@@ -139,19 +139,19 @@ cd ../..
 #### 6. Git 操作
 ```bash
 git add .
-git commit -m "chore: release v0.1.0"
-git tag v0.1.0
+git commit -m "chore: release v0.0.1"
+git tag v0.0.1
 git push origin main --tags
 ```
 
 #### 7. GitHub Release
 1. 访问 https://github.com/yourusername/unify-ai/releases/new
-2. 选择标签 v0.1.0
+2. 选择标签 v0.0.1
 3. 复制 CHANGELOG.md 中的发布说明
 4. 上传 GUI 二进制文件：
-   - `packages/gui/release/unify-ai-0.1.0.dmg` (macOS)
-   - `packages/gui/release/unify-ai-0.1.0.exe` (Windows)
-   - `packages/gui/release/unify-ai-0.1.0.AppImage` (Linux)
+   - `packages/gui/release/unify-ai-0.0.1.dmg` (macOS)
+   - `packages/gui/release/unify-ai-0.0.1.exe` (Windows)
+   - `packages/gui/release/unify-ai-0.0.1.AppImage` (Linux)
 
 ## 📋 发布检查清单
 
@@ -189,7 +189,7 @@ git push origin main --tags
 ./scripts/test-release.sh
 
 # 如果一切正常，执行真实发布
-./scripts/release.sh 0.1.0
+./scripts/release.sh 0.0.1
 ```
 
 ### 需要配置的事项
@@ -271,10 +271,10 @@ git push origin main --tags
 ✅ **脚本完成**: 版本更新、测试、发布脚本已创建
 ✅ **发布准备**: 检查清单和计划已就绪
 
-**状态**: 准备发布 v0.1.0 🚀
+**状态**: 准备发布 v0.0.1 🚀
 
 只需运行以下命令即可开始发布：
 ```bash
 ./scripts/test-release.sh  # 先测试
-./scripts/release.sh 0.1.0  # 确认无误后发布
+./scripts/release.sh 0.0.1  # 确认无误后发布
 ```

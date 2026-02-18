@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-17
 **Status**: Ready for Release
-**Version**: 0.1.0
+**Version**: 0.0.1
 
 ---
 
@@ -135,9 +135,9 @@ pnpm build
 pnpm electron:build
 
 # Output:
-# - dist-electron/unify-ai-0.1.0.dmg (macOS)
-# - dist-electron/unify-ai-0.1.0.exe (Windows)
-# - dist-electron/unify-ai-0.1.0.AppImage (Linux)
+# - dist-electron/unify-ai-0.0.1.dmg (macOS)
+# - dist-electron/unify-ai-0.0.1.exe (Windows)
+# - dist-electron/unify-ai-0.0.1.AppImage (Linux)
 ```
 
 ---
@@ -152,7 +152,7 @@ VERSION=$1
 
 if [ -z "$VERSION" ]; then
   echo "Usage: ./update-version.sh <version>"
-  echo "Example: ./update-version.sh 0.1.0"
+  echo "Example: ./update-version.sh 0.0.1"
   exit 1
 fi
 
@@ -173,7 +173,7 @@ echo "✅ Updated all packages to version $VERSION"
 
 ```bash
 # 1. Update version
-./scripts/update-version.sh 0.1.0
+./scripts/update-version.sh 0.0.1
 
 # 2. Run all tests
 pnpm test
@@ -198,8 +198,8 @@ cd packages/gui
 pnpm electron:build
 
 # 7. Create git tag
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.0.1
+git push origin v0.0.1
 
 # 8. Create GitHub release with:
 # - Release notes
@@ -212,7 +212,7 @@ git push origin v0.1.0
 ## 6. Release Notes Template
 
 ```markdown
-# Release v0.1.0
+# Release v0.0.1
 
 ## Overview
 First public release of unify-ai - unified configuration management for AI coding assistants.
@@ -255,9 +255,9 @@ unify-ai --help
 
 ### GUI Application
 Download from GitHub Releases:
-- macOS: `unify-ai-0.1.0.dmg`
-- Windows: `unify-ai-0.1.0.exe`
-- Linux: `unify-ai-0.1.0.AppImage`
+- macOS: `unify-ai-0.0.1.dmg`
+- Windows: `unify-ai-0.0.1.exe`
+- Linux: `unify-ai-0.0.1.AppImage`
 
 ## Supported Tools
 
@@ -313,13 +313,13 @@ If critical issues are found:
 
 ```bash
 # Deprecate npm package
-npm deprecate @unify-ai/core@0.1.0 "Critical bug found, please upgrade to 0.1.1"
-npm deprecate @unify-ai/cli@0.1.0 "Critical bug found, please upgrade to 0.1.1"
+npm deprecate @unify-ai/core@0.0.1 "Critical bug found, please upgrade to 0.1.1"
+npm deprecate @unify-ai/cli@0.0.1 "Critical bug found, please upgrade to 0.1.1"
 
 # Delete GitHub release
 # Delete git tag
-git tag -d v0.1.0
-git push origin :refs/tags/v0.1.0
+git tag -d v0.0.1
+git push origin :refs/tags/v0.0.1
 
 # Create hotfix
 git checkout -b hotfix/0.1.1

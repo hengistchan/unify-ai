@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-02-17
+## [0.0.1] - 2026-02-17
 
 ### Added
 
@@ -85,14 +85,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned Features (v0.2.0)
+### Planned Features (v0.1.0)
 - Complete sync merge strategies implementation
 - Configuration templates system
 - Team configuration sharing
 - Cloud sync support
 - VS Code extension
 
-### Planned Features (v0.3.0)
+### Planned Features (v0.2.0)
 - Web interface
 - Plugin system
 - Custom adapter support
@@ -102,4 +102,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
-- **0.1.0** (2026-02-17) - Initial release
+- **0.0.1** (2026-02-17) - Initial release

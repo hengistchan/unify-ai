@@ -3,7 +3,7 @@
 
 set -e
 
-VERSION="0.1.0-test"
+VERSION="0.0.1-test"
 
 echo "🧪 Testing release process..."
 echo ""
@@ -57,4 +57,4 @@ echo ""
 
 echo "✅ All release tests passed!"
 echo ""
-echo "Ready for actual release with: ./scripts/release.sh 0.1.0"
+echo "Ready for actual release with: ./scripts/release.sh 0.0.1"

@@ -13,7 +13,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    emptyOutDir: false, // Don't empty dist to preserve electron files
     rollupOptions: {
       output: {
         entryFileNames: 'assets/[name].js',

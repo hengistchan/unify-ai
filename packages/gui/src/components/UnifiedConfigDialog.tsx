@@ -4,7 +4,16 @@
  */
 
 import { useState } from 'react';
-import { X, FileJson, Download, Upload, Check, AlertCircle, AlertTriangle, Plus } from 'lucide-react';
+import {
+  X,
+  FileJson,
+  Download,
+  Upload,
+  Check,
+  AlertCircle,
+  AlertTriangle,
+  Plus,
+} from 'lucide-react';
 import { Button, ToolIcon } from '@/components/common';
 import type { DetectedTool, UnifiedConfig } from '@/stores/appStore';
 import { cn } from '@/lib/utils';

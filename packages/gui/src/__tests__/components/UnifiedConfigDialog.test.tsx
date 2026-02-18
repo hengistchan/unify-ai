@@ -193,7 +193,9 @@ describe('UnifiedConfigDialog', () => {
       );
 
       fireEvent.click(screen.getByText('Generate Unified Config'));
-      expect(screen.getByText('Select source tools to generate unified config from:')).toBeInTheDocument();
+      expect(
+        screen.getByText('Select source tools to generate unified config from:')
+      ).toBeInTheDocument();
     });
 
     it('should go to export step when Export is clicked', () => {

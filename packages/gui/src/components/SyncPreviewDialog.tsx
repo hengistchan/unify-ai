@@ -234,9 +234,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
           <div className="bg-bg-tertiary border border-border rounded-lg p-4">
             <div className="flex items-center justify-center gap-4">
               <div className="text-center">
-                <Badge variant="info">
-                  {getToolName(preview.sourceTool)}
-                </Badge>
+                <Badge variant="info">{getToolName(preview.sourceTool)}</Badge>
                 <p className="text-xs text-text-tertiary mt-1">Source</p>
               </div>
               <ArrowRight size={24} className="text-primary" />

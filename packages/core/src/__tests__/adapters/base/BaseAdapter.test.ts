@@ -17,7 +17,12 @@ import type {
   CapabilityLevel,
   ToolId,
 } from '../../../core/types';
-import { ConfigCapability as CC, CapabilityLevel as CL, AdapterStatus, ToolId as ToolIdEnum } from '../../../core/types';
+import {
+  ConfigCapability as CC,
+  CapabilityLevel as CL,
+  AdapterStatus,
+  ToolId as ToolIdEnum,
+} from '../../../core/types';
 
 /**
  * Concrete test adapter implementation

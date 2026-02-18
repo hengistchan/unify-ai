@@ -200,8 +200,8 @@ describe('Exporter', () => {
       ]);
 
       vi.mocked(adapterRegistry.get).mockImplementation(toolId => {
-        if (toolId === 'cursor' as ToolId) return mockAdapterSuccess;
-        if (toolId === 'claude-code' as ToolId) return mockAdapterFail;
+        if (toolId === ('cursor' as ToolId)) return mockAdapterSuccess;
+        if (toolId === ('claude-code' as ToolId)) return mockAdapterFail;
         return undefined;
       });
 

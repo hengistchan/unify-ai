@@ -6,13 +6,7 @@
 import { ipcMain, app } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
-import {
-  syncConfig,
-  previewSync,
-  getToolConfig,
-  importConfig,
-  exportConfig,
-} from './sync';
+import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig } from './sync';
 import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
 
 /**

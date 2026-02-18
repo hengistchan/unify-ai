@@ -1,6 +1,6 @@
 /**
  * Unified Config Dialog
- * Manage unified.json - import from tools, export to tools
+ * Manage unified.json - generate from tools, export to tools
  */
 
 import { useState } from 'react';
@@ -125,7 +125,7 @@ export function UnifiedConfigDialog({
             </button>
             <span className="text-text-tertiary">/</span>
             <span className="text-sm text-text-secondary">
-              {step === 'import' && 'Import from Tools'}
+              {step === 'import' && 'Generate Unified Config'}
               {step === 'export' && 'Export to Tools'}
             </span>
           </div>
@@ -189,7 +189,7 @@ export function UnifiedConfigDialog({
                     <Download className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-text-primary">Import from Tools</h4>
+                    <h4 className="font-medium text-text-primary">Generate Unified Config</h4>
                     <p className="text-xs text-text-tertiary mt-0.5">
                       Read from multiple tools and merge
                     </p>
@@ -234,7 +234,7 @@ export function UnifiedConfigDialog({
             <div className="space-y-6">
               <div>
                 <h3 className="text-sm font-medium text-text-primary mb-2">
-                  Select source tools to import from:
+                  Select source tools to generate unified config from:
                 </h3>
                 <p className="text-xs text-text-tertiary mb-3">
                   Select multiple tools to merge their configurations

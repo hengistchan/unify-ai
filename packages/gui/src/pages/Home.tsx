@@ -210,7 +210,7 @@ export function Home() {
         </div>
       )}
 
-      {/* Import from Tool */}
+      {/* Generate Unified Config */}
       <div className="mb-12">
         <button
           onClick={handleImportFromTool}
@@ -220,9 +220,9 @@ export function Home() {
             <Download className="w-5 h-5 text-text-tertiary" />
           </div>
           <div className="text-left flex-1">
-            <h3 className="text-sm font-medium text-text-secondary">Import from Tool</h3>
+            <h3 className="text-sm font-medium text-text-secondary">Generate Unified Config</h3>
             <p className="text-xs text-text-tertiary">
-              Import existing configuration from a specific AI tool
+              Generate unified config from AI tools in your project
             </p>
           </div>
         </button>

@@ -138,7 +138,7 @@ export function SyncModeDialog({
                     )}
                   </div>
                   <p className="text-sm text-text-secondary mt-1">
-                    Import to unified.json, edit, then export to tools
+                    Generate unified.json from tools, edit, then export
                   </p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-text-tertiary">
                     <span>Best for: Long-term config management</span>

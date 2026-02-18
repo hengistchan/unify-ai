@@ -4,7 +4,8 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { Exporter, type ExportResult, type ExportOptions } from '../../converter/Exporter';
-import type { UnifiedConfig, ToolId, GenerateResult, ValidationResult } from '../../core/types';
+import type { UnifiedConfig, ToolId, GenerateResult } from '../../core/types';
+import type { ValidationResult } from '../../adapters/base/IAdapter';
 import { adapterRegistry } from '../../adapters/registry';
 
 // Mock the adapter registry
@@ -72,6 +73,7 @@ describe('Exporter', () => {
       const mockAdapter = createMockAdapterWithValidation('cursor', {
         valid: false,
         errors: [{ path: 'rules[0]', message: 'Invalid rule' }],
+        warnings: [],
       });
       vi.mocked(adapterRegistry.get).mockReturnValue(mockAdapter);
 
@@ -89,6 +91,7 @@ describe('Exporter', () => {
       const mockAdapter = createMockAdapterWithValidation('cursor', {
         valid: false,
         errors: [{ path: 'rules[0]', message: 'Invalid rule' }],
+        warnings: [],
       });
       vi.mocked(adapterRegistry.get).mockReturnValue(mockAdapter);
 
@@ -184,10 +187,10 @@ describe('Exporter', () => {
       ]);
 
       expect(results.size).toBe(2);
-      expect(results.has('cursor')).toBe(true);
-      expect(results.has('claude-code')).toBe(true);
-      expect(results.get('cursor')?.success).toBe(true);
-      expect(results.get('claude-code')?.success).toBe(true);
+      expect(results.has('cursor' as ToolId)).toBe(true);
+      expect(results.has('claude-code' as ToolId)).toBe(true);
+      expect(results.get('cursor' as ToolId)?.success).toBe(true);
+      expect(results.get('claude-code' as ToolId)?.success).toBe(true);
     });
 
     it('should handle partial failures', async () => {
@@ -197,8 +200,8 @@ describe('Exporter', () => {
       ]);
 
       vi.mocked(adapterRegistry.get).mockImplementation(toolId => {
-        if (toolId === 'cursor') return mockAdapterSuccess;
-        if (toolId === 'claude-code') return mockAdapterFail;
+        if (toolId === 'cursor' as ToolId) return mockAdapterSuccess;
+        if (toolId === 'claude-code' as ToolId) return mockAdapterFail;
         return undefined;
       });
 
@@ -207,8 +210,8 @@ describe('Exporter', () => {
         'claude-code' as ToolId,
       ]);
 
-      expect(results.get('cursor')?.success).toBe(true);
-      expect(results.get('claude-code')?.success).toBe(false);
+      expect(results.get('cursor' as ToolId)?.success).toBe(true);
+      expect(results.get('claude-code' as ToolId)?.success).toBe(false);
     });
 
     it('should pass options to all exports', async () => {
@@ -312,7 +315,7 @@ describe('Exporter', () => {
 });
 
 // Helper functions to create mock adapters
-function createMockAdapter(toolId: string, valid: boolean) {
+function createMockAdapter(toolId: string, valid: boolean): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     validate: vi.fn().mockResolvedValue({ valid, errors: [] }),
@@ -332,7 +335,7 @@ function createMockAdapter(toolId: string, valid: boolean) {
   };
 }
 
-function createMockAdapterWithValidation(toolId: string, validation: ValidationResult) {
+function createMockAdapterWithValidation(toolId: string, validation: ValidationResult): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     validate: vi.fn().mockResolvedValue(validation),
@@ -355,7 +358,7 @@ function createMockAdapterWithValidation(toolId: string, validation: ValidationR
 function createMockAdapterWithGenerateErrors(
   toolId: string,
   errors: Array<{ code: string; message: string }>
-) {
+): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     validate: vi.fn().mockResolvedValue({ valid: true, errors: [] }),
@@ -372,7 +375,7 @@ function createMockAdapterWithGenerateErrors(
 function createMockAdapterWithGenerateWarnings(
   toolId: string,
   warnings: Array<{ code: string; message: string; suggestion?: string }>
-) {
+): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     validate: vi.fn().mockResolvedValue({ valid: true, errors: [] }),
@@ -393,7 +396,7 @@ function createMockAdapterWithGenerateWarnings(
   };
 }
 
-function createMockAdapterWithoutCapability(toolId: string, capability: string) {
+function createMockAdapterWithoutCapability(toolId: string, capability: string): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     validate: vi.fn().mockResolvedValue({ valid: true, errors: [] }),

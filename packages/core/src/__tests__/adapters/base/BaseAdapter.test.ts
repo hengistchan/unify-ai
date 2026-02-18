@@ -15,15 +15,16 @@ import type {
   CapabilityDeclaration,
   ConfigCapability,
   CapabilityLevel,
+  ToolId,
 } from '../../../core/types';
-import { ConfigCapability as CC, CapabilityLevel as CL, AdapterStatus } from '../../../core/types';
+import { ConfigCapability as CC, CapabilityLevel as CL, AdapterStatus, ToolId as ToolIdEnum } from '../../../core/types';
 
 /**
  * Concrete test adapter implementation
  */
 class TestAdapter extends BaseAdapter {
   readonly toolMeta: ToolMeta = {
-    id: 'test-tool' as ConfigCapability,
+    id: ToolIdEnum.CURSOR,
     name: 'Test Tool',
     description: 'A test adapter for unit testing',
     website: 'https://test.example.com',
@@ -247,7 +248,7 @@ describe('BaseAdapter', () => {
   describe('deepMerge()', () => {
     it('should merge flat objects', () => {
       const target = { a: 1, b: 2 };
-      const source = { b: 3, c: 4 };
+      const source = { b: 3, c: 4 } as any;
 
       const result = adapter.testDeepMerge(target, source);
 
@@ -266,7 +267,7 @@ describe('BaseAdapter', () => {
           level2a: 'new',
           level2c: 'added',
         },
-      };
+      } as any;
 
       const result = adapter.testDeepMerge(target, source);
 
@@ -300,7 +301,7 @@ describe('BaseAdapter', () => {
 
     it('should handle null values', () => {
       const target = { a: 'keep', b: null };
-      const source = { b: 'overwrite', c: null };
+      const source = { b: 'overwrite', c: null } as any;
 
       const result = adapter.testDeepMerge(target, source);
 
@@ -320,7 +321,7 @@ describe('BaseAdapter', () => {
 
     it('should handle undefined source values', () => {
       const target = { a: 1, b: 2 };
-      const source = { b: undefined, c: 3 };
+      const source = { b: undefined, c: 3 } as any;
 
       const result = adapter.testDeepMerge(target, source);
 
@@ -334,7 +335,7 @@ describe('BaseAdapter', () => {
     it('should return complete adapter info', () => {
       const info = adapter.getInfo();
 
-      expect(info.tool.id).toBe('test-tool');
+      expect(info.tool.id).toBe(ToolIdEnum.CURSOR);
       expect(info.tool.name).toBe('Test Tool');
       expect(info.version).toBe('1.0.0-test');
       expect(info.status).toBe(AdapterStatus.READY);
@@ -359,7 +360,7 @@ describe('BaseAdapter', () => {
     it('should error on missing version', async () => {
       const config = {
         rules: [],
-      } as UnifiedConfig;
+      } as unknown as UnifiedConfig;
 
       const result = await adapter.validate(config);
 

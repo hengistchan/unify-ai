@@ -260,8 +260,8 @@ describe('Importer', () => {
       const merged = (importer as any).mergeConfigs(configs);
 
       expect(merged.mcp.servers).toHaveLength(2);
-      expect(merged.mcp.servers.map((s: MCPServerConfig) => s.name)).toContain('server1');
-      expect(merged.mcp.servers.map((s: MCPServerConfig) => s.name)).toContain('server2');
+      expect(merged.mcp.servers.map((s: MCPServerConfigType) => s.name)).toContain('server1');
+      expect(merged.mcp.servers.map((s: MCPServerConfigType) => s.name)).toContain('server2');
     });
 
     it('should merge settings', async () => {
@@ -428,7 +428,7 @@ describe('Importer', () => {
 });
 
 // Helper functions to create mock adapters
-function createMockAdapter(toolId: string, config: UnifiedConfig) {
+function createMockAdapter(toolId: string, config: UnifiedConfig): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({
@@ -442,7 +442,7 @@ function createMockAdapter(toolId: string, config: UnifiedConfig) {
 function createMockAdapterWithErrors(
   toolId: string,
   errors: Array<{ code: string; message: string; recoverable: boolean }>
-) {
+): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({
@@ -456,7 +456,7 @@ function createMockAdapterWithErrors(
 function createMockAdapterWithWarnings(
   toolId: string,
   warnings: Array<{ code: string; message: string }>
-) {
+): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({
@@ -472,7 +472,7 @@ function createMockAdapterWithFiles(
   toolId: string,
   config: UnifiedConfig,
   files: Array<{ path: string; absolutePath: string; exists: boolean }>
-) {
+): any {
   return {
     toolMeta: { id: toolId, name: toolId },
     parse: vi.fn().mockResolvedValue({

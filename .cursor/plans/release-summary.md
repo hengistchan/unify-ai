@@ -74,6 +74,7 @@
    - 测试 GUI 构建
 
 3. **release.sh**
+
    ```bash
    ./scripts/release.sh 0.1.0
    ```

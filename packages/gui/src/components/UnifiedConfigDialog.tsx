@@ -4,10 +4,23 @@
  */
 
 import { useState } from 'react';
-import { X, FileJson, Download, Upload, Check, AlertCircle, AlertTriangle } from 'lucide-react';
+import { X, FileJson, Download, Upload, Check, AlertCircle, AlertTriangle, Plus } from 'lucide-react';
 import { Button, ToolIcon } from '@/components/common';
 import type { DetectedTool, UnifiedConfig } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
+import { getToolName } from '@/components/common/ToolIcon';
+
+// All supported tools
+const SUPPORTED_TOOLS = [
+  'cursor',
+  'claude-code',
+  'copilot',
+  'windsurf',
+  'codex',
+  'cline',
+  'aider',
+  'continue',
+] as const;
 
 interface UnifiedConfigDialogProps {
   open: boolean;
@@ -290,26 +303,46 @@ export function UnifiedConfigDialog({
                 <p className="text-xs text-text-tertiary mb-3">
                   unified.json will be written to selected tools
                 </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {detectedList.map(tool => (
-                    <button
-                      key={tool.id}
-                      onClick={() => toggleExportTarget(tool.id)}
-                      className={cn(
-                        'flex items-center gap-3 p-3 rounded-lg border transition-all',
-                        exportTargets.has(tool.id)
-                          ? 'bg-success-muted border-success'
-                          : 'bg-bg-tertiary border-border hover:border-border-hover'
-                      )}
-                    >
-                      <ToolIcon toolId={tool.id} size="sm" />
-                      <span className="font-medium text-text-primary">{tool.name}</span>
-                      {exportTargets.has(tool.id) && (
-                        <Check className="w-5 h-5 text-success ml-auto" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+
+                {/* Get detected tool IDs */}
+                {(() => {
+                  const detectedToolIds = new Set(detectedList.map(t => t.id));
+                  const allToolsWithStatus = SUPPORTED_TOOLS.map(toolId => ({
+                    id: toolId,
+                    name: getToolName(toolId),
+                    isDetected: detectedToolIds.has(toolId),
+                  }));
+
+                  return (
+                    <div className="grid grid-cols-2 gap-2">
+                      {allToolsWithStatus.map(tool => (
+                        <button
+                          key={tool.id}
+                          onClick={() => toggleExportTarget(tool.id)}
+                          className={cn(
+                            'flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
+                            exportTargets.has(tool.id)
+                              ? 'bg-success-muted border-success'
+                              : 'bg-bg-tertiary border-border hover:border-border-hover'
+                          )}
+                        >
+                          <ToolIcon toolId={tool.id} size="sm" />
+                          <span className="font-medium text-text-primary flex-1">{tool.name}</span>
+                          <div className="flex items-center gap-1">
+                            {tool.isDetected ? (
+                              <AlertTriangle className="w-3 h-3 text-warning" />
+                            ) : (
+                              <Plus className="w-3 h-3 text-success" />
+                            )}
+                            {exportTargets.has(tool.id) && (
+                              <Check className="w-5 h-5 text-success" />
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Options */}

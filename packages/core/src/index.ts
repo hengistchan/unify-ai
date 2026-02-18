@@ -38,6 +38,9 @@ export * from './discovery';
 // Converter
 export * from './converter';
 
+// Model Configuration Management
+export * from './model';
+
 // Convenience exports
 import { adapterRegistry } from './adapters/registry';
 import { importer } from './converter/Importer';

@@ -167,7 +167,7 @@ export function Settings() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-text-tertiary">Version</span>
-              <span className="text-sm text-text-secondary font-mono">0.1.0</span>
+              <span className="text-sm text-text-secondary font-mono">0.0.1</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-text-tertiary">License</span>

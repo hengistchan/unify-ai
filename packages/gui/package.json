@@ -4,6 +4,11 @@
   "description": "Electron + React GUI for unify-ai configuration management",
   "type": "module",
   "main": "dist/electron/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hengistchan/unify-ai.git",
+    "directory": "packages/gui"
+  },
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && node scripts/electron-dev.js\"",
     "dev:web": "vite",

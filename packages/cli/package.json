@@ -7,6 +7,11 @@
   "bin": {
     "unify-ai": "./dist/bin/unify-ai.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hengistchan/unify-ai.git",
+    "directory": "packages/cli"
+  },
   "scripts": {
     "dev": "tsx bin/unify-ai.ts",
     "build": "tsc",

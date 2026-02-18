@@ -36,6 +36,11 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hengistchan/unify-ai.git",
+    "directory": "packages/core"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json && node scripts/fix-esm-imports.js",
     "dev": "tsc --project tsconfig.build.json --watch",

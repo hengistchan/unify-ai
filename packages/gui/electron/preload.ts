@@ -8,6 +8,7 @@ import { IPC_CHANNELS } from './ipc/channels';
 
 // Type definitions for the exposed API
 export interface ElectronAPI {
+  getAppVersion: () => Promise<string>;
   openFolder: () => Promise<string | null>;
   detectTools: (folderPath: string) => Promise<DetectedTool[]>;
   syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) => Promise<SyncResult>;
@@ -158,6 +159,9 @@ export interface PromptTemplate {
 
 // Expose protected methods to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Get app version
+  getAppVersion: () => ipcRenderer.invoke(IPC_CHANNELS.GET_APP_VERSION),
+
   // Open folder dialog
   openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_FOLDER),
 

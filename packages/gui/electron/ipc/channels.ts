@@ -4,6 +4,9 @@
  */
 
 export const IPC_CHANNELS = {
+  // App info
+  GET_APP_VERSION: 'get-app-version',
+
   // Folder operations
   OPEN_FOLDER: 'open-folder',
   FOLDER_SELECTED: 'folder-selected',

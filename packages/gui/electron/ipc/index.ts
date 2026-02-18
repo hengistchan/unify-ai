@@ -3,7 +3,7 @@
  * Registers all IPC handlers for the main process
  */
 
-import { ipcMain } from 'electron';
+import { ipcMain, app } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
 import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig, previewExport } from './sync';
@@ -13,6 +13,11 @@ import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
  * Register all IPC handlers
  */
 export function registerIpcHandlers(): void {
+  // Get app version
+  ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
+    return app.getVersion();
+  });
+
   // Open folder dialog
   ipcMain.handle(IPC_CHANNELS.OPEN_FOLDER, async () => {
     console.log('[IPC] Opening folder dialog...');

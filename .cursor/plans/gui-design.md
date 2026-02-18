@@ -656,7 +656,7 @@ npm install lucide-react
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.0.0"
   },
-  "devDependencies": {
+  "": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "typescript": "^5.3.0",

@@ -3,6 +3,7 @@
  * Application settings and preferences
  */
 
+import { useEffect, useState } from 'react';
 import {
   Settings as SettingsIcon,
   Moon,
@@ -21,6 +22,18 @@ import { cn } from '@/lib/utils';
 export function Settings() {
   const settings = useAppStore(selectSettings);
   const { updateSettings, addToast } = useAppStore();
+  const [appVersion, setAppVersion] = useState<string>('...');
+
+  useEffect(() => {
+    // Fetch app version from Electron
+    if (window.electronAPI?.getAppVersion) {
+      window.electronAPI.getAppVersion().then(setAppVersion).catch(() => {
+        setAppVersion('unknown');
+      });
+    } else {
+      setAppVersion('dev');
+    }
+  }, []);
 
   const handleToggle = (key: keyof typeof settings) => {
     updateSettings({ [key]: !settings[key] });
@@ -167,7 +180,7 @@ export function Settings() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-text-tertiary">Version</span>
-              <span className="text-sm text-text-secondary font-mono">0.0.1</span>
+              <span className="text-sm text-text-secondary font-mono">{appVersion}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-text-tertiary">License</span>

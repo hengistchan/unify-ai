@@ -132,7 +132,6 @@ describe('Button', () => {
           With Right Icon
         </Button>
       );
-      const button = screen.getByRole('button');
       const text = screen.getByText('With Right Icon');
       const icon = screen.getByTestId('plus-icon');
       // Icon should come after text in DOM

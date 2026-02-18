@@ -12,7 +12,6 @@ import {
   getToolConfig,
   importConfig,
   exportConfig,
-  previewExport,
 } from './sync';
 import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
 

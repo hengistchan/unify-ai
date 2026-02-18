@@ -234,7 +234,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
           <div className="bg-bg-tertiary border border-border rounded-lg p-4">
             <div className="flex items-center justify-center gap-4">
               <div className="text-center">
-                <Badge variant="info" size="lg">
+                <Badge variant="info">
                   {getToolName(preview.sourceTool)}
                 </Badge>
                 <p className="text-xs text-text-tertiary mt-1">Source</p>
@@ -243,7 +243,7 @@ export const SyncPreviewDialog: React.FC<SyncPreviewDialogProps> = ({
               <div className="text-center">
                 <div className="flex flex-wrap gap-1.5 justify-center">
                   {preview.targetTools.map(tool => (
-                    <Badge key={tool} variant="success" size="lg">
+                    <Badge key={tool} variant="success">
                       {getToolName(tool)}
                     </Badge>
                   ))}

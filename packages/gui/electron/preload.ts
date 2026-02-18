@@ -226,9 +226,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 });
 
-// Type declaration for TypeScript
-declare global {
-  interface Window {
-    electronAPI: ElectronAPI;
-  }
-}
+// No need to redeclare Window interface here - it's already declared in src/types/electron.d.ts

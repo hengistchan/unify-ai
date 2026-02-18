@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import { X, FileJson, Download, Upload, Check, AlertCircle, AlertTriangle } from 'lucide-react';
-import { Button, Badge, ToolIcon } from '@/components/common';
+import { Button, ToolIcon } from '@/components/common';
 import type { DetectedTool, UnifiedConfig } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
 

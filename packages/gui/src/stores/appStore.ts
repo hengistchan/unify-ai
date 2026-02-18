@@ -143,6 +143,7 @@ export interface SyncPreferences {
 
 export interface ImportExportOptions {
   mergeMultiple?: boolean;
+  sourceTool?: string;
   createBackup?: boolean;
   overwrite?: boolean;
 }

@@ -3,9 +3,7 @@
  * Renders icons for AI tools using Bootstrap Icons or emojis as fallback
  */
 
-import React from 'react';
-
-interface ToolIconProps {
+export interface ToolIconProps {
   toolId: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;

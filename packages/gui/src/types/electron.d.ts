@@ -2,6 +2,7 @@
 // This file ensures TypeScript knows about the electronAPI exposed by preload script
 
 export interface ElectronAPI {
+  getAppVersion: () => Promise<string>;
   openFolder: () => Promise<string | null>;
   detectTools: (folderPath: string) => Promise<DetectedTool[]>;
   syncConfig: (sourceFolder: string, targetTools: string[], options?: SyncOptions) => Promise<SyncResult>;

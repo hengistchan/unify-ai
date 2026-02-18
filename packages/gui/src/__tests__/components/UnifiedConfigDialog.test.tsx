@@ -154,7 +154,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      expect(screen.getByText('Import from Tools')).toBeInTheDocument();
+      expect(screen.getByText('Generate Unified Config')).toBeInTheDocument();
       expect(screen.getByText('Export to Tools')).toBeInTheDocument();
     });
 
@@ -192,8 +192,8 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
-      expect(screen.getByText('Select source tools to import from:')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Generate Unified Config'));
+      expect(screen.getByText('Select source tools to generate unified config from:')).toBeInTheDocument();
     });
 
     it('should go to export step when Export is clicked', () => {
@@ -228,10 +228,10 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
       fireEvent.click(screen.getByText('Back'));
 
-      expect(screen.getByText('Import from Tools')).toBeInTheDocument();
+      expect(screen.getByText('Generate Unified Config')).toBeInTheDocument();
     });
   });
 
@@ -250,7 +250,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
 
       expect(screen.getByText('Claude Code')).toBeInTheDocument();
       expect(screen.getByText('Cursor')).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
       fireEvent.click(screen.getByText('Claude Code'));
       fireEvent.click(screen.getByText('Cursor'));
 
@@ -296,7 +296,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
       fireEvent.click(screen.getByText('Claude Code'));
       fireEvent.click(screen.getByText('Cursor'));
 
@@ -317,7 +317,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
       fireEvent.click(screen.getByText('Cursor'));
 
       const importButtons = screen.getAllByText(/Import/);
@@ -340,7 +340,7 @@ describe('UnifiedConfigDialog', () => {
         />
       );
 
-      fireEvent.click(screen.getByText('Import from Tools'));
+      fireEvent.click(screen.getByText('Generate Unified Config'));
 
       // When no tools selected, button shows "Import" without count
       const importButton = screen.getByRole('button', { name: /Import$/ });

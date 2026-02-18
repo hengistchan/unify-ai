@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import path from 'path';
 
 export default defineConfig({
   test: {
@@ -11,6 +12,15 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.ts'],
       exclude: ['src/__tests__/**', 'src/**/index.ts'],
+    },
+  },
+  resolve: {
+    alias: {
+      '@unify-ai/core': path.resolve(__dirname, '../core/src'),
+      '@unify-ai/core/discovery': path.resolve(__dirname, '../core/src/discovery'),
+      '@unify-ai/core/adapters': path.resolve(__dirname, '../core/src/adapters'),
+      '@unify-ai/core/converter': path.resolve(__dirname, '../core/src/converter'),
+      '@unify-ai/core/core': path.resolve(__dirname, '../core/src/core'),
     },
   },
 });

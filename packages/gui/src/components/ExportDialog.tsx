@@ -3,11 +3,24 @@
  * Allows users to export unified configuration to target tools
  */
 
-import { useState, useEffect } from 'react';
-import { X, Check, Download, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { X, Check, Download, Loader2, AlertCircle, Plus, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/common';
 import type { DetectedTool, UnifiedConfig } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
+import { getToolName } from '@/components/common/ToolIcon';
+
+// All supported tools
+const SUPPORTED_TOOLS = [
+  'cursor',
+  'claude-code',
+  'copilot',
+  'windsurf',
+  'codex',
+  'cline',
+  'aider',
+  'continue',
+] as const;
 
 interface ExportDialogProps {
   open: boolean;
@@ -29,14 +42,30 @@ export function ExportDialog({
   const [selectedTools, setSelectedTools] = useState<Set<string>>(new Set());
   const [createBackup, setCreateBackup] = useState(true);
 
-  const detectedList = detectedTools.filter(t => t.detected);
+  // Get detected tool IDs as a set for quick lookup
+  const detectedToolIds = useMemo(() => {
+    return new Set(detectedTools.filter(t => t.detected).map(t => t.id));
+  }, [detectedTools]);
 
-  // Initialize with all tools selected
+  // Get list of all supported tools with their status
+  const allToolsWithStatus = useMemo(() => {
+    return SUPPORTED_TOOLS.map(toolId => ({
+      id: toolId,
+      name: getToolName(toolId),
+      isDetected: detectedToolIds.has(toolId),
+    }));
+  }, [detectedToolIds]);
+
+  // Initialize with detected tools selected when dialog opens
   useEffect(() => {
-    if (open && detectedList.length > 0 && selectedTools.size === 0) {
-      setSelectedTools(new Set(detectedList.map(t => t.id)));
+    if (open && selectedTools.size === 0) {
+      // Default to selecting detected tools
+      const detected = allToolsWithStatus.filter(t => t.isDetected).map(t => t.id);
+      if (detected.length > 0) {
+        setSelectedTools(new Set(detected));
+      }
     }
-  }, [open, detectedList, selectedTools.size]);
+  }, [open, allToolsWithStatus, selectedTools.size]);
 
   const handleToggleTool = (toolId: string) => {
     const newSelected = new Set(selectedTools);
@@ -105,8 +134,11 @@ export function ExportDialog({
           {/* Target Tools Selection */}
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-text-primary">Target Tools</h3>
+            <p className="text-xs text-text-tertiary">
+              Select tools to export your unified configuration. Detected tools may be overwritten.
+            </p>
             <div className="grid grid-cols-2 gap-2">
-              {detectedList.map(tool => {
+              {allToolsWithStatus.map(tool => {
                 const isSelected = selectedTools.has(tool.id);
 
                 return (
@@ -115,16 +147,29 @@ export function ExportDialog({
                     onClick={() => handleToggleTool(tool.id)}
                     disabled={loading}
                     className={cn(
-                      'flex items-center gap-3 p-3 rounded-lg border transition-all',
+                      'flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
                       isSelected
                         ? 'bg-primary-muted border-primary text-text-primary'
                         : 'bg-bg-tertiary border-border hover:border-border-hover text-text-secondary'
                     )}
                   >
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-sm">{tool.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{tool.name}</div>
+                      <div className="text-xs text-text-tertiary flex items-center gap-1">
+                        {tool.isDetected ? (
+                          <>
+                            <AlertTriangle className="w-3 h-3 text-warning" />
+                            <span className="text-warning">Will overwrite</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-3 h-3 text-success" />
+                            <span className="text-success">New config</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-primary" />}
+                    {isSelected && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
                   </button>
                 );
               })}

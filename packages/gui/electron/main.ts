@@ -3,10 +3,54 @@
  * Initializes the application and coordinates all modules
  */
 
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeImage } from 'electron';
 import { createWindow, getMainWindow } from './window.js';
 import { createApplicationMenu } from './menu.js';
 import { registerIpcHandlers, unregisterIpcHandlers } from './ipc/index.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+// Get __dirname in ES module scope
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Set app name for dock/menu display
+app.setName('Unify AI');
+
+/**
+ * Get the icon path for the current environment
+ */
+function getIconPath(): string | undefined {
+  const possiblePaths = [
+    path.join(__dirname, '../build/icon.png'),  // Production: dist/electron/../build/
+    path.join(__dirname, '../../build/icon.png'), // Development from source
+    path.join(__dirname, '../public/icon.png'),  // Alternative path
+  ];
+
+  for (const iconPath of possiblePaths) {
+    if (fs.existsSync(iconPath)) {
+      return iconPath;
+    }
+  }
+  return undefined;
+}
+
+// Set dock icon on macOS
+if (process.platform === 'darwin' && app.dock) {
+  const iconPath = getIconPath();
+  if (iconPath) {
+    console.log('[Main] Setting dock icon from:', iconPath);
+    const iconImage = nativeImage.createFromPath(iconPath);
+    if (!iconImage.isEmpty()) {
+      app.dock.setIcon(iconImage);
+      console.log('[Main] Dock icon set successfully');
+    } else {
+      console.warn('[Main] Failed to create icon image');
+    }
+  } else {
+    console.warn('[Main] Icon file not found');
+  }
+}
 
 // Print startup info
 console.log('\n========================================');

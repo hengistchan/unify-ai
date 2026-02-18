@@ -174,12 +174,9 @@ export function SyncSettingsDialog({
                   )}
                 >
                   <ToolIcon toolId={tool.id} size="sm" />
-                  <div className="flex-1 text-left">
-                    <div className="font-medium">{tool.name}</div>
-                    <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
-                  </div>
+                  <span className="font-medium">{tool.name}</span>
                   {sourceTool === tool.id && (
-                    <Check className="w-5 h-5 text-primary" />
+                    <Check className="w-5 h-5 text-primary ml-auto" />
                   )}
                 </button>
               ))}
@@ -211,14 +208,9 @@ export function SyncSettingsDialog({
                     )}
                   >
                     <ToolIcon toolId={tool.id} size="sm" className={isSource ? 'opacity-50' : ''} />
-                    <div className="flex-1 text-left">
-                      <div className="font-medium">{tool.name}</div>
-                      <div className="text-xs text-text-tertiary">
-                        {isSource ? '(Source tool)' : tool.configPath}
-                      </div>
-                    </div>
+                    <span className="font-medium">{isSource ? `${tool.name} (Source)` : tool.name}</span>
                     {isSelected && !isSource && (
-                      <Check className="w-5 h-5 text-success" />
+                      <Check className="w-5 h-5 text-success ml-auto" />
                     )}
                   </button>
                 );

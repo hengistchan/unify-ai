@@ -228,12 +228,9 @@ export function UnifiedConfigDialog({
                       )}
                     >
                       <ToolIcon toolId={tool.id} size="sm" />
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-text-primary">{tool.name}</div>
-                        <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
-                      </div>
+                      <span className="font-medium text-text-primary">{tool.name}</span>
                       {importSources.has(tool.id) && (
-                        <Check className="w-5 h-5 text-primary" />
+                        <Check className="w-5 h-5 text-primary ml-auto" />
                       )}
                     </button>
                   ))}
@@ -295,12 +292,9 @@ export function UnifiedConfigDialog({
                       )}
                     >
                       <ToolIcon toolId={tool.id} size="sm" />
-                      <div className="flex-1 text-left">
-                        <div className="font-medium text-text-primary">{tool.name}</div>
-                        <div className="text-xs text-text-tertiary truncate">{tool.configPath}</div>
-                      </div>
+                      <span className="font-medium text-text-primary">{tool.name}</span>
                       {exportTargets.has(tool.id) && (
-                        <Check className="w-5 h-5 text-success" />
+                        <Check className="w-5 h-5 text-success ml-auto" />
                       )}
                     </button>
                   ))}

@@ -3,13 +3,37 @@
  * Creates and manages application windows
  */
 
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, nativeImage } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Get __dirname in ES module scope
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow: BrowserWindow | null = null;
+
+/**
+ * Get the icon path for the current environment
+ */
+function getIconPath(): string | undefined {
+  // In production, the icon is in the build folder relative to dist/electron/
+  // In development, it's in the build folder relative to electron/
+  const possiblePaths = [
+    path.join(__dirname, '../build/icon.png'),  // Production: dist/electron/../build/
+    path.join(__dirname, '../../build/icon.png'), // Alternative production path
+    path.join(__dirname, '../public/icon.png'),  // Development fallback
+  ];
+
+  const fs = require('fs');
+  for (const iconPath of possiblePaths) {
+    if (fs.existsSync(iconPath)) {
+      console.log('[Window] Found icon at:', iconPath);
+      return iconPath;
+    }
+  }
+  console.warn('[Window] Icon not found in any path');
+  return undefined;
+}
 
 /**
  * Window configuration
@@ -39,7 +63,10 @@ export function createWindow(): BrowserWindow {
     },
     title: WINDOW_CONFIG.title,
     show: false, // Don't show until ready
-    icon: path.join(__dirname, '../public/icon.png'),
+    icon: (() => {
+      const iconPath = getIconPath();
+      return iconPath ? nativeImage.createFromPath(iconPath) : undefined;
+    })(),
     backgroundColor: '#000000', // OLED dark background
   });
 

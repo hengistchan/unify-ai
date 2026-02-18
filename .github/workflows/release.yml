@@ -155,8 +155,8 @@ jobs:
         with:
           name: gui-macos
           path: |
-            packages/gui/dist-electron/*.dmg
-            packages/gui/dist-electron/*.zip
+            packages/gui/release/*.dmg
+            packages/gui/release/*.zip
 
       - name: Upload artifacts (Windows)
         if: matrix.os == 'windows-latest'
@@ -164,8 +164,8 @@ jobs:
         with:
           name: gui-windows
           path: |
-            packages/gui/dist-electron/*.exe
-            packages/gui/dist-electron/*.zip
+            packages/gui/release/*.exe
+            packages/gui/release/*.zip
 
       - name: Upload artifacts (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -173,9 +173,9 @@ jobs:
         with:
           name: gui-linux
           path: |
-            packages/gui/dist-electron/*.AppImage
-            packages/gui/dist-electron/*.deb
-            packages/gui/dist-electron/*.rpm
+            packages/gui/release/*.AppImage
+            packages/gui/release/*.deb
+            packages/gui/release/*.rpm
 
   create-release:
     name: Create GitHub Release

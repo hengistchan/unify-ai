@@ -68,21 +68,7 @@ export function Project() {
   const handleSyncModeSelect = (mode: SyncMode) => {
     setShowSyncModeDialog(false);
     if (mode === 'direct-sync') {
-      // Check if we have saved preferences
-      const detectedList = detectedTools.filter((t) => t.detected);
-      if (syncPreferences.sourceTool && syncPreferences.targetTools.length > 0) {
-        const sourceExists = detectedList.find(t => t.id === syncPreferences.sourceTool);
-        const validTargets = syncPreferences.targetTools.filter(tid =>
-          detectedList.find(t => t.id === tid)
-        );
-        if (sourceExists && validTargets.length > 0) {
-          // Use saved preferences
-          previewSync(syncPreferences.sourceTool, validTargets);
-          setShowSyncPreview(true);
-          return;
-        }
-      }
-      // No saved preferences, show settings dialog
+      // Always show settings dialog to allow user to change selection
       setShowSyncSettings(true);
     } else {
       // Unified config mode

@@ -151,6 +151,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build core package
+        run: pnpm --filter @unify-ai/core run build
+
       - name: Build Electron app
         run: pnpm --filter @unify-ai/gui run electron:build
         env:

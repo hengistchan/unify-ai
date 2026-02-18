@@ -20,7 +20,7 @@ async function build() {
       outfile: path.join(__dirname, '../dist/electron/main.js'),
       format: 'esm',
       sourcemap: true,
-      external: ['electron', 'electron-squirrel-startup'],
+      external: ['electron', 'electron-squirrel-startup', '@unify-ai/core'],
       banner: {
         js: 'import { createRequire } from "module"; const require = createRequire(import.meta.url);',
       },
@@ -34,7 +34,7 @@ async function build() {
       target: 'node18',
       outfile: path.join(__dirname, '../dist/electron/preload.cjs'), // .cjs extension for CommonJS
       sourcemap: true,
-      external: ['electron'],
+      external: ['electron', '@unify-ai/core'],
     });
 
     console.log('✅ Electron main process built successfully');

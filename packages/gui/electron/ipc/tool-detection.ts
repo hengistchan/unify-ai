@@ -19,6 +19,36 @@ export interface DetectedTool {
 }
 
 /**
+ * Get a friendly display path for a tool based on its file patterns
+ */
+function getDisplayPath(adapter: IAdapter): string {
+  const patterns = adapter.getFilePatterns();
+
+  // Collect unique directories/files
+  const paths = new Set<string>();
+  for (const p of patterns) {
+    // Extract the main directory or file from the pattern
+    const pattern = p.pattern;
+
+    // Handle common patterns
+    if (pattern.includes('/*')) {
+      // e.g., ".cursor/rules/*.md" -> ".cursor/rules/"
+      const baseDir = pattern.split('/*')[0];
+      paths.add(baseDir + '/');
+    } else if (pattern.includes('/')) {
+      // e.g., ".github/copilot-instructions.md" -> ".github/copilot-instructions.md"
+      paths.add(pattern);
+    } else {
+      // e.g., "CLAUDE.md" -> "CLAUDE.md"
+      paths.add(pattern);
+    }
+  }
+
+  // Return comma-separated list
+  return Array.from(paths).join(', ');
+}
+
+/**
  * Detect AI tools in a directory using core fileDiscovery
  */
 export async function detectTools(folderPath: string): Promise<DetectedTool[]> {
@@ -26,13 +56,10 @@ export async function detectTools(folderPath: string): Promise<DetectedTool[]> {
     const adapters = await fileDiscovery.detectTools(folderPath);
 
     return adapters.map((adapter: IAdapter) => {
-      const filePatterns = adapter.getFilePatterns();
-      const primaryPattern = filePatterns[0]?.pattern || '';
-
       return {
         id: adapter.toolMeta.id,
         name: adapter.toolMeta.name,
-        configPath: primaryPattern,
+        configPath: getDisplayPath(adapter),
         detected: true,
         hasRules: adapter.hasCapability(ConfigCapability.RULES),
         hasMcp: adapter.hasCapability(ConfigCapability.MCP_SERVERS),

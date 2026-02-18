@@ -20,7 +20,6 @@ export const initCommand = new Command('init')
   .description('Initialize unified.json configuration')
   .option('-f, --from <tool>', 'Import from existing tool config')
   .option('-i, --interactive', 'Interactive mode')
-  .option('-t, --template <name>', 'Use template (default, minimal, full)', 'default')
   .option('--force', 'Overwrite existing config')
   .option('--skip-hooks', 'Skip hooks')
   .action(async options => {
@@ -44,7 +43,7 @@ export const initCommand = new Command('init')
       } else if (options.from) {
         await runFromToolInit(options, logger, configManager);
       } else {
-        await runDefaultInit(options, logger, configManager);
+        await runDefaultInit(logger, configManager);
       }
 
       logger.success('Configuration initialized successfully!');
@@ -55,7 +54,7 @@ export const initCommand = new Command('init')
   });
 
 async function runInteractiveInit(
-  options: { from?: string; template?: string },
+  options: { from?: string },
   logger: ReturnType<typeof getLogger>,
   configManager: ConfigManager
 ): Promise<void> {
@@ -161,7 +160,6 @@ async function runFromToolInit(
 }
 
 async function runDefaultInit(
-  options: { template?: string },
   logger: ReturnType<typeof getLogger>,
   configManager: ConfigManager
 ): Promise<void> {
@@ -171,5 +169,4 @@ async function runDefaultInit(
   await configManager.save(config);
 
   logger.success('Created unified.json');
-  logger.info(`  Template: ${options.template || 'default'}`);
 }

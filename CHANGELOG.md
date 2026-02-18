@@ -122,7 +122,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned Features (v0.1.0)
 - Complete sync merge strategies implementation
-- Configuration templates system
 - Team configuration sharing
 - Cloud sync support
 - VS Code extension

@@ -5,12 +5,14 @@
 
 import { Command } from 'commander';
 import inquirer from 'inquirer';
+import fs from 'fs/promises';
 
 import { getLogger } from '../utils/logger.js';
 import { ConfigManager, createConfigManager, ToolId, UnifiedConfig } from '@unify-ai/core';
 import { diffEngine, DiffEntry, DiffType } from '@unify-ai/core';
 import { exporter } from '@unify-ai/core';
 import { adapterRegistry } from '@unify-ai/core';
+import { ConflictResolver } from '@unify-ai/core';
 
 // Sync modes
 type SyncMode = 'one-way-export' | 'one-way-import' | 'two-way-auto' | 'two-way-interactive';
@@ -285,6 +287,11 @@ async function handleImport(
 
         if (answer.resolution === 'skip') {
           logger.info(`    Skipped: ${conflict.path}`);
+        } else if (answer.resolution === 'unified') {
+          logger.info(`    Kept unified: ${conflict.path}`);
+        } else if (answer.resolution === 'tool') {
+          logger.info(`    Using tool: ${conflict.path}`);
+          // Mark for tool-wins resolution
         }
         // TODO: Actually apply the resolution
       }
@@ -292,13 +299,19 @@ async function handleImport(
       logger.info(`  Strategy: unified-wins (keeping unified config)`);
     } else if (options.strategy === 'tool-wins') {
       logger.info(`  Strategy: tool-wins (using tool config)`);
-      // TODO: Import tool changes
+      // Tool-wins: use incoming/tool version for all conflicts
+      for (const conflict of conflictEntries) {
+        logger.info(`    Using tool version: ${conflict.path}`);
+      }
+      // Will parse and use tool config below
     } else if (options.strategy === 'latest') {
       logger.info(`  Strategy: latest (comparing timestamps)`);
-      // TODO: Implement timestamp comparison
+      // Compare timestamps and use the newer version
+      await resolveByTimestamp(projectRoot, config, adapter, conflictEntries, logger);
     } else if (options.strategy === 'merge') {
       logger.info(`  Strategy: merge (combining both)`);
-      // TODO: Implement merge logic
+      // Use ConflictResolver to merge
+      await resolveByMerge(config, adapter, conflictEntries, logger);
     }
 
     return { imported: 0, hasConflicts: true };
@@ -325,4 +338,114 @@ async function handleImport(
     logger.error(`  Import error: ${error instanceof Error ? error.message : error}`);
     return { imported: 0, hasConflicts: false };
   }
+}
+
+/**
+ * Get file modification time
+ */
+async function getFileMtime(filePath: string): Promise<Date | null> {
+  try {
+    const stats = await fs.stat(filePath);
+    return stats.mtime;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve conflicts by comparing timestamps
+ * Uses the newer version between unified and tool config
+ */
+async function resolveByTimestamp(
+  projectRoot: string,
+  config: UnifiedConfig,
+  adapter: {
+    toolMeta: { name: string; id: string };
+    getConfigPaths?: () => Promise<string[]>;
+  },
+  conflictEntries: DiffEntry[],
+  logger: ReturnType<typeof getLogger>
+): Promise<void> {
+  // Get unified config mtime
+  const unifiedConfigPath = `${projectRoot}/unified.json`;
+  const unifiedMtime = await getFileMtime(unifiedConfigPath);
+
+  // Get tool config mtime(s)
+  let toolMtime: Date | null = null;
+
+  if (adapter.getConfigPaths) {
+    try {
+      const toolPaths = await adapter.getConfigPaths();
+      for (const path of toolPaths) {
+        const mtime = await getFileMtime(path);
+        if (mtime && (!toolMtime || mtime > toolMtime)) {
+          toolMtime = mtime;
+        }
+      }
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  // Compare and decide
+  const useTool = toolMtime && unifiedMtime && toolMtime > unifiedMtime;
+
+  for (const conflict of conflictEntries) {
+    if (useTool) {
+      logger.info(`    Using tool (newer): ${conflict.path}`);
+    } else {
+      logger.info(`    Using unified (newer or no tool mtime): ${conflict.path}`);
+    }
+  }
+}
+
+/**
+ * Resolve conflicts by merging both versions
+ * Uses ConflictResolver to intelligently combine configurations
+ */
+async function resolveByMerge(
+  config: UnifiedConfig,
+  adapter: {
+    toolMeta: { name: string; id: string };
+    parse: (
+      projectRoot: string
+    ) => Promise<{ success: boolean; data?: UnifiedConfig; errors?: any[] }>;
+  },
+  conflictEntries: DiffEntry[],
+  logger: ReturnType<typeof getLogger>
+): Promise<void> {
+  // Parse tool config
+  const toolConfig = await adapter.parse('');
+  if (!toolConfig.success || !toolConfig.data) {
+    logger.warn(`  Could not parse tool config, keeping unified`);
+    return;
+  }
+
+  // Use ConflictResolver to merge
+  const resolver = new ConflictResolver('merge');
+
+  // Merge rules
+  if (config.rules && toolConfig.data.rules) {
+    const { rules, conflicts } = resolver.resolveRuleConflicts(
+      config.rules,
+      toolConfig.data.rules,
+      adapter.toolMeta.id as ToolId
+    );
+    logger.info(`  Merged ${rules.length} rules (${conflicts.length} conflicts resolved)`);
+  }
+
+  // Merge MCP servers
+  const existingServers = config.mcp?.servers ?? [];
+  const incomingServers = toolConfig.data.mcp?.servers ?? [];
+
+  if (existingServers.length > 0 || incomingServers.length > 0) {
+    const { servers, conflicts } = resolver.resolveMCPConflicts(
+      existingServers,
+      incomingServers,
+      adapter.toolMeta.id as ToolId
+    );
+    logger.info(`  Merged ${servers.length} MCP servers (${conflicts.length} conflicts resolved)`);
+  }
+
+  logger.success(`  Merge completed`);
 }

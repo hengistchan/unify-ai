@@ -123,7 +123,6 @@ describe('init command', () => {
 
       expect(optionNames).toContain('--from');
       expect(optionNames).toContain('--interactive');
-      expect(optionNames).toContain('--template');
       expect(optionNames).toContain('--force');
       expect(optionNames).toContain('--skip-hooks');
     });
@@ -234,12 +233,6 @@ describe('init command', () => {
       const options = initCommand.options;
       const interactiveOption = options.find(o => o.long === '--interactive');
       expect(interactiveOption).toBeDefined();
-    });
-
-    it('should have --template option defined', () => {
-      const options = initCommand.options;
-      const templateOption = options.find(o => o.long === '--template');
-      expect(templateOption).toBeDefined();
     });
 
     it('should have --force option defined', () => {

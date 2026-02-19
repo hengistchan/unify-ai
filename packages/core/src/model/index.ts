@@ -25,6 +25,10 @@ export type {
   LogUsageInput,
   UsageLogFilters,
   ModelExportData,
+  ProxyConfig,
+  ProxyStats,
+  ProxyStatus,
+  RequestLog,
 } from './types';
 
 // Core classes
@@ -32,6 +36,7 @@ export { ModelManager } from './ModelManager';
 export { ModelDatabase } from './Database';
 export { EncryptionManager } from './EncryptionManager';
 export { UsageTracker } from './UsageTracker';
+export { ProxyServer } from './ProxyServer';
 
 // Built-in providers
 export { BUILTIN_PROVIDERS } from './ProviderRegistry';

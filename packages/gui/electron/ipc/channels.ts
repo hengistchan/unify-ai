@@ -63,6 +63,14 @@ export const IPC_CHANNELS = {
   // Model management - Provider Selection
   GET_ACTIVE_PROVIDER: 'get-active-provider',
   GET_ACTIVE_PROVIDERS: 'get-active-providers',
+
+  // Proxy Server
+  START_PROXY: 'start-proxy',
+  STOP_PROXY: 'stop-proxy',
+  GET_PROXY_STATUS: 'get-proxy-status',
+  GET_PROXY_STATS: 'get-proxy-stats',
+  GET_REQUEST_LOGS: 'get-request-logs',
+  CLEAR_REQUEST_LOGS: 'clear-request-logs',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

@@ -356,3 +356,82 @@ export interface ModelExportData {
   /** Usage summary (optional) */
   usageSummary?: UsageSummary;
 }
+
+// ============================================
+// Proxy Server Types
+// ============================================
+
+/**
+ * Proxy server configuration
+ */
+export interface ProxyConfig {
+  /** Port to listen on */
+  port: number;
+  /** Host to bind to */
+  host: string;
+  /** Enable request/response logging */
+  enableLogging: boolean;
+  /** Enable automatic usage tracking */
+  enableUsageTracking: boolean;
+}
+
+/**
+ * Proxy server status
+ */
+export type ProxyStatus = 'stopped' | 'starting' | 'running' | 'stopping' | 'error';
+
+/**
+ * Proxy server statistics
+ */
+export interface ProxyStats {
+  /** Current status */
+  status: ProxyStatus;
+  /** Number of requests processed */
+  totalRequests: number;
+  /** Number of successful requests */
+  successfulRequests: number;
+  /** Number of failed requests */
+  failedRequests: number;
+  /** Total bytes received */
+  bytesReceived: number;
+  /** Total bytes sent */
+  bytesSent: number;
+  /** Uptime in seconds */
+  uptime: number;
+  /** Last error message */
+  lastError?: string;
+}
+
+/**
+ * Request log entry
+ */
+export interface RequestLog {
+  /** Request ID */
+  id: string;
+  /** Timestamp */
+  timestamp: string;
+  /** HTTP method */
+  method: string;
+  /** Request path */
+  path: string;
+  /** Provider ID used */
+  providerId?: string;
+  /** Model requested */
+  model?: string;
+  /** Request headers (sanitized) */
+  headers: Record<string, string>;
+  /** Request body size */
+  requestSize: number;
+  /** Response status code */
+  responseStatus: number;
+  /** Response size */
+  responseSize: number;
+  /** Duration in milliseconds */
+  duration: number;
+  /** Whether request was successful */
+  success: boolean;
+  /** Error message if failed */
+  error?: string;
+  /** Associated usage log ID */
+  usageLogId?: number;
+}

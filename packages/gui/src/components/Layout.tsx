@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FolderOpen, Settings, RefreshCw, Sparkles } from 'lucide-react';
+import { Home, FolderOpen, Settings, RefreshCw, Sparkles, Cpu } from 'lucide-react';
 import { useAppStore } from '../stores/appStore';
 
 interface LayoutProps {
@@ -46,6 +46,7 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/project', icon: FolderOpen, label: 'Project' },
+    { to: '/models', icon: Cpu, label: 'Models' },
     { to: '/settings', icon: Settings, label: 'Settings' },
   ];
 

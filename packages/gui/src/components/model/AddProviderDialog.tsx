@@ -6,7 +6,6 @@
 import { useState } from 'react';
 import { useModelStore } from '../../stores/modelStore';
 import { Modal, Button } from '../common';
-import { X } from 'lucide-react';
 import type { CreateProviderInput, ProviderType } from '@unify-ai/core/model';
 
 interface AddProviderDialogProps {
@@ -84,70 +83,62 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
   if (!open) return null;
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <div className="w-full max-w-lg">
-        <div className="flex items-center justify-between border-b border-border p-4">
-          <h2 className="text-xl font-bold">
-            {step === 'select' ? 'Add Provider' : 'Configure Provider'}
-          </h2>
-          <button onClick={handleClose} className="text-text-secondary hover:text-text">
-            <X className="h-5 w-5" />
-          </button>
+    <Modal
+      isOpen={open}
+      onClose={handleClose}
+      title={step === 'select' ? 'Add Provider' : 'Configure Provider'}
+      size="lg"
+    >
+      {step === 'select' ? (
+        <div className="grid grid-cols-2 gap-3">
+          {PROVIDER_TEMPLATES.map(template => (
+            <button
+              key={template.id}
+              onClick={() => handleSelectType(template.id)}
+              className="rounded border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary-muted"
+            >
+              <p className="font-medium">{template.name}</p>
+              <p className="mt-1 text-xs text-text-secondary">{template.type}</p>
+            </button>
+          ))}
         </div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm"
+              placeholder="Provider name"
+            />
+          </div>
 
-        <div className="p-4">
-          {step === 'select' ? (
-            <div className="grid grid-cols-2 gap-3">
-              {PROVIDER_TEMPLATES.map(template => (
-                <button
-                  key={template.id}
-                  onClick={() => handleSelectType(template.id)}
-                  className="rounded border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary-muted"
-                >
-                  <p className="font-medium">{template.name}</p>
-                  <p className="mt-1 text-xs text-text-secondary">{template.type}</p>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium">Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm"
-                  placeholder="Provider name"
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium">API Key (Optional)</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm font-mono"
+              placeholder="sk-..."
+            />
+            <p className="mt-1 text-xs text-text-secondary">
+              You can add the API key later if needed
+            </p>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium">API Key (Optional)</label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm font-mono"
-                  placeholder="sk-..."
-                />
-                <p className="mt-1 text-xs text-text-secondary">
-                  You can add the API key later if needed
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setStep('select')}>
-                  Back
-                </Button>
-                <Button onClick={handleCreate} loading={loading}>
-                  Add Provider
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setStep('select')}>
+              Back
+            </Button>
+            <Button onClick={handleCreate} loading={loading}>
+              Add Provider
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
     </Modal>
   );
 }

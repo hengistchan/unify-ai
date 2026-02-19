@@ -34,9 +34,9 @@ export function Models() {
   const selectedProvider = providers.find(p => p.id === selectedProviderId);
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-screen">
       {/* Provider Sidebar */}
-      <div className="w-64 border-r border-border bg-surface p-4">
+      <div className="w-64 border-r border-border bg-surface p-4 overflow-auto">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Providers</h2>
           <Button
@@ -69,7 +69,7 @@ export function Models() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 bg-bg-primary">
         {selectedProvider ? (
           <ProviderDetail provider={selectedProvider} />
         ) : (
@@ -91,7 +91,7 @@ export function Models() {
       </div>
 
       {/* Usage Panel */}
-      <div className="w-80 border-l border-border bg-surface p-4">
+      <div className="w-80 border-l border-border bg-surface p-4 overflow-auto">
         <h2 className="mb-4 text-lg font-semibold">Usage</h2>
         <UsageDashboard />
       </div>

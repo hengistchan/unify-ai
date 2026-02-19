@@ -273,6 +273,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getActiveProvider: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDER),
     getActiveProviders: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDERS),
   },
+
+  // ============================================
+  // Proxy Server API
+  // ============================================
+
+  proxy: {
+    startProxy: (config?: any) => ipcRenderer.invoke(IPC_CHANNELS.START_PROXY, config),
+    stopProxy: () => ipcRenderer.invoke(IPC_CHANNELS.STOP_PROXY),
+    getProxyStatus: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PROXY_STATUS),
+    getProxyStats: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PROXY_STATS),
+    getRequestLogs: (limit?: number) => ipcRenderer.invoke(IPC_CHANNELS.GET_REQUEST_LOGS, limit),
+    clearRequestLogs: () => ipcRenderer.invoke(IPC_CHANNELS.CLEAR_REQUEST_LOGS),
+  },
 });
 
 // No need to redeclare Window interface here - it's already declared in src/types/electron.d.ts

@@ -13,13 +13,21 @@ import {
   initializeModelManager,
   cleanupModelManager,
 } from './model.js';
+import {
+  registerProxyIpcHandlers,
+  initializeProxyServer,
+  cleanupProxyServer,
+} from './proxy.js';
 
 /**
  * Register all IPC handlers
  */
 export async function registerIpcHandlers(): Promise<void> {
   // Initialize ModelManager first
-  await initializeModelManager();
+  const modelManager = await initializeModelManager();
+
+  // Initialize ProxyServer with ModelManager
+  initializeProxyServer(modelManager);
 
   // Get app version
   ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
@@ -148,6 +156,9 @@ export async function registerIpcHandlers(): Promise<void> {
   // Register model management handlers
   registerModelIpcHandlers();
 
+  // Register proxy server handlers
+  registerProxyIpcHandlers();
+
   console.log('[IPC] All handlers registered');
 }
 
@@ -158,5 +169,6 @@ export async function unregisterIpcHandlers(): Promise<void> {
   Object.values(IPC_CHANNELS).forEach(channel => {
     ipcMain.removeHandler(channel);
   });
+  await cleanupProxyServer();
   await cleanupModelManager();
 }

@@ -9,7 +9,8 @@ import { ProviderList } from '../components/model/ProviderList';
 import { ProviderDetail } from '../components/model/ProviderDetail';
 import { UsageDashboard } from '../components/model/UsageDashboard';
 import { AddProviderDialog } from '../components/model/AddProviderDialog';
-import { Cpu, Plus } from 'lucide-react';
+import { ProxyControl } from '../components/model/ProxyControl';
+import { Cpu, Plus, Settings } from 'lucide-react';
 import { Button } from '../components/common';
 
 export function Models() {
@@ -92,8 +93,18 @@ export function Models() {
 
       {/* Usage Panel */}
       <div className="w-80 border-l border-border bg-surface p-4 overflow-auto">
-        <h2 className="mb-4 text-lg font-semibold">Usage</h2>
-        <UsageDashboard />
+        <h2 className="mb-4 text-lg font-semibold">Usage & Proxy</h2>
+
+        {/* Proxy Control */}
+        <div className="mb-6">
+          <ProxyControl />
+        </div>
+
+        {/* Usage Dashboard */}
+        <div className="border-t border-border pt-4">
+          <h3 className="mb-3 text-md font-semibold">Usage Statistics</h3>
+          <UsageDashboard />
+        </div>
       </div>
 
       {/* Add Provider Dialog */}

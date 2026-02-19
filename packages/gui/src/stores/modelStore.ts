@@ -14,6 +14,10 @@ import type {
   UpdateProviderInput,
   SetAPIKeyInput,
   LogUsageInput,
+  ProxyConfig,
+  ProxyStats,
+  ProxyStatus,
+  RequestLog,
 } from '@unify-ai/core/model';
 
 // ============================================
@@ -32,6 +36,11 @@ export interface ModelState {
   // Usage
   usageSummary: UsageSummary | null;
   usageLogs: UsageLog[];
+
+  // Proxy
+  proxyStatus: ProxyStatus;
+  proxyStats: ProxyStats | null;
+  requestLogs: RequestLog[];
 
   // UI State
   loading: boolean;
@@ -61,6 +70,13 @@ export interface ModelState {
   loadUsageLogs: (filters?: UsageLogFilters) => Promise<void>;
   logUsage: (input: LogUsageInput) => Promise<void>;
 
+  // Proxy Actions
+  startProxy: (config?: Partial<ProxyConfig>) => Promise<void>;
+  stopProxy: () => Promise<void>;
+  loadProxyStatus: () => Promise<void>;
+  loadProxyStats: () => Promise<void>;
+  loadRequestLogs: (limit?: number) => Promise<void>;
+
   // Utility Actions
   clearError: () => void;
   reset: () => void;
@@ -77,6 +93,9 @@ const initialState = {
   modelsByProvider: new Map<string, ModelInfo[]>(),
   usageSummary: null,
   usageLogs: [],
+  proxyStatus: 'stopped' as ProxyStatus,
+  proxyStats: null,
+  requestLogs: [],
   loading: false,
   error: null,
 };
@@ -303,6 +322,66 @@ export const useModelStore = create<ModelState>((set, get) => ({
       await window.electronAPI.model.logUsage(input);
     } catch (error) {
       console.error('Failed to log usage:', error);
+    }
+  },
+
+  // ============================================
+  // Proxy Actions
+  // ============================================
+
+  startProxy: async (config?: Partial<ProxyConfig>) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await window.electronAPI.proxy.startProxy(config);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to start proxy');
+      }
+      await get().loadProxyStatus();
+      set({ loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start proxy';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  stopProxy: async () => {
+    set({ loading: true, error: null });
+    try {
+      await window.electronAPI.proxy.stopProxy();
+      await get().loadProxyStatus();
+      set({ loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to stop proxy';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  loadProxyStatus: async () => {
+    try {
+      const proxyStatus = await window.electronAPI.proxy.getProxyStatus();
+      set({ proxyStatus });
+    } catch (error) {
+      console.error('Failed to load proxy status:', error);
+    }
+  },
+
+  loadProxyStats: async () => {
+    try {
+      const proxyStats = await window.electronAPI.proxy.getProxyStats();
+      set({ proxyStats });
+    } catch (error) {
+      console.error('Failed to load proxy stats:', error);
+    }
+  },
+
+  loadRequestLogs: async (limit?: number) => {
+    try {
+      const requestLogs = await window.electronAPI.proxy.getRequestLogs(limit);
+      set({ requestLogs });
+    } catch (error) {
+      console.error('Failed to load request logs:', error);
     }
   },
 

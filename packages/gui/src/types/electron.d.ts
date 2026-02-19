@@ -13,6 +13,10 @@ import type {
   UsageLogFilters,
   ModelInfo,
   ModelConfig,
+  ProxyConfig,
+  ProxyStats,
+  ProxyStatus,
+  RequestLog,
 } from '@unify-ai/core/model';
 
 export interface ElectronAPI {
@@ -60,6 +64,16 @@ export interface ElectronAPI {
     // Provider selection
     getActiveProvider: () => Promise<AIProvider | null>;
     getActiveProviders: () => Promise<AIProvider[]>;
+  };
+
+  // Proxy Server API
+  proxy: {
+    startProxy: (config?: Partial<ProxyConfig>) => Promise<{ success: boolean; url?: string; error?: string }>;
+    stopProxy: () => Promise<{ success: boolean; error?: string }>;
+    getProxyStatus: () => Promise<ProxyStatus>;
+    getProxyStats: () => Promise<ProxyStats>;
+    getRequestLogs: (limit?: number) => Promise<RequestLog[]>;
+    clearRequestLogs: () => Promise<{ success: boolean }>;
   };
 }
 

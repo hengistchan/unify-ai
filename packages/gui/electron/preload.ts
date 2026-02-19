@@ -224,6 +224,55 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeListener(IPC_CHANNELS.FOLDER_SELECTED, handler);
     };
   },
+
+  // ============================================
+  // Model Management API
+  // ============================================
+
+  model: {
+    // Provider management
+    getProviders: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PROVIDERS),
+    getProvider: (providerId: string) => ipcRenderer.invoke(IPC_CHANNELS.GET_PROVIDER, providerId),
+    createProvider: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.CREATE_PROVIDER, input),
+    updateProvider: (providerId: string, input: any) =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_PROVIDER, providerId, input),
+    deleteProvider: (providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DELETE_PROVIDER, providerId),
+    setProviderEnabled: (providerId: string, enabled: boolean) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_ENABLED, providerId, enabled),
+    setProviderPriority: (providerId: string, priority: number) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_PRIORITY, providerId, priority),
+
+    // API key management
+    setAPIKey: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.SET_API_KEY, input),
+    getAPIKey: (providerId: string, keyName?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_API_KEY, providerId, keyName),
+    validateAPIKey: (providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_API_KEY, providerId),
+    deleteAPIKey: (providerId: string, keyName?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DELETE_API_KEY, providerId, keyName),
+    hasValidAPIKey: (providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.HAS_VALID_API_KEY, providerId),
+
+    // Model management
+    getModels: (providerId: string) => ipcRenderer.invoke(IPC_CHANNELS.GET_MODELS, providerId),
+    updateModel: (providerId: string, modelId: string, config: any) =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_MODEL, providerId, modelId, config),
+    setDefaultModel: (providerId: string, modelId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_DEFAULT_MODEL, providerId, modelId),
+    getDefaultModel: (providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_DEFAULT_MODEL, providerId),
+
+    // Usage tracking
+    logUsage: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.LOG_USAGE, input),
+    getUsageLogs: (filters?: any) => ipcRenderer.invoke(IPC_CHANNELS.GET_USAGE_LOGS, filters),
+    getUsageSummary: (filters?: any) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_USAGE_SUMMARY, filters),
+
+    // Provider selection
+    getActiveProvider: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDER),
+    getActiveProviders: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDERS),
+  },
 });
 
 // No need to redeclare Window interface here - it's already declared in src/types/electron.d.ts

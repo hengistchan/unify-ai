@@ -1,6 +1,20 @@
 // Type definitions for Electron API
 // This file ensures TypeScript knows about the electronAPI exposed by preload script
 
+import type {
+  AIProvider,
+  APIKey,
+  CreateProviderInput,
+  UpdateProviderInput,
+  SetAPIKeyInput,
+  LogUsageInput,
+  UsageLog,
+  UsageSummary,
+  UsageLogFilters,
+  ModelInfo,
+  ModelConfig,
+} from '@unify-ai/core/model';
+
 export interface ElectronAPI {
   getAppVersion: () => Promise<string>;
   openFolder: () => Promise<string | null>;
@@ -13,6 +27,40 @@ export interface ElectronAPI {
   saveUnifiedConfig: (folderPath: string, config: UnifiedConfig) => Promise<SaveResult>;
   loadUnifiedConfig: (folderPath: string) => Promise<LoadResult>;
   onFolderSelected: (callback: (folderPath: string) => void) => () => void;
+
+  // Model Management API
+  model: {
+    // Provider management
+    getProviders: () => Promise<AIProvider[]>;
+    getProvider: (providerId: string) => Promise<AIProvider | null>;
+    createProvider: (input: CreateProviderInput) => Promise<AIProvider>;
+    updateProvider: (providerId: string, input: UpdateProviderInput) => Promise<AIProvider>;
+    deleteProvider: (providerId: string) => Promise<void>;
+    setProviderEnabled: (providerId: string, enabled: boolean) => Promise<void>;
+    setProviderPriority: (providerId: string, priority: number) => Promise<void>;
+
+    // API key management
+    setAPIKey: (input: SetAPIKeyInput) => Promise<APIKey>;
+    getAPIKey: (providerId: string, keyName?: string) => Promise<string | null>;
+    validateAPIKey: (providerId: string) => Promise<boolean>;
+    deleteAPIKey: (providerId: string, keyName?: string) => Promise<void>;
+    hasValidAPIKey: (providerId: string) => Promise<boolean>;
+
+    // Model management
+    getModels: (providerId: string) => Promise<ModelInfo[]>;
+    updateModel: (providerId: string, modelId: string, config: Partial<ModelConfig>) => Promise<ModelInfo>;
+    setDefaultModel: (providerId: string, modelId: string) => Promise<void>;
+    getDefaultModel: (providerId: string) => Promise<ModelInfo | null>;
+
+    // Usage tracking
+    logUsage: (input: LogUsageInput) => Promise<UsageLog>;
+    getUsageLogs: (filters?: UsageLogFilters) => Promise<UsageLog[]>;
+    getUsageSummary: (filters?: UsageLogFilters) => Promise<UsageSummary>;
+
+    // Provider selection
+    getActiveProvider: () => Promise<AIProvider | null>;
+    getActiveProviders: () => Promise<AIProvider[]>;
+  };
 }
 
 export interface SaveResult {

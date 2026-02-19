@@ -8,11 +8,19 @@ import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
 import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig } from './sync';
 import { saveUnifiedConfig, loadUnifiedConfig } from './unified-config';
+import {
+  registerModelIpcHandlers,
+  initializeModelManager,
+  cleanupModelManager,
+} from './model.js';
 
 /**
  * Register all IPC handlers
  */
-export function registerIpcHandlers(): void {
+export async function registerIpcHandlers(): Promise<void> {
+  // Initialize ModelManager first
+  await initializeModelManager();
+
   // Get app version
   ipcMain.handle(IPC_CHANNELS.GET_APP_VERSION, () => {
     return app.getVersion();
@@ -137,14 +145,18 @@ export function registerIpcHandlers(): void {
     return result;
   });
 
+  // Register model management handlers
+  registerModelIpcHandlers();
+
   console.log('[IPC] All handlers registered');
 }
 
 /**
  * Unregister all IPC handlers (for cleanup)
  */
-export function unregisterIpcHandlers(): void {
+export async function unregisterIpcHandlers(): Promise<void> {
   Object.values(IPC_CHANNELS).forEach(channel => {
     ipcMain.removeHandler(channel);
   });
+  await cleanupModelManager();
 }

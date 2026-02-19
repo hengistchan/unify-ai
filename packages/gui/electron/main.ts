@@ -93,7 +93,7 @@ if (!gotTheLock) {
 /**
  * Initialize the application
  */
-function initializeApp(): void {
+async function initializeApp(): Promise<void> {
   console.log('[Main] Initializing application...');
 
   // Create the main window
@@ -104,8 +104,8 @@ function initializeApp(): void {
   createApplicationMenu();
   console.log('[Main] Menu created');
 
-  // Register IPC handlers
-  registerIpcHandlers();
+  // Register IPC handlers (now async)
+  await registerIpcHandlers();
   console.log('[Main] IPC handlers registered');
 
   console.log('[Main] Application ready\n');

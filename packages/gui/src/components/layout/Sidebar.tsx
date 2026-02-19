@@ -9,6 +9,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  Cpu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SidebarProps, ToolInfo, ToolStatus } from '@/types/layout';
@@ -183,6 +184,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Actions */}
       <div className="border-t border-border p-2 space-y-1">
+        <button
+          onClick={() => window.location.href = '/models'}
+          className={cn(
+            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors',
+            collapsed && 'justify-center'
+          )}
+          title={collapsed ? 'Models' : undefined}
+        >
+          <Cpu className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && <span className="text-sm">Models</span>}
+        </button>
         <button
           onClick={onOpenSettings}
           className={cn(

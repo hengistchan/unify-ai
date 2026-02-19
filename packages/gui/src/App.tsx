@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Home, Project, ToolDetail, Settings } from './pages';
+import { Home, Project, ToolDetail, Settings, Models } from './pages';
 import { useAppStore } from './stores/appStore';
 import { useThemeStore } from './stores/themeStore';
 import type { Toast as ToastType } from './stores/appStore';
@@ -24,6 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/project" element={<Project />} />
           <Route path="/project/tool/:toolId" element={<ToolDetail />} />
+          <Route path="/models" element={<Models />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>

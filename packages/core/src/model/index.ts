@@ -27,11 +27,11 @@ export type {
   ModelExportData,
 } from './types';
 
-// Core classes (will be implemented in Phase 2)
-// export { ModelManager } from './ModelManager';
-// export { ModelDatabase } from './Database';
-// export { EncryptionManager } from './EncryptionManager';
-// export { UsageTracker } from './UsageTracker';
+// Core classes
+export { ModelManager } from './ModelManager';
+export { ModelDatabase } from './Database';
+export { EncryptionManager } from './EncryptionManager';
+export { UsageTracker } from './UsageTracker';
 
 // Built-in providers
 export { BUILTIN_PROVIDERS } from './ProviderRegistry';

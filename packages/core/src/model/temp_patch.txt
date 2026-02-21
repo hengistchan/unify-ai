@@ -1,0 +1,22 @@
+
+    // Delete provider by id only (deletes all versions - global and tool-specific)
+    this.statements.set('provider_delete_all_versions', this.db.prepare(
+      'DELETE FROM providers WHERE id = ?'
+    ));
+
+    // Set current global provider (unset all others first, then set specific one)
+    this.statements.set('provider_unset_current_global', this.db.prepare(
+      'UPDATE providers SET is_current_global = 0 WHERE is_global = 1'
+    ));
+    this.statements.set('provider_set_current_global', this.db.prepare(
+      "UPDATE providers SET is_current_global = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND COALESCE(tool_id, 'global') = COALESCE(?, 'global')"
+    ));
+
+    // Set current tool provider (unset others for that tool first)
+    this.statements.set('provider_unset_current_tool', this.db.prepare(
+      'UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?'
+    ));
+    this.statements.set('provider_set_current_tool', this.db.prepare(
+      'UPDATE providers SET is_current_tool = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?'
+    ));
+

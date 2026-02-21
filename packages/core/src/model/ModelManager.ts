@@ -11,12 +11,14 @@ import type {
   AIProvider,
   APIKey,
   CreateProviderInput,
+  CurrentProviderResult,
   EncryptedKeyData,
   LogUsageInput,
   ModelConfig,
   ModelExportData,
   ModelInfo,
   ModelManagerOptions,
+  ProviderScope,
   SetAPIKeyInput,
   UpdateProviderInput,
   UsageLog,
@@ -149,6 +151,7 @@ export class ModelManager {
     const stmt = this.db.getStatement('provider_insert');
     stmt.run({
       id: input.id,
+      toolId: 'global',  // Use 'global' for global providers
       name: input.name,
       type: input.type,
       enabled: input.enabled ? 1 : 0,
@@ -157,6 +160,13 @@ export class ModelManager {
       models: JSON.stringify(input.models || []),
       defaultModel: input.defaultModel || null,
       baseUrl: input.baseUrl || null,
+      isGlobal: 1,
+      isCurrentGlobal: 0,
+      isCurrentTool: 0,
+      sortIndex: input.priority,
+      category: 'third-party',
+      notes: null,
+      meta: '{}',
     });
 
     // Insert models into model_configs table
@@ -199,14 +209,16 @@ export class ModelManager {
   /**
    * Get a provider by ID
    * @param id - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Provider or null if not found
    */
-  async getProvider(id: string): Promise<AIProvider | null> {
+  async getProvider(id: string, toolId?: string): Promise<AIProvider | null> {
     await this.ensureInitialized();
 
+    const effectiveToolId = toolId ?? 'global';
     const row = await this.db.get<any>(
-      'SELECT * FROM providers WHERE id = ?',
-      [id]
+      "SELECT * FROM providers WHERE id = ? AND tool_id = ?",
+      [id, effectiveToolId]
     );
 
     return row ? rowToProvider(row) : null;
@@ -220,15 +232,20 @@ export class ModelManager {
   async createProvider(input: CreateProviderInput): Promise<AIProvider> {
     await this.ensureInitialized();
 
-    // Check if provider already exists
-    const existing = await this.getProvider(input.id);
+    const toolId = input.toolId ?? 'global';
+    const isGlobal = toolId === 'global';
+
+    // Check if provider already exists for this scope
+    const existing = await this.getProvider(input.id, toolId);
     if (existing) {
-      throw new Error(`Provider with ID '${input.id}' already exists`);
+      const scope = isGlobal ? 'global' : `tool '${toolId}'`;
+      throw new Error(`Provider with ID '${input.id}' already exists in ${scope} scope`);
     }
 
     const stmt = this.db.getStatement('provider_insert');
     stmt.run({
       id: input.id,
+      toolId: toolId,
       name: input.name,
       type: input.type,
       enabled: 1,
@@ -237,6 +254,13 @@ export class ModelManager {
       models: JSON.stringify(input.models || []),
       defaultModel: input.defaultModel || null,
       baseUrl: input.baseUrl || null,
+      isGlobal: isGlobal ? 1 : 0,
+      isCurrentGlobal: 0,
+      isCurrentTool: 0,
+      sortIndex: 0,
+      category: input.category || 'third-party',
+      notes: input.notes || null,
+      meta: JSON.stringify(input.meta || {}),
     });
 
     // Insert models into model_configs table
@@ -257,7 +281,7 @@ export class ModelManager {
       });
     }
 
-    const provider = await this.getProvider(input.id);
+    const provider = await this.getProvider(input.id, toolId);
     if (!provider) {
       throw new Error('Failed to create provider');
     }
@@ -269,22 +293,26 @@ export class ModelManager {
    * Update a provider
    * @param id - Provider ID
    * @param input - Update input
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Updated provider
    */
   async updateProvider(
     id: string,
-    input: UpdateProviderInput
+    input: UpdateProviderInput,
+    toolId?: string
   ): Promise<AIProvider> {
     await this.ensureInitialized();
 
-    const existing = await this.getProvider(id);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getProvider(id, effectiveToolId);
     if (!existing) {
-      throw new Error(`Provider with ID '${id}' not found`);
+      throw new Error(`Provider with ID '${id}' not found in scope '${effectiveToolId}'`);
     }
 
     const stmt = this.db.getStatement('provider_update');
     stmt.run({
       id,
+      toolId: effectiveToolId,
       name: input.name ?? existing.name,
       type: existing.type,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : (existing.enabled ? 1 : 0),
@@ -293,9 +321,16 @@ export class ModelManager {
       models: JSON.stringify(input.models ?? existing.models),
       defaultModel: input.defaultModel ?? existing.defaultModel ?? null,
       baseUrl: input.baseUrl ?? existing.baseUrl ?? null,
+      isGlobal: effectiveToolId === 'global' ? 1 : 0,
+      isCurrentGlobal: 0,
+      isCurrentTool: 0,
+      sortIndex: input.priority ?? existing.priority,
+      category: input.category ?? 'third-party',
+      notes: input.notes ?? null,
+      meta: JSON.stringify(input.meta ?? {}),
     });
 
-    const provider = await this.getProvider(id);
+    const provider = await this.getProvider(id, effectiveToolId);
     if (!provider) {
       throw new Error('Failed to update provider');
     }
@@ -306,44 +341,51 @@ export class ModelManager {
   /**
    * Delete a provider
    * @param id - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    */
-  async deleteProvider(id: string): Promise<void> {
+  async deleteProvider(id: string, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
-    const existing = await this.getProvider(id);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getProvider(id, effectiveToolId);
     if (!existing) {
-      throw new Error(`Provider with ID '${id}' not found`);
+      throw new Error(`Provider with ID '${id}' not found in scope '${effectiveToolId}'`);
     }
 
     // Delete related model_configs first (no CASCADE in schema)
     await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
 
     // Delete associated API keys (no CASCADE in schema)
-    await this.db.run('DELETE FROM api_keys WHERE provider_id = ?', [id]);
+    await this.db.run(
+      'DELETE FROM api_keys WHERE provider_id = ? AND provider_tool_id = ?',
+      [id, effectiveToolId]
+    );
 
     // Invalidate all cached API keys for this provider
     this.encryption.invalidateProviderCache(id);
 
     const stmt = this.db.getStatement('provider_delete');
-    stmt.run(id);
+    stmt.run(id, effectiveToolId);
   }
 
   /**
    * Set provider enabled status
    * @param id - Provider ID
    * @param enabled - Enabled status
+   * @param toolId - Optional tool ID (defaults to 'global')
    */
-  async setProviderEnabled(id: string, enabled: boolean): Promise<void> {
+  async setProviderEnabled(id: string, enabled: boolean, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
-    const existing = await this.getProvider(id);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getProvider(id, effectiveToolId);
     if (!existing) {
-      throw new Error(`Provider with ID '${id}' not found`);
+      throw new Error(`Provider with ID '${id}' not found in scope '${effectiveToolId}'`);
     }
 
     await this.db.run(
-      'UPDATE providers SET enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [enabled ? 1 : 0, id]
+      'UPDATE providers SET enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?',
+      [enabled ? 1 : 0, id, effectiveToolId]
     );
   }
 
@@ -352,17 +394,18 @@ export class ModelManager {
    * @param id - Provider ID
    * @param priority - Priority value (higher = preferred)
    */
-  async setProviderPriority(id: string, priority: number): Promise<void> {
+  async setProviderPriority(id: string, priority: number, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
-    const existing = await this.getProvider(id);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getProvider(id, effectiveToolId);
     if (!existing) {
-      throw new Error(`Provider with ID '${id}' not found`);
+      throw new Error(`Provider with ID '${id}' not found in scope '${effectiveToolId}'`);
     }
 
     await this.db.run(
-      'UPDATE providers SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [priority, id]
+      'UPDATE providers SET priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?',
+      [priority, id, effectiveToolId]
     );
   }
 
@@ -373,27 +416,30 @@ export class ModelManager {
   /**
    * Set an API key for a provider
    * @param input - API key input
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns API key metadata (not the actual key)
    */
-  async setAPIKey(input: SetAPIKeyInput): Promise<APIKey> {
+  async setAPIKey(input: SetAPIKeyInput, toolId?: string): Promise<APIKey> {
     await this.ensureInitialized();
 
+    const effectiveToolId = toolId ?? 'global';
+
     // Verify provider exists
-    const provider = await this.getProvider(input.providerId);
+    const provider = await this.getProvider(input.providerId, effectiveToolId);
     if (!provider) {
-      throw new Error(`Provider with ID '${input.providerId}' not found`);
+      throw new Error(`Provider with ID '${input.providerId}' not found in scope '${effectiveToolId}'`);
     }
 
     const keyName = input.keyName || 'primary';
-    const keyId = `${input.providerId}:${keyName}`;
+    const keyId = `${input.providerId}:${effectiveToolId}:${keyName}`;
 
     // Encrypt the API key
     const encryptedData = await this.encryption.encrypt(input.key);
 
     // Check if key already exists
     const existing = await this.db.get<any>(
-      'SELECT id FROM api_keys WHERE provider_id = ? AND key_name = ?',
-      [input.providerId, keyName]
+      'SELECT id FROM api_keys WHERE provider_id = ? AND provider_tool_id = ? AND key_name = ?',
+      [input.providerId, effectiveToolId, keyName]
     );
 
     if (existing) {
@@ -413,7 +459,7 @@ export class ModelManager {
       // Invalidate cache when key is updated
       this.encryption.invalidateCachedAPIKey(input.providerId, keyName);
 
-      const apiKey = await this.getAPIKeyRecord(input.providerId, keyName);
+      const apiKey = await this.getAPIKeyRecord(input.providerId, keyName, effectiveToolId);
       if (!apiKey) {
         throw new Error('Failed to update API key');
       }
@@ -424,6 +470,7 @@ export class ModelManager {
       stmt.run({
         id: keyId,
         providerId: input.providerId,
+        providerToolId: effectiveToolId,
         keyName,
         encryptedKey: encryptedData.encrypted,
         iv: encryptedData.iv || null,
@@ -447,11 +494,13 @@ export class ModelManager {
    */
   private async getAPIKeyRecord(
     providerId: string,
-    keyName: string
+    keyName: string,
+    toolId?: string
   ): Promise<APIKey | null> {
+    const effectiveToolId = toolId ?? 'global';
     const row = await this.db.get<any>(
-      'SELECT * FROM api_keys WHERE provider_id = ? AND key_name = ?',
-      [providerId, keyName]
+      'SELECT * FROM api_keys WHERE provider_id = ? AND provider_tool_id = ? AND key_name = ?',
+      [providerId, effectiveToolId, keyName]
     );
 
     return row ? rowToAPIKey(row) : null;
@@ -461,12 +510,14 @@ export class ModelManager {
    * Get the decrypted API key for a provider
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Decrypted API key or null
    */
-  async getAPIKey(providerId: string, keyName?: string): Promise<string | null> {
+  async getAPIKey(providerId: string, keyName?: string, toolId?: string): Promise<string | null> {
     await this.ensureInitialized();
 
     const name = keyName || 'primary';
+    const effectiveToolId = toolId ?? 'global';
 
     // Check cache first
     const cachedKey = this.encryption.getCachedAPIKey(providerId, name);
@@ -475,8 +526,8 @@ export class ModelManager {
     }
 
     const row = await this.db.get<any>(
-      'SELECT encrypted_key, iv, auth_tag FROM api_keys WHERE provider_id = ? AND key_name = ?',
-      [providerId, name]
+      'SELECT encrypted_key, iv, auth_tag FROM api_keys WHERE provider_id = ? AND provider_tool_id = ? AND key_name = ?',
+      [providerId, effectiveToolId, name]
     );
 
     if (!row) {
@@ -528,17 +579,20 @@ export class ModelManager {
   /**
    * Validate an API key by making a test API call
    * @param providerId - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns True if key is valid
    */
-  async validateAPIKey(providerId: string): Promise<boolean> {
+  async validateAPIKey(providerId: string, toolId?: string): Promise<boolean> {
     await this.ensureInitialized();
 
-    const provider = await this.getProvider(providerId);
+    const effectiveToolId = toolId ?? 'global';
+
+    const provider = await this.getProvider(providerId, effectiveToolId);
     if (!provider) {
-      throw new Error(`Provider with ID '${providerId}' not found`);
+      throw new Error(`Provider with ID '${providerId}' not found in scope '${effectiveToolId}'`);
     }
 
-    const apiKey = await this.getAPIKey(providerId);
+    const apiKey = await this.getAPIKey(providerId, 'primary', effectiveToolId);
     if (!apiKey) {
       return false;
     }
@@ -550,8 +604,8 @@ export class ModelManager {
       await this.db.run(
         `UPDATE api_keys
          SET is_valid = ?, last_validated = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-         WHERE provider_id = ? AND key_name = 'primary'`,
-        [result.valid ? 1 : 0, providerId]
+         WHERE provider_id = ? AND provider_tool_id = ? AND key_name = 'primary'`,
+        [result.valid ? 1 : 0, providerId, effectiveToolId]
       );
 
       return result.valid;
@@ -560,8 +614,8 @@ export class ModelManager {
       await this.db.run(
         `UPDATE api_keys
          SET is_valid = 0, last_validated = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-         WHERE provider_id = ? AND key_name = 'primary'`,
-        [providerId]
+         WHERE provider_id = ? AND provider_tool_id = ? AND key_name = 'primary'`,
+        [providerId, effectiveToolId]
       );
 
       return false;
@@ -572,15 +626,17 @@ export class ModelManager {
    * Delete an API key
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
+   * @param toolId - Optional tool ID (defaults to 'global')
    */
-  async deleteAPIKey(providerId: string, keyName?: string): Promise<void> {
+  async deleteAPIKey(providerId: string, keyName?: string, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
     const name = keyName || 'primary';
+    const effectiveToolId = toolId ?? 'global';
 
     await this.db.run(
-      'DELETE FROM api_keys WHERE provider_id = ? AND key_name = ?',
-      [providerId, name]
+      'DELETE FROM api_keys WHERE provider_id = ? AND provider_tool_id = ? AND key_name = ?',
+      [providerId, effectiveToolId, name]
     );
 
     // Invalidate cache when key is deleted
@@ -590,14 +646,17 @@ export class ModelManager {
   /**
    * Check if a provider has a valid API key
    * @param providerId - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns True if provider has a valid key
    */
-  async hasValidAPIKey(providerId: string): Promise<boolean> {
+  async hasValidAPIKey(providerId: string, toolId?: string): Promise<boolean> {
     await this.ensureInitialized();
 
+    const effectiveToolId = toolId ?? 'global';
+
     const row = await this.db.get<any>(
-      'SELECT is_valid FROM api_keys WHERE provider_id = ? AND is_valid = 1',
-      [providerId]
+      'SELECT is_valid FROM api_keys WHERE provider_id = ? AND provider_tool_id = ? AND is_valid = 1',
+      [providerId, effectiveToolId]
     );
 
     return row !== undefined;
@@ -799,18 +858,22 @@ export class ModelManager {
 
   /**
    * Get active provider (highest priority with valid key)
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Active provider or null
    */
-  async getActiveProvider(): Promise<AIProvider | null> {
+  async getActiveProvider(toolId?: string): Promise<AIProvider | null> {
     await this.ensureInitialized();
+
+    const effectiveToolId = toolId ?? 'global';
 
     const rows = await this.db.all<any>(
       `SELECT p.*
        FROM providers p
-       INNER JOIN api_keys k ON p.id = k.provider_id
-       WHERE p.enabled = 1 AND k.is_valid = 1
+       INNER JOIN api_keys k ON p.id = k.provider_id AND p.tool_id = k.provider_tool_id
+       WHERE p.enabled = 1 AND k.is_valid = 1 AND p.tool_id = ?
        ORDER BY p.priority DESC, p.name ASC
-       LIMIT 1`
+       LIMIT 1`,
+      [effectiveToolId]
     );
 
     return rows.length > 0 ? rowToProvider(rows[0]) : null;
@@ -818,20 +881,321 @@ export class ModelManager {
 
   /**
    * Get all active providers (enabled with valid keys)
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Array of active providers
    */
-  async getActiveProviders(): Promise<AIProvider[]> {
+  async getActiveProviders(toolId?: string): Promise<AIProvider[]> {
     await this.ensureInitialized();
+
+    const effectiveToolId = toolId ?? 'global';
 
     const rows = await this.db.all<any>(
       `SELECT p.*
        FROM providers p
-       INNER JOIN api_keys k ON p.id = k.provider_id
-       WHERE p.enabled = 1 AND k.is_valid = 1
-       ORDER BY p.priority DESC, p.name ASC`
+       INNER JOIN api_keys k ON p.id = k.provider_id AND p.tool_id = k.provider_tool_id
+       WHERE p.enabled = 1 AND k.is_valid = 1 AND p.tool_id = ?
+       ORDER BY p.priority DESC, p.name ASC`,
+      [effectiveToolId]
     );
 
     return rows.map(rowToProvider);
+  }
+
+  // ============================================
+  // Current Provider Query (Hybrid Tool Isolation)
+  // ============================================
+
+  /**
+   * Get the current provider with priority logic for hybrid tool isolation
+   *
+   * Priority order:
+   * 1. Tool-specific current provider (if toolId provided)
+   * 2. Global current provider (fallback)
+   *
+   * @param toolId - Optional tool ID for tool-specific lookup
+   * @returns Current provider result with scope info, or null if not found
+   */
+  async getCurrentProvider(toolId?: string): Promise<CurrentProviderResult | null> {
+    await this.ensureInitialized();
+
+    // If toolId is provided, try tool-specific provider first
+    if (toolId) {
+      const toolProvider = await this.getToolCurrentProvider(toolId);
+      if (toolProvider) {
+        return {
+          provider: toolProvider,
+          scope: 'tool-specific',
+          toolId,
+        };
+      }
+    }
+
+    // Fall back to global current provider
+    const globalProvider = await this.getGlobalCurrentProvider();
+    if (globalProvider) {
+      return {
+        provider: globalProvider,
+        scope: 'global',
+      };
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the global current provider
+   *
+   * Query: is_global = 1 AND is_current_global = 1
+   * Falls back to getActiveProvider() if hybrid columns don't exist
+   *
+   * @returns Global current provider or null
+   */
+  async getGlobalCurrentProvider(): Promise<AIProvider | null> {
+    await this.ensureInitialized();
+
+    // Check if hybrid tool isolation columns exist
+    const hasHybridColumns = await this.checkHybridColumnsExist();
+
+    if (hasHybridColumns) {
+      // Use new hybrid query
+      const row = await this.db.get<any>(
+        `SELECT p.*
+         FROM providers p
+         WHERE p.enabled = 1 AND p.is_global = 1 AND p.is_current_global = 1
+         ORDER BY p.priority DESC
+         LIMIT 1`
+      );
+
+      return row ? rowToProvider(row) : null;
+    } else {
+      // Fallback to existing getActiveProvider for backward compatibility
+      return this.getActiveProvider();
+    }
+  }
+
+  /**
+   * Get the tool-specific current provider
+   *
+   * Query: tool_id = ? AND is_current_tool = 1
+   * Returns null if hybrid columns don't exist (graceful fallback)
+   *
+   * @param toolId - Tool ID
+   * @returns Tool-specific current provider or null
+   */
+  async getToolCurrentProvider(toolId: string): Promise<AIProvider | null> {
+    await this.ensureInitialized();
+
+    // Check if hybrid tool isolation columns exist
+    const hasHybridColumns = await this.checkHybridColumnsExist();
+
+    if (!hasHybridColumns) {
+      // Hybrid columns don't exist yet, return null
+      // This forces fallback to global provider
+      return null;
+    }
+
+    const row = await this.db.get<any>(
+      `SELECT p.*
+       FROM providers p
+       WHERE p.enabled = 1 AND p.tool_id = ? AND p.is_current_tool = 1
+       ORDER BY p.priority DESC
+       LIMIT 1`,
+      [toolId]
+    );
+
+    return row ? rowToProvider(row) : null;
+  }
+
+  /**
+   * Check if hybrid tool isolation columns exist in the providers table
+   * This allows graceful fallback during migration
+   */
+  private async checkHybridColumnsExist(): Promise<boolean> {
+    try {
+      const columns = await this.db.all<any>(
+        "PRAGMA table_info(providers)"
+      );
+      const columnNames = columns.map(col => col.name);
+      return (
+        columnNames.includes('tool_id') &&
+        columnNames.includes('is_global') &&
+        columnNames.includes('is_current_global') &&
+        columnNames.includes('is_current_tool')
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get API key with priority logic for hybrid tool isolation
+   *
+   * Priority order (when toolId is provided):
+   * 1. Tool-specific provider's API key
+   * 2. Global provider's API key (fallback)
+   *
+   * @param providerId - Provider ID
+   * @param keyName - Key name (default: 'primary')
+   * @param toolId - Optional tool ID for priority lookup
+   * @returns Decrypted API key or null
+   */
+  async getAPIKeyWithPriority(
+    providerId: string,
+    keyName?: string,
+    toolId?: string
+  ): Promise<string | null> {
+    await this.ensureInitialized();
+
+    const name = keyName || 'primary';
+
+    // If toolId provided, try tool-specific provider's API key first
+    if (toolId) {
+      const toolProvider = await this.getToolCurrentProvider(toolId);
+      if (toolProvider && toolProvider.id === providerId) {
+        const key = await this.getAPIKey(providerId, name);
+        if (key) return key;
+      }
+    }
+
+    // Fall back to regular getAPIKey (global provider)
+    return this.getAPIKey(providerId, name);
+  }
+
+  /**
+   * List all global providers
+   * Falls back to listProviders() if hybrid columns don't exist
+   *
+   * @returns Array of global providers
+   */
+  async listGlobalProviders(): Promise<AIProvider[]> {
+    await this.ensureInitialized();
+
+    const hasHybridColumns = await this.checkHybridColumnsExist();
+
+    if (hasHybridColumns) {
+      const rows = await this.db.all<any>(
+        `SELECT * FROM providers
+         WHERE is_global = 1 OR tool_id IS NULL
+         ORDER BY priority DESC, name ASC`
+      );
+      return rows.map(rowToProvider);
+    } else {
+      // Fallback to list all providers (backward compatibility)
+      return this.listProviders();
+    }
+  }
+
+  /**
+   * List all providers for a specific tool
+   * Returns empty array if hybrid columns don't exist
+   *
+   * @param toolId - Tool ID
+   * @returns Array of tool-specific providers
+   */
+  async listToolProviders(toolId: string): Promise<AIProvider[]> {
+    await this.ensureInitialized();
+
+    const hasHybridColumns = await this.checkHybridColumnsExist();
+
+    if (!hasHybridColumns) {
+      return [];
+    }
+
+    const rows = await this.db.all<any>(
+      `SELECT * FROM providers
+       WHERE tool_id = ?
+       ORDER BY priority DESC, name ASC`,
+      [toolId]
+    );
+
+    return rows.map(rowToProvider);
+  }
+
+  /**
+   * Set a provider as the global default
+   * @param providerId - Provider ID
+   */
+  async setGlobalDefaultProvider(providerId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    // Check if provider exists in global scope
+    const provider = await this.getProvider(providerId, 'global');
+    if (!provider) {
+      throw new Error(`Provider '${providerId}' not found in global scope`);
+    }
+
+    // Unset all global current flags
+    await this.db.run(
+      'UPDATE providers SET is_current_global = 0 WHERE is_global = 1'
+    );
+
+    // Set the new global default
+    await this.db.run(
+      'UPDATE providers SET is_current_global = 1, updated_at = ? WHERE id = ? AND tool_id = ?',
+      [new Date().toISOString(), providerId, 'global']
+    );
+  }
+
+  /**
+   * Set a tool-specific provider override
+   * @param toolId - Tool ID
+   * @param providerId - Provider ID
+   */
+  async setToolOverrideProvider(toolId: string, providerId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    // Check if provider exists for this tool
+    const provider = await this.getProvider(providerId, toolId);
+    if (!provider) {
+      throw new Error(`Provider '${providerId}' not found for tool '${toolId}'`);
+    }
+
+    // Unset current tool flag for all providers of this tool
+    await this.db.run(
+      'UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?',
+      [toolId]
+    );
+
+    // Set the new tool-specific current provider
+    await this.db.run(
+      'UPDATE providers SET is_current_tool = 1, updated_at = ? WHERE id = ? AND tool_id = ?',
+      [new Date().toISOString(), providerId, toolId]
+    );
+  }
+
+  /**
+   * Clear tool-specific provider override (fallback to global)
+   * @param toolId - Tool ID
+   */
+  async clearToolOverride(toolId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    // Unset current tool flag for all providers of this tool
+    await this.db.run(
+      'UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?',
+      [toolId]
+    );
+  }
+
+  /**
+   * Create a global provider
+   * Convenience method that calls createProvider with toolId = 'global'
+   * @param input - Provider creation input
+   * @returns Created provider
+   */
+  async createGlobalProvider(input: CreateProviderInput): Promise<AIProvider> {
+    return this.createProvider({ ...input, toolId: 'global' });
+  }
+
+  /**
+   * Create a tool-specific provider
+   * Convenience method that calls createProvider with specified toolId
+   * @param toolId - Tool ID
+   * @param input - Provider creation input
+   * @returns Created provider
+   */
+  async createToolProvider(toolId: string, input: CreateProviderInput): Promise<AIProvider> {
+    return this.createProvider({ ...input, toolId });
   }
 
   // ============================================

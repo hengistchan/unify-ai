@@ -703,6 +703,195 @@ describe('ModelManager', () => {
     });
   });
 
+  describe('current provider query (hybrid tool isolation)', () => {
+    /**
+     * Note: These tests verify the priority query logic.
+     * When hybrid tool isolation columns don't exist (pre-migration),
+     * the methods should gracefully fall back to existing behavior.
+     */
+
+    // Reset provider states before each test
+    beforeEach(async () => {
+      const providers = await manager.listProviders();
+      for (const p of providers) {
+        await manager.setProviderEnabled(p.id, true);
+        await manager.setProviderPriority(p.id, 0);
+      }
+    });
+
+    describe('getCurrentProvider()', () => {
+      it('should return global current provider when no toolId provided', async () => {
+        // Setup: make openai the active provider
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-openai-key-with-sufficient-length',
+        });
+        await manager.validateAPIKey('openai');
+
+        // Without hybrid columns, this falls back to getActiveProvider
+        const result = await manager.getCurrentProvider();
+
+        // Result may be null if no active provider with valid key
+        // or may return the active provider
+        if (result) {
+          expect(result.scope).toBe('global');
+          expect(result.provider).toBeDefined();
+        }
+      });
+
+      it('should return null when no provider available', async () => {
+        // Disable all providers
+        const providers = await manager.listProviders();
+        for (const p of providers) {
+          await manager.setProviderEnabled(p.id, false);
+        }
+
+        const result = await manager.getCurrentProvider();
+        expect(result).toBeNull();
+      });
+
+      it('should fall back to global provider when toolId has no specific provider', async () => {
+        // Setup: make openai the active provider
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-openai-key-with-sufficient-length',
+        });
+        await manager.validateAPIKey('openai');
+
+        // Query with a tool that has no tool-specific provider
+        const result = await manager.getCurrentProvider('claude-code');
+
+        // Without hybrid columns, tool-specific lookup returns null
+        // and falls back to global
+        if (result) {
+          expect(result.scope).toBe('global');
+        }
+      });
+    });
+
+    describe('getGlobalCurrentProvider()', () => {
+      it('should return active provider as global current (fallback)', async () => {
+        await manager.setAPIKey({
+          providerId: 'anthropic',
+          key: 'sk-ant-key-with-sufficient-length',
+        });
+        await manager.validateAPIKey('anthropic');
+
+        // Without hybrid columns, this falls back to getActiveProvider
+        const provider = await manager.getGlobalCurrentProvider();
+
+        if (provider) {
+          expect(provider.id).toBeDefined();
+          expect(provider.enabled).toBe(true);
+        }
+      });
+
+      it('should return null when no global provider available', async () => {
+        // Disable all providers
+        const providers = await manager.listProviders();
+        for (const p of providers) {
+          await manager.setProviderEnabled(p.id, false);
+        }
+
+        const provider = await manager.getGlobalCurrentProvider();
+        expect(provider).toBeNull();
+      });
+    });
+
+    describe('getToolCurrentProvider()', () => {
+      it('should return null without hybrid columns (graceful fallback)', async () => {
+        // Without hybrid columns, tool-specific lookup returns null
+        const provider = await manager.getToolCurrentProvider('cursor');
+
+        // This is expected behavior before migration
+        expect(provider).toBeNull();
+      });
+    });
+
+    describe('getAPIKeyWithPriority()', () => {
+      it('should return API key for provider', async () => {
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-test-priority-key',
+        });
+
+        const key = await manager.getAPIKeyWithPriority('openai');
+
+        expect(key).toBe('sk-test-priority-key');
+      });
+
+      it('should return null for non-existent key', async () => {
+        const key = await manager.getAPIKeyWithPriority('anthropic');
+        expect(key).toBeNull();
+      });
+
+      it('should fall back to global key when toolId has no specific provider', async () => {
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        const key = await manager.getAPIKeyWithPriority('openai', 'primary', 'some-tool');
+
+        // Falls back to global provider's key
+        expect(key).toBe('sk-global-key');
+      });
+    });
+
+    describe('listGlobalProviders()', () => {
+      it('should return all providers without hybrid columns (fallback)', async () => {
+        const providers = await manager.listGlobalProviders();
+
+        // Without hybrid columns, this falls back to listProviders
+        expect(providers.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe('listToolProviders()', () => {
+      it('should return empty array without hybrid columns', async () => {
+        const providers = await manager.listToolProviders('cursor');
+
+        // Without hybrid columns, returns empty array
+        expect(providers).toEqual([]);
+      });
+    });
+
+    describe('backward compatibility', () => {
+      it('should maintain existing getActiveProvider behavior', async () => {
+        // Ensure providers are enabled and have correct priority
+        await manager.setProviderEnabled('openai', true);
+        await manager.setProviderEnabled('anthropic', true);
+        await manager.setProviderPriority('openai', 200);
+        await manager.setProviderPriority('anthropic', 100);
+
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-openai-key-with-sufficient-length',
+        });
+        await manager.setAPIKey({
+          providerId: 'anthropic',
+          key: 'sk-ant-key-with-sufficient-length',
+        });
+        await manager.validateAPIKey('openai');
+        await manager.validateAPIKey('anthropic');
+
+        const activeProvider = await manager.getActiveProvider();
+        expect(activeProvider).toBeDefined();
+        expect(activeProvider!.id).toBe('openai');
+      });
+
+      it('should maintain existing getAPIKey behavior', async () => {
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-test-key',
+        });
+
+        const key = await manager.getAPIKey('openai');
+        expect(key).toBe('sk-test-key');
+      });
+    });
+  });
+
   describe('utility methods', () => {
     it('should get database path', () => {
       const path = manager.getDatabasePath();

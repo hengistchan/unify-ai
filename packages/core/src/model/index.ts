@@ -29,6 +29,10 @@ export type {
   ProxyStats,
   ProxyStatus,
   RequestLog,
+  // Hybrid tool isolation types
+  ProviderScope,
+  HybridProviderFields,
+  CurrentProviderResult,
 } from './types';
 
 // Validation types

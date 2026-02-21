@@ -262,6 +262,14 @@ export interface CreateProviderInput {
   models?: Omit<ModelInfo, 'providerId'>[];
   /** Default model ID */
   defaultModel?: string;
+  /** Tool ID for tool-specific providers (null/undefined for global) */
+  toolId?: string | null;
+  /** Category for the provider */
+  category?: string;
+  /** User notes */
+  notes?: string;
+  /** Additional metadata */
+  meta?: Record<string, unknown>;
 }
 
 /**
@@ -282,6 +290,14 @@ export interface UpdateProviderInput {
   defaultModel?: string;
   /** API base URL */
   baseUrl?: string;
+  /** Tool ID for tool-specific providers */
+  toolId?: string | null;
+  /** Category for the provider */
+  category?: string;
+  /** User notes */
+  notes?: string;
+  /** Additional metadata */
+  meta?: Record<string, unknown>;
 }
 
 /**
@@ -570,4 +586,47 @@ export interface ISOWeek {
   year: number;
   /** ISO week number (1-53) */
   week: number;
+}
+
+// ============================================
+// Hybrid Tool Isolation Types
+// ============================================
+
+/**
+ * Provider scope for hybrid tool isolation
+ */
+export type ProviderScope = 'global' | 'tool-specific';
+
+/**
+ * Extended provider data with hybrid tool isolation fields
+ */
+export interface HybridProviderFields {
+  /** Tool ID (null = global provider) */
+  toolId?: string | null;
+  /** Whether this is a global provider */
+  isGlobal: boolean;
+  /** Whether this is the current global default provider */
+  isCurrentGlobal: boolean;
+  /** Whether this is the current tool-specific provider */
+  isCurrentTool: boolean;
+  /** Sort index for ordering */
+  sortIndex?: number;
+  /** Provider category */
+  category?: string;
+  /** User notes */
+  notes?: string;
+  /** Additional metadata */
+  meta?: Record<string, unknown>;
+}
+
+/**
+ * Current provider query result
+ */
+export interface CurrentProviderResult {
+  /** The provider */
+  provider: AIProvider;
+  /** Scope of the provider (global or tool-specific) */
+  scope: ProviderScope;
+  /** Tool ID if tool-specific */
+  toolId?: string;
 }

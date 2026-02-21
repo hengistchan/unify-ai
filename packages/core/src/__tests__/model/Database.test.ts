@@ -74,8 +74,10 @@ describe('ModelDatabase', () => {
         'SELECT name FROM migrations ORDER BY name'
       );
 
-      expect(migrations).toHaveLength(1);
+      expect(migrations).toHaveLength(3);
       expect(migrations[0].name).toBe('001_initial_schema');
+      expect(migrations[1].name).toBe('002_usage_aggregation');
+      expect(migrations[2].name).toBe('003_hybrid_tool_isolation');
 
       // Initialize again - should not add duplicate migrations
       await db.close();
@@ -86,7 +88,7 @@ describe('ModelDatabase', () => {
         'SELECT name FROM migrations ORDER BY name'
       );
 
-      expect(migrations2).toHaveLength(1);
+      expect(migrations2).toHaveLength(3);
     });
   });
 
@@ -260,6 +262,7 @@ describe('ModelDatabase', () => {
 
       const result = stmt.run({
         id: 'test-provider',
+        toolId: 'global',
         name: 'Test Provider',
         type: 'openai-compatible',
         enabled: 1,
@@ -268,6 +271,13 @@ describe('ModelDatabase', () => {
         models: null,
         defaultModel: null,
         baseUrl: null,
+        isGlobal: 1,
+        isCurrentGlobal: 0,
+        isCurrentTool: 0,
+        sortIndex: 50,
+        category: 'third-party',
+        notes: null,
+        meta: '{}',
       });
 
       expect(result.changes).toBe(1);
@@ -285,6 +295,7 @@ describe('ModelDatabase', () => {
 
         stmt.run({
           id: 'provider1',
+          toolId: 'global',
           name: 'Provider 1',
           type: 'openai-compatible',
           enabled: 1,
@@ -293,10 +304,18 @@ describe('ModelDatabase', () => {
           models: null,
           defaultModel: null,
           baseUrl: null,
+          isGlobal: 1,
+          isCurrentGlobal: 0,
+          isCurrentTool: 0,
+          sortIndex: 100,
+          category: 'third-party',
+          notes: null,
+          meta: '{}',
         });
 
         stmt.run({
           id: 'provider2',
+          toolId: 'global',
           name: 'Provider 2',
           type: 'anthropic',
           enabled: 1,
@@ -305,6 +324,13 @@ describe('ModelDatabase', () => {
           models: null,
           defaultModel: null,
           baseUrl: null,
+          isGlobal: 1,
+          isCurrentGlobal: 0,
+          isCurrentTool: 0,
+          sortIndex: 90,
+          category: 'third-party',
+          notes: null,
+          meta: '{}',
         });
 
         return 'success';
@@ -323,6 +349,7 @@ describe('ModelDatabase', () => {
 
           stmt.run({
             id: 'provider1',
+            toolId: 'global',
             name: 'Provider 1',
             type: 'openai-compatible',
             enabled: 1,
@@ -331,6 +358,13 @@ describe('ModelDatabase', () => {
             models: null,
             defaultModel: null,
             baseUrl: null,
+            isGlobal: 1,
+            isCurrentGlobal: 0,
+            isCurrentTool: 0,
+            sortIndex: 100,
+            category: 'third-party',
+            notes: null,
+            meta: '{}',
           });
 
           // This will cause an error

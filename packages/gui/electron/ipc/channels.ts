@@ -46,6 +46,7 @@ export const IPC_CHANNELS = {
   SET_API_KEY: 'set-api-key',
   GET_API_KEY: 'get-api-key',
   VALIDATE_API_KEY: 'validate-api-key',
+  VALIDATE_API_KEY_WITHOUT_SAVING: 'validate-api-key-without-saving',
   DELETE_API_KEY: 'delete-api-key',
   HAS_VALID_API_KEY: 'has-valid-api-key',
 
@@ -71,6 +72,14 @@ export const IPC_CHANNELS = {
   GET_PROXY_STATS: 'get-proxy-stats',
   GET_REQUEST_LOGS: 'get-request-logs',
   CLEAR_REQUEST_LOGS: 'clear-request-logs',
+
+  // Quick Switcher
+  SHOW_QUICK_SWITCHER: 'show-quick-switcher',
+  QUICK_SWITCHER_TRIGGERED: 'quick-switcher-triggered',
+
+  // Tray
+  TRAY_PROVIDER_CHANGED: 'tray-provider-changed',
+  UPDATE_TRAY_PROVIDERS: 'update-tray-providers',
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

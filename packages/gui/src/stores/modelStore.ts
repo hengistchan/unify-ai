@@ -18,6 +18,7 @@ import type {
   ProxyStats,
   ProxyStatus,
   RequestLog,
+  APIKeyValidationResult,
 } from '@unify-ai/core/model';
 
 // ============================================
@@ -55,10 +56,17 @@ export interface ModelState {
   setProviderPriority: (id: string, priority: number) => Promise<void>;
   selectProvider: (id: string | null) => void;
   loadActiveProvider: () => Promise<void>;
+  setActiveProvider: (providerId: string) => Promise<void>;
+  initializeTrayListener: () => () => void;
 
   // API Key Actions
   setAPIKey: (input: SetAPIKeyInput) => Promise<void>;
   validateAPIKey: (providerId: string) => Promise<boolean>;
+  validateAPIKeyWithoutSaving: (
+    providerId: string,
+    apiKey: string,
+    options?: { timeout?: number; baseUrl?: string }
+  ) => Promise<APIKeyValidationResult>;
   hasValidAPIKey: (providerId: string) => Promise<boolean>;
 
   // Model Actions
@@ -217,6 +225,46 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
+  setActiveProvider: async (providerId: string) => {
+    set({ loading: true, error: null });
+    try {
+      // Update the provider's priority to make it the active one
+      // First, get all providers to find current highest priority
+      const providers = get().providers;
+      const maxPriority = Math.max(...providers.map(p => p.priority), 0);
+
+      // Set the selected provider's priority to be highest
+      await window.electronAPI.model.setProviderPriority(providerId, maxPriority + 10);
+
+      // Reload active provider
+      const activeProvider = await window.electronAPI.model.getActiveProvider();
+      set({ activeProvider, loading: false });
+
+      // Update tray
+      await window.electronAPI.tray.updateProviders();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to set active provider';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  initializeTrayListener: () => {
+    // Listen for provider changes from tray
+    const cleanup = window.electronAPI.tray.onProviderChanged(async (providerId: string) => {
+      console.log('[ModelStore] Provider changed from tray:', providerId);
+
+      // Set the new active provider
+      try {
+        await get().setActiveProvider(providerId);
+      } catch (error) {
+        console.error('[ModelStore] Failed to set active provider from tray:', error);
+      }
+    });
+
+    return cleanup;
+  },
+
   // ============================================
   // API Key Actions
   // ============================================
@@ -246,6 +294,31 @@ export const useModelStore = create<ModelState>((set, get) => ({
       const message = error instanceof Error ? error.message : 'Failed to validate API key';
       set({ error: message, loading: false });
       throw error;
+    }
+  },
+
+  validateAPIKeyWithoutSaving: async (
+    providerId: string,
+    apiKey: string,
+    options?: { timeout?: number; baseUrl?: string }
+  ) => {
+    set({ loading: true, error: null });
+    try {
+      const result = await window.electronAPI.model.validateAPIKeyWithoutSaving(
+        providerId,
+        apiKey,
+        options
+      );
+      set({ loading: false });
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to validate API key';
+      set({ error: message, loading: false });
+      return {
+        valid: false,
+        error: message,
+        errorType: 'unknown' as const,
+      };
     }
   },
 

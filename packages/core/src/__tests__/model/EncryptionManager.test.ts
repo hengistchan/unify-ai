@@ -394,4 +394,212 @@ describe('EncryptionManager', () => {
       expect(decrypted).toBe(plaintext);
     });
   });
+
+  // ============================================
+  // Cache Tests
+  // ============================================
+
+  describe('API Key Cache', () => {
+    describe('getCachedAPIKey', () => {
+      it('should return undefined for non-existent cache entry', () => {
+        const result = manager.getCachedAPIKey('openai', 'primary');
+        expect(result).toBeUndefined();
+      });
+
+      it('should return cached value after setting', () => {
+        manager.setCachedAPIKey('openai', 'primary', 'sk-test-key');
+        const result = manager.getCachedAPIKey('openai', 'primary');
+        expect(result).toBe('sk-test-key');
+      });
+
+      it('should use default keyName when not specified', () => {
+        manager.setCachedAPIKey('anthropic', 'sk-claude-key');
+        const result = manager.getCachedAPIKey('anthropic');
+        expect(result).toBe('sk-claude-key');
+      });
+    });
+
+    describe('setCachedAPIKey', () => {
+      it('should cache API key with explicit keyName', () => {
+        manager.setCachedAPIKey('openai', 'backup', 'sk-backup-key');
+        expect(manager.getCachedAPIKey('openai', 'backup')).toBe('sk-backup-key');
+      });
+
+      it('should overwrite existing cached value', () => {
+        manager.setCachedAPIKey('openai', 'sk-old-key');
+        manager.setCachedAPIKey('openai', 'sk-new-key');
+        expect(manager.getCachedAPIKey('openai')).toBe('sk-new-key');
+      });
+    });
+
+    describe('invalidateCachedAPIKey', () => {
+      it('should remove specific cached key', () => {
+        manager.setCachedAPIKey('openai', 'primary', 'sk-key1');
+        manager.setCachedAPIKey('openai', 'backup', 'sk-key2');
+
+        manager.invalidateCachedAPIKey('openai', 'primary');
+
+        expect(manager.getCachedAPIKey('openai', 'primary')).toBeUndefined();
+        expect(manager.getCachedAPIKey('openai', 'backup')).toBe('sk-key2');
+      });
+
+      it('should use default keyName when not specified', () => {
+        manager.setCachedAPIKey('openai', 'sk-key');
+        manager.invalidateCachedAPIKey('openai');
+        expect(manager.getCachedAPIKey('openai')).toBeUndefined();
+      });
+    });
+
+    describe('invalidateProviderCache', () => {
+      it('should remove all keys for a provider', () => {
+        manager.setCachedAPIKey('openai', 'primary', 'sk-key1');
+        manager.setCachedAPIKey('openai', 'backup', 'sk-key2');
+        manager.setCachedAPIKey('anthropic', 'primary', 'sk-key3');
+
+        const removed = manager.invalidateProviderCache('openai');
+
+        expect(removed).toBe(2);
+        expect(manager.getCachedAPIKey('openai', 'primary')).toBeUndefined();
+        expect(manager.getCachedAPIKey('openai', 'backup')).toBeUndefined();
+        expect(manager.getCachedAPIKey('anthropic', 'primary')).toBe('sk-key3');
+      });
+
+      it('should return 0 if no keys found', () => {
+        const removed = manager.invalidateProviderCache('nonexistent');
+        expect(removed).toBe(0);
+      });
+    });
+
+    describe('clearCache', () => {
+      it('should remove all cached keys', () => {
+        manager.setCachedAPIKey('openai', 'primary', 'sk-key1');
+        manager.setCachedAPIKey('anthropic', 'primary', 'sk-key2');
+
+        manager.clearCache();
+
+        expect(manager.getCacheSize()).toBe(0);
+        expect(manager.getCachedAPIKey('openai')).toBeUndefined();
+        expect(manager.getCachedAPIKey('anthropic')).toBeUndefined();
+      });
+    });
+
+    describe('getCacheSize', () => {
+      it('should return 0 for empty cache', () => {
+        expect(manager.getCacheSize()).toBe(0);
+      });
+
+      it('should return correct count', () => {
+        manager.setCachedAPIKey('openai', 'primary', 'sk-key1');
+        expect(manager.getCacheSize()).toBe(1);
+
+        manager.setCachedAPIKey('anthropic', 'primary', 'sk-key2');
+        expect(manager.getCacheSize()).toBe(2);
+
+        // Overwriting should not increase size
+        manager.setCachedAPIKey('openai', 'primary', 'sk-new-key');
+        expect(manager.getCacheSize()).toBe(2);
+      });
+    });
+
+    describe('TTL expiration', () => {
+      it('should expire entries after TTL', async () => {
+        // Use vi.useFakeTimers for time-based testing
+        vi.useFakeTimers();
+
+        manager.setCachedAPIKey('openai', 'primary', 'sk-test-key');
+
+        // Should be available immediately
+        expect(manager.getCachedAPIKey('openai', 'primary')).toBe('sk-test-key');
+
+        // Advance time by 59 minutes (still valid)
+        vi.advanceTimersByTime(59 * 60 * 1000);
+        expect(manager.getCachedAPIKey('openai', 'primary')).toBe('sk-test-key');
+
+        // Advance time to 1 hour + 1 minute (expired)
+        vi.advanceTimersByTime(2 * 60 * 1000);
+        expect(manager.getCachedAPIKey('openai', 'primary')).toBeUndefined();
+
+        vi.useRealTimers();
+      });
+    });
+
+    describe('LRU eviction', () => {
+      it('should evict least recently used entries when at capacity', () => {
+        // Create a manager with small cache for testing
+        const smallCacheManager = new EncryptionManager();
+
+        // Add entries up to capacity (100)
+        for (let i = 0; i < 100; i++) {
+          smallCacheManager.setCachedAPIKey(`provider-${i}`, `key-${i}`);
+        }
+
+        expect(smallCacheManager.getCacheSize()).toBe(100);
+
+        // Add one more entry - should evict the first one
+        smallCacheManager.setCachedAPIKey('new-provider', 'new-key');
+
+        expect(smallCacheManager.getCacheSize()).toBe(100);
+        expect(smallCacheManager.getCachedAPIKey('provider-0')).toBeUndefined();
+        expect(smallCacheManager.getCachedAPIKey('new-provider')).toBe('new-key');
+      });
+
+      it('should update LRU order on access', () => {
+        const smallCacheManager = new EncryptionManager();
+
+        // Add entries up to capacity
+        for (let i = 0; i < 100; i++) {
+          smallCacheManager.setCachedAPIKey(`provider-${i}`, `key-${i}`);
+        }
+
+        // Access provider-0 to make it recently used
+        smallCacheManager.getCachedAPIKey('provider-0');
+
+        // Add a new entry - should evict provider-1 (not provider-0)
+        smallCacheManager.setCachedAPIKey('new-provider', 'new-key');
+
+        expect(smallCacheManager.getCachedAPIKey('provider-0')).toBe('key-0');
+        expect(smallCacheManager.getCachedAPIKey('provider-1')).toBeUndefined();
+      });
+    });
+
+    describe('performance', () => {
+      it('cached retrieval should be faster than decryption', async () => {
+        const apiKey = 'sk-test-api-key-12345678901234567890';
+
+        // First, encrypt the key
+        const encrypted = await manager.encrypt(apiKey);
+
+        // Measure decryption time (multiple iterations for more accurate measurement)
+        const decryptIterations = 100;
+        const decryptStart = performance.now();
+        for (let i = 0; i < decryptIterations; i++) {
+          await manager.decrypt(encrypted);
+        }
+        const decryptEnd = performance.now();
+        const avgDecryptTime = (decryptEnd - decryptStart) / decryptIterations;
+
+        // Cache the key
+        manager.setCachedAPIKey('test-provider', 'primary', apiKey);
+
+        // Measure cache retrieval time
+        const cacheIterations = 1000;
+        const cacheStart = performance.now();
+        for (let i = 0; i < cacheIterations; i++) {
+          manager.getCachedAPIKey('test-provider', 'primary');
+        }
+        const cacheEnd = performance.now();
+        const avgCacheTime = (cacheEnd - cacheStart) / cacheIterations;
+
+        // Cache should be significantly faster than decryption
+        expect(avgCacheTime).toBeLessThan(avgDecryptTime / 10);
+
+        // Cache hit should be under 5ms (requirement)
+        expect(avgCacheTime).toBeLessThan(5);
+
+        console.log(`Average decrypt time: ${avgDecryptTime.toFixed(3)}ms`);
+        console.log(`Average cache time: ${avgCacheTime.toFixed(3)}ms`);
+        console.log(`Cache is ${(avgDecryptTime / avgCacheTime).toFixed(1)}x faster`);
+      });
+    });
+  });
 });

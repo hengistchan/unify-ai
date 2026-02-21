@@ -1,8 +1,10 @@
 import type Database from 'better-sqlite3';
 import { migration_001 } from './001_initial';
+import { migration_002 } from './002_usage_aggregation';
 
 export const migrations = [
-  { version: 1, sql: migration_001 }
+  { version: 1, sql: migration_001 },
+  { version: 2, sql: migration_002 }
 ];
 
 export function runMigrations(db: Database.Database): void {

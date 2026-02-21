@@ -37,3 +37,5 @@ packages/gui/release/
 # Project config (generated per project)
 unified.json
 .unify-ai/
+
+cc-switch

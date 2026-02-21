@@ -3,7 +3,7 @@
  * Registers all IPC handlers for the main process
  */
 
-import { ipcMain, app } from 'electron';
+import { ipcMain, app, globalShortcut } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { detectTools, openFolderDialog } from './tool-detection';
 import { syncConfig, previewSync, getToolConfig, importConfig, exportConfig } from './sync';
@@ -12,12 +12,15 @@ import {
   registerModelIpcHandlers,
   initializeModelManager,
   cleanupModelManager,
+  getModelManagerForTray,
 } from './model.js';
 import {
   registerProxyIpcHandlers,
   initializeProxyServer,
   cleanupProxyServer,
 } from './proxy.js';
+import { getMainWindow } from '../window.js';
+import { updateProviders as updateTrayProviders } from '../tray.js';
 
 /**
  * Register all IPC handlers
@@ -159,6 +162,23 @@ export async function registerIpcHandlers(): Promise<void> {
   // Register proxy server handlers
   registerProxyIpcHandlers();
 
+  // Register tray update handler
+  ipcMain.handle(IPC_CHANNELS.UPDATE_TRAY_PROVIDERS, async () => {
+    console.log('[IPC] Updating tray providers...');
+    try {
+      const manager = getModelManagerForTray();
+      const providers = await manager.listProviders();
+      const activeProvider = await manager.getActiveProvider();
+      updateTrayProviders(providers, activeProvider?.id || null);
+      console.log('[IPC] Tray providers updated');
+    } catch (error) {
+      console.error('[IPC] Failed to update tray providers:', error);
+    }
+  });
+
+  // Register Quick Switcher shortcut
+  registerQuickSwitcherShortcut();
+
   console.log('[IPC] All handlers registered');
 }
 
@@ -166,9 +186,45 @@ export async function registerIpcHandlers(): Promise<void> {
  * Unregister all IPC handlers (for cleanup)
  */
 export async function unregisterIpcHandlers(): Promise<void> {
+  // Unregister global shortcuts
+  globalShortcut.unregisterAll();
+
   Object.values(IPC_CHANNELS).forEach(channel => {
     ipcMain.removeHandler(channel);
   });
   await cleanupProxyServer();
   await cleanupModelManager();
+}
+
+/**
+ * Register global shortcut for Quick Switcher
+ * Cmd+Shift+M on macOS, Ctrl+Shift+M on Windows/Linux
+ */
+function registerQuickSwitcherShortcut(): void {
+  // Determine the accelerator based on platform
+  const accelerator = process.platform === 'darwin' ? 'CommandOrControl+Shift+M' : 'Ctrl+Shift+M';
+
+  const ret = globalShortcut.register(accelerator, () => {
+    console.log('[QuickSwitcher] Shortcut triggered');
+    const mainWindow = getMainWindow();
+    if (mainWindow) {
+      // Show and focus the window if hidden/minimized
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      if (!mainWindow.isVisible()) {
+        mainWindow.show();
+      }
+      mainWindow.focus();
+
+      // Send event to renderer to show quick switcher
+      mainWindow.webContents.send(IPC_CHANNELS.QUICK_SWITCHER_TRIGGERED);
+    }
+  });
+
+  if (!ret) {
+    console.error('[QuickSwitcher] Failed to register global shortcut:', accelerator);
+  } else {
+    console.log('[QuickSwitcher] Global shortcut registered:', accelerator);
+  }
 }

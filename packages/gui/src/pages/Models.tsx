@@ -22,6 +22,7 @@ export function Models() {
     loadProviders,
     loadActiveProvider,
     selectProvider,
+    initializeTrayListener,
   } = useModelStore();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -31,6 +32,12 @@ export function Models() {
     loadProviders();
     loadActiveProvider();
   }, [loadProviders, loadActiveProvider]);
+
+  // Initialize tray listener
+  useEffect(() => {
+    const cleanup = initializeTrayListener();
+    return cleanup;
+  }, [initializeTrayListener]);
 
   const selectedProvider = providers.find(p => p.id === selectedProviderId);
 

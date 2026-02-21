@@ -6,6 +6,7 @@ import { ModelDatabase } from './Database';
 import { EncryptionManager } from './EncryptionManager';
 import { UsageTracker } from './UsageTracker';
 import { BUILTIN_PROVIDERS } from './ProviderRegistry';
+import { APIKeyValidator, type APIKeyValidationResult } from './APIKeyValidator';
 import type {
   AIProvider,
   APIKey,
@@ -317,6 +318,12 @@ export class ModelManager {
     // Delete related model_configs first (no CASCADE in schema)
     await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
 
+    // Delete associated API keys (no CASCADE in schema)
+    await this.db.run('DELETE FROM api_keys WHERE provider_id = ?', [id]);
+
+    // Invalidate all cached API keys for this provider
+    this.encryption.invalidateProviderCache(id);
+
     const stmt = this.db.getStatement('provider_delete');
     stmt.run(id);
   }
@@ -403,6 +410,9 @@ export class ModelManager {
         ]
       );
 
+      // Invalidate cache when key is updated
+      this.encryption.invalidateCachedAPIKey(input.providerId, keyName);
+
       const apiKey = await this.getAPIKeyRecord(input.providerId, keyName);
       if (!apiKey) {
         throw new Error('Failed to update API key');
@@ -420,6 +430,9 @@ export class ModelManager {
         authTag: encryptedData.authTag || null,
         isValid: 0,
       });
+
+      // Cache the new API key
+      this.encryption.setCachedAPIKey(input.providerId, keyName, input.key);
 
       const apiKey = await this.getAPIKeyRecord(input.providerId, keyName);
       if (!apiKey) {
@@ -455,6 +468,12 @@ export class ModelManager {
 
     const name = keyName || 'primary';
 
+    // Check cache first
+    const cachedKey = this.encryption.getCachedAPIKey(providerId, name);
+    if (cachedKey !== undefined) {
+      return cachedKey;
+    }
+
     const row = await this.db.get<any>(
       'SELECT encrypted_key, iv, auth_tag FROM api_keys WHERE provider_id = ? AND key_name = ?',
       [providerId, name]
@@ -470,7 +489,40 @@ export class ModelManager {
       authTag: row.auth_tag || undefined,
     };
 
-    return this.encryption.decrypt(encryptedData);
+    const decrypted = await this.encryption.decrypt(encryptedData);
+
+    // Cache the decrypted key for future use
+    this.encryption.setCachedAPIKey(providerId, name, decrypted);
+
+    return decrypted;
+  }
+
+  /**
+   * Validate an API key without saving it
+   * This method validates the key by making an actual API call
+   *
+   * @param providerId - Provider ID
+   * @param apiKey - The API key to validate
+   * @param options - Validation options (timeout, custom baseUrl)
+   * @returns Validation result with detailed error info
+   */
+  async validateAPIKeyWithoutSaving(
+    providerId: string,
+    apiKey: string,
+    options?: { timeout?: number; baseUrl?: string }
+  ): Promise<APIKeyValidationResult> {
+    await this.ensureInitialized();
+
+    const provider = await this.getProvider(providerId);
+    if (!provider) {
+      return {
+        valid: false,
+        error: `Provider with ID '${providerId}' not found`,
+        errorType: 'invalid_key',
+      };
+    }
+
+    return APIKeyValidator.validate(providerId, apiKey, provider, options);
   }
 
   /**
@@ -491,30 +543,18 @@ export class ModelManager {
       return false;
     }
 
-    // MVP: Basic validation - just check if key exists and has reasonable format
-    // TODO: Make actual API calls to verify key validity
-    let isValid: boolean;
-
     try {
-      // Simple format validation for now
-      if (providerId === 'openai') {
-        isValid = apiKey.startsWith('sk-') && apiKey.length > 20;
-      } else if (providerId === 'anthropic') {
-        isValid = apiKey.length > 20;
-      } else {
-        // Generic validation - key should be at least 10 characters
-        isValid = apiKey.length >= 10;
-      }
+      const result = await APIKeyValidator.validate(providerId, apiKey, provider);
 
       // Update validation status in database
       await this.db.run(
         `UPDATE api_keys
          SET is_valid = ?, last_validated = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
          WHERE provider_id = ? AND key_name = 'primary'`,
-        [isValid ? 1 : 0, providerId]
+        [result.valid ? 1 : 0, providerId]
       );
 
-      return isValid;
+      return result.valid;
     } catch (_error) {
       // Mark as invalid on error
       await this.db.run(
@@ -542,6 +582,9 @@ export class ModelManager {
       'DELETE FROM api_keys WHERE provider_id = ? AND key_name = ?',
       [providerId, name]
     );
+
+    // Invalidate cache when key is deleted
+    this.encryption.invalidateCachedAPIKey(providerId, name);
   }
 
   /**

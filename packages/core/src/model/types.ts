@@ -435,3 +435,139 @@ export interface RequestLog {
   /** Associated usage log ID */
   usageLogId?: number;
 }
+
+// ============================================
+// Usage Aggregation Types
+// ============================================
+
+/**
+ * Daily usage summary entry
+ */
+export interface DailyUsageSummary {
+  /** Summary ID */
+  id: number;
+  /** Provider ID */
+  providerId: string;
+  /** Model used */
+  model: string;
+  /** Date (ISO format: YYYY-MM-DD) */
+  date: string;
+  /** Total number of requests */
+  totalRequests: number;
+  /** Total input tokens */
+  inputTokens: number;
+  /** Total output tokens */
+  outputTokens: number;
+  /** Total tokens */
+  totalTokens: number;
+  /** Total cost in USD */
+  totalCost: number;
+  /** Creation timestamp */
+  createdAt: string;
+  /** Last update timestamp */
+  updatedAt: string;
+}
+
+/**
+ * Weekly usage summary entry
+ */
+export interface WeeklyUsageSummary {
+  /** Summary ID */
+  id: number;
+  /** Provider ID */
+  providerId: string;
+  /** Model used */
+  model: string;
+  /** ISO year */
+  year: number;
+  /** ISO week number (1-53) */
+  week: number;
+  /** Total number of requests */
+  totalRequests: number;
+  /** Total input tokens */
+  inputTokens: number;
+  /** Total output tokens */
+  outputTokens: number;
+  /** Total tokens */
+  totalTokens: number;
+  /** Total cost in USD */
+  totalCost: number;
+  /** Creation timestamp */
+  createdAt: string;
+  /** Last update timestamp */
+  updatedAt: string;
+}
+
+/**
+ * Aggregation type
+ */
+export type AggregationType = 'daily' | 'weekly';
+
+/**
+ * Aggregation status
+ */
+export type AggregationStatus = 'pending' | 'completed' | 'failed';
+
+/**
+ * Aggregation log entry
+ */
+export interface AggregationLog {
+  /** Log ID */
+  id: number;
+  /** Aggregation type */
+  aggregationType: AggregationType;
+  /** Date that was aggregated */
+  aggregationDate: string;
+  /** Status */
+  status: AggregationStatus;
+  /** When aggregation started */
+  startedAt?: string;
+  /** When aggregation completed */
+  completedAt?: string;
+  /** Error message if failed */
+  errorMessage?: string;
+  /** Number of retry attempts */
+  retryCount: number;
+  /** Creation timestamp */
+  createdAt: string;
+}
+
+/**
+ * Options for aggregation tasks
+ */
+export interface AggregationOptions {
+  /** Maximum retry attempts for failed aggregations */
+  maxRetries?: number;
+  /** Delay between retries in milliseconds */
+  retryDelayMs?: number;
+  /** Whether to run aggregation in background */
+  runInBackground?: boolean;
+  /** Timezone for date calculations (IANA timezone string) */
+  timezone?: string;
+}
+
+/**
+ * Aggregation result
+ */
+export interface AggregationResult {
+  /** Aggregation type */
+  type: AggregationType;
+  /** Date aggregated */
+  date: string;
+  /** Number of records processed */
+  recordsProcessed: number;
+  /** Whether aggregation was successful */
+  success: boolean;
+  /** Error message if failed */
+  error?: string;
+}
+
+/**
+ * ISO week representation
+ */
+export interface ISOWeek {
+  /** ISO year */
+  year: number;
+  /** ISO week number (1-53) */
+  week: number;
+}

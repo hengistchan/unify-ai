@@ -13,6 +13,7 @@ import type {
   SetAPIKeyInput,
   LogUsageInput,
   UsageLogFilters,
+  ValidationOptions,
 } from '@unify-ai/core/model';
 
 let modelManager: ModelManager | null = null;
@@ -39,6 +40,13 @@ function getModelManager(): ModelManager {
     throw new Error('ModelManager not initialized. Call initializeModelManager() first.');
   }
   return modelManager;
+}
+
+/**
+ * Get ModelManager instance (exported for tray and other main process modules)
+ */
+export function getModelManagerForTray(): ModelManager {
+  return getModelManager();
 }
 
 /**
@@ -141,6 +149,18 @@ export function registerModelIpcHandlers(): void {
     console.log('[Model IPC] API key validation result:', isValid);
     return isValid;
   });
+
+  ipcMain.handle(
+    IPC_CHANNELS.VALIDATE_API_KEY_WITHOUT_SAVING,
+    async (_event, providerId: string, apiKey: string, options?: ValidationOptions) => {
+      // Don't log API key - security concern
+      console.log('[Model IPC] Validating API key without saving for provider:', providerId);
+      const manager = getModelManager();
+      const result = await manager.validateAPIKeyWithoutSaving(providerId, apiKey, options);
+      console.log('[Model IPC] API key validation result:', result.valid, result.errorType || 'ok');
+      return result;
+    }
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.DELETE_API_KEY,

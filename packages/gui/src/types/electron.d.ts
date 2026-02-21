@@ -17,6 +17,7 @@ import type {
   ProxyStats,
   ProxyStatus,
   RequestLog,
+  APIKeyValidationResult,
 } from '@unify-ai/core/model';
 
 export interface ElectronAPI {
@@ -47,6 +48,11 @@ export interface ElectronAPI {
     setAPIKey: (input: SetAPIKeyInput) => Promise<APIKey>;
     getAPIKey: (providerId: string, keyName?: string) => Promise<string | null>;
     validateAPIKey: (providerId: string) => Promise<boolean>;
+    validateAPIKeyWithoutSaving: (
+      providerId: string,
+      apiKey: string,
+      options?: { timeout?: number; baseUrl?: string }
+    ) => Promise<APIKeyValidationResult>;
     deleteAPIKey: (providerId: string, keyName?: string) => Promise<void>;
     hasValidAPIKey: (providerId: string) => Promise<boolean>;
 
@@ -74,6 +80,17 @@ export interface ElectronAPI {
     getProxyStats: () => Promise<ProxyStats>;
     getRequestLogs: (limit?: number) => Promise<RequestLog[]>;
     clearRequestLogs: () => Promise<{ success: boolean }>;
+  };
+
+  // Quick Switcher API
+  quickSwitcher: {
+    onTriggered: (callback: () => void) => () => void;
+  };
+
+  // Tray API
+  tray: {
+    updateProviders: () => Promise<void>;
+    onProviderChanged: (callback: (providerId: string) => void) => () => void;
   };
 }
 

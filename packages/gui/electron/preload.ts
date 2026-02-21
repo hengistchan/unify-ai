@@ -249,6 +249,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke(IPC_CHANNELS.GET_API_KEY, providerId, keyName),
     validateAPIKey: (providerId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_API_KEY, providerId),
+    validateAPIKeyWithoutSaving: (
+      providerId: string,
+      apiKey: string,
+      options?: { timeout?: number; baseUrl?: string }
+    ) =>
+      ipcRenderer.invoke(
+        IPC_CHANNELS.VALIDATE_API_KEY_WITHOUT_SAVING,
+        providerId,
+        apiKey,
+        options
+      ),
     deleteAPIKey: (providerId: string, keyName?: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.DELETE_API_KEY, providerId, keyName),
     hasValidAPIKey: (providerId: string) =>
@@ -285,6 +296,46 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProxyStats: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PROXY_STATS),
     getRequestLogs: (limit?: number) => ipcRenderer.invoke(IPC_CHANNELS.GET_REQUEST_LOGS, limit),
     clearRequestLogs: () => ipcRenderer.invoke(IPC_CHANNELS.CLEAR_REQUEST_LOGS),
+  },
+
+  // ============================================
+  // Quick Switcher API
+  // ============================================
+
+  quickSwitcher: {
+    onTriggered: (callback: () => void) => {
+      const handler = () => {
+        callback();
+      };
+      ipcRenderer.on(IPC_CHANNELS.QUICK_SWITCHER_TRIGGERED, handler);
+
+      // Return cleanup function
+      return () => {
+        ipcRenderer.removeListener(IPC_CHANNELS.QUICK_SWITCHER_TRIGGERED, handler);
+      };
+    },
+  },
+
+  // ============================================
+  // Tray API
+  // ============================================
+
+  tray: {
+    // Update tray providers list
+    updateProviders: () => ipcRenderer.invoke(IPC_CHANNELS.UPDATE_TRAY_PROVIDERS),
+
+    // Listen for provider changes from tray
+    onProviderChanged: (callback: (providerId: string) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, providerId: string) => {
+        callback(providerId);
+      };
+      ipcRenderer.on(IPC_CHANNELS.TRAY_PROVIDER_CHANGED, handler);
+
+      // Return cleanup function
+      return () => {
+        ipcRenderer.removeListener(IPC_CHANNELS.TRAY_PROVIDER_CHANGED, handler);
+      };
+    },
   },
 });
 

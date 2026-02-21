@@ -31,12 +31,16 @@ export type {
   RequestLog,
 } from './types';
 
+// Validation types
+export type { APIKeyValidationResult, ValidationOptions } from './APIKeyValidator';
+
 // Core classes
 export { ModelManager } from './ModelManager';
 export { ModelDatabase } from './Database';
 export { EncryptionManager } from './EncryptionManager';
 export { UsageTracker } from './UsageTracker';
 export { ProxyServer } from './ProxyServer';
+export { APIKeyValidator } from './APIKeyValidator';
 
 // Built-in providers
 export { BUILTIN_PROVIDERS } from './ProviderRegistry';

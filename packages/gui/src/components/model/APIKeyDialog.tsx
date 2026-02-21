@@ -1,12 +1,13 @@
 /**
  * API Key Dialog
- * Modal for managing API keys
+ * Modal for managing API keys with validation before save
  */
 
 import { useState } from 'react';
 import { useModelStore } from '../../stores/modelStore';
 import { Modal, Button } from '../common';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import type { APIKeyValidationResult } from '@unify-ai/core/model';
 
 interface APIKeyDialogProps {
   open: boolean;
@@ -16,42 +17,49 @@ interface APIKeyDialogProps {
 }
 
 export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKeyDialogProps) {
-  const { setAPIKey, validateAPIKey } = useModelStore();
+  const { setAPIKey, validateAPIKeyWithoutSaving } = useModelStore();
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [validating, setValidating] = useState(false);
-  const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
+  const [validationResult, setValidationResult] = useState<APIKeyValidationResult | null>(null);
 
+  /**
+   * Validate API key without saving
+   * Makes actual API call to verify the key works
+   */
   const handleValidate = async () => {
     if (!apiKey.trim()) return;
 
     setValidating(true);
-    try {
-      // First save the key
-      await setAPIKey({
-        providerId,
-        key: apiKey.trim(),
-      });
+    setValidationResult(null);
 
-      // Then validate
-      const isValid = await validateAPIKey(providerId);
-      setValidationStatus(isValid ? 'valid' : 'invalid');
+    try {
+      const result = await validateAPIKeyWithoutSaving(providerId, apiKey.trim());
+      setValidationResult(result);
     } catch (error) {
       console.error('Validation failed:', error);
-      setValidationStatus('invalid');
+      setValidationResult({
+        valid: false,
+        error: error instanceof Error ? error.message : 'Validation failed',
+        errorType: 'unknown',
+      });
     } finally {
       setValidating(false);
     }
   };
 
+  /**
+   * Save API key
+   * Only called after successful validation or when user explicitly chooses to save
+   */
   const handleSave = async () => {
     if (!apiKey.trim()) {
       onClose();
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
       await setAPIKey({
         providerId,
@@ -60,17 +68,87 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
       handleClose();
     } catch (error) {
       console.error('Failed to save API key:', error);
-      alert(error instanceof Error ? error.message : 'Failed to save API key');
+      setValidationResult({
+        valid: false,
+        error: error instanceof Error ? error.message : 'Failed to save API key',
+        errorType: 'unknown',
+      });
     } finally {
-      setLoading(false);
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Validate then save if valid
+   * This is the recommended flow for users
+   */
+  const handleValidateAndSave = async () => {
+    if (!apiKey.trim()) return;
+
+    setValidating(true);
+    setValidationResult(null);
+
+    try {
+      const result = await validateAPIKeyWithoutSaving(providerId, apiKey.trim());
+      setValidationResult(result);
+
+      if (result.valid) {
+        // Key is valid, save it
+        setSaving(true);
+        try {
+          await setAPIKey({
+            providerId,
+            key: apiKey.trim(),
+          });
+          handleClose();
+        } catch (error) {
+          console.error('Failed to save API key:', error);
+          setValidationResult({
+            valid: false,
+            error: error instanceof Error ? error.message : 'Failed to save API key',
+            errorType: 'unknown',
+          });
+        } finally {
+          setSaving(false);
+        }
+      }
+    } catch (error) {
+      console.error('Validation failed:', error);
+      setValidationResult({
+        valid: false,
+        error: error instanceof Error ? error.message : 'Validation failed',
+        errorType: 'unknown',
+      });
+    } finally {
+      setValidating(false);
     }
   };
 
   const handleClose = () => {
     setApiKey('');
     setShowKey(false);
-    setValidationStatus('idle');
+    setValidationResult(null);
     onClose();
+  };
+
+  /**
+   * Get user-friendly error message
+   */
+  const getErrorMessage = (result: ValidationResult): string => {
+    switch (result.errorType) {
+      case 'invalid_key':
+        return 'Invalid API key. Please check and try again.';
+      case 'insufficient_quota':
+        return 'API key is valid but quota exceeded. Please check your billing.';
+      case 'rate_limited':
+        return 'Rate limited. Please try again later.';
+      case 'network_error':
+        return 'Network error. Please check your internet connection.';
+      case 'timeout':
+        return 'Validation timed out. Please try again.';
+      default:
+        return result.error || 'Validation failed. Please try again.';
+    }
   };
 
   if (!open) return null;
@@ -78,11 +156,13 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
   return (
     <Modal isOpen={open} onClose={handleClose} title={`API Key for ${providerName}`}>
       <div className="space-y-4">
+        {/* Security notice */}
         <div className="flex items-center gap-2 rounded bg-success-muted p-3 text-sm">
-          <Lock className="h-4 w-4 text-success" />
+          <Lock className="h-4 w-4 text-success flex-shrink-0" />
           <span className="text-success">API keys are encrypted and stored securely</span>
         </div>
 
+        {/* API Key input */}
         <div>
           <label className="block text-sm font-medium">API Key</label>
           <div className="relative mt-1">
@@ -91,10 +171,11 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
               value={apiKey}
               onChange={(e) => {
                 setApiKey(e.target.value);
-                setValidationStatus('idle');
+                setValidationResult(null);
               }}
-              className="w-full rounded border border-border bg-surface px-3 py-2 pr-20 font-mono text-sm"
+              className="w-full rounded border border-border bg-surface px-3 py-2 pr-20 font-mono text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="Enter your API key"
+              autoFocus
             />
             <button
               type="button"
@@ -106,32 +187,68 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleValidate}
-            loading={validating}
-            disabled={!apiKey.trim()}
+        {/* Validation result */}
+        {validationResult && (
+          <div
+            className={`flex items-start gap-2 rounded p-3 text-sm ${
+              validationResult.valid
+                ? 'bg-success-muted text-success'
+                : 'bg-error-muted text-error'
+            }`}
           >
-            Validate
-          </Button>
-          {validationStatus === 'valid' && (
-            <span className="text-sm text-success">✓ Valid</span>
-          )}
-          {validationStatus === 'invalid' && (
-            <span className="text-sm text-error">✗ Invalid</span>
-          )}
+            {validationResult.valid ? (
+              <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            )}
+            <span>
+              {validationResult.valid
+                ? 'API key is valid! Click Save to store it.'
+                : getErrorMessage(validationResult)}
+            </span>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleValidate}
+              loading={validating}
+              disabled={!apiKey.trim() || saving}
+            >
+              {validating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Validating...
+                </>
+              ) : (
+                'Test Key'
+              )}
+            </Button>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleClose} disabled={saving || validating}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleValidateAndSave}
+              loading={validating || saving}
+              disabled={!apiKey.trim()}
+            >
+              {validating ? 'Validating...' : saving ? 'Saving...' : 'Validate & Save'}
+            </Button>
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} loading={loading}>
-            Save
-          </Button>
-        </div>
+        {/* Help text */}
+        <p className="text-xs text-text-secondary">
+          Click "Test Key" to validate without saving, or "Validate & Save" to verify and store
+          your key in one step.
+        </p>
       </div>
     </Modal>
   );

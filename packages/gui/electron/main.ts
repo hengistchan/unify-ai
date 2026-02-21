@@ -7,6 +7,8 @@ import { app, BrowserWindow, nativeImage } from 'electron';
 import { createWindow, getMainWindow } from './window.js';
 import { createApplicationMenu } from './menu.js';
 import { registerIpcHandlers, unregisterIpcHandlers } from './ipc/index.js';
+import { initializeTray, destroyTray } from './tray.js';
+import { getModelManagerForTray } from './ipc/model.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -104,11 +106,45 @@ async function initializeApp(): Promise<void> {
   createApplicationMenu();
   console.log('[Main] Menu created');
 
-  // Register IPC handlers (now async)
+  // Register IPC handlers (this also initializes ModelManager)
   await registerIpcHandlers();
   console.log('[Main] IPC handlers registered');
 
+  // Initialize system tray with providers
+  await initializeTrayWithProviders();
+  console.log('[Main] Tray initialized');
+
   console.log('[Main] Application ready\n');
+}
+
+/**
+ * Initialize tray with current providers
+ */
+async function initializeTrayWithProviders(): Promise<void> {
+  try {
+    const modelManager = getModelManagerForTray();
+    const providers = await modelManager.listProviders();
+    const activeProvider = await modelManager.getActiveProvider();
+
+    initializeTray(
+      providers,
+      activeProvider?.id || null,
+      async (providerId: string) => {
+        // Handle provider switch from tray
+        console.log('[Main] Provider switch requested from tray:', providerId);
+
+        // Notify renderer about the change
+        const mainWindow = getMainWindow();
+        if (mainWindow) {
+          mainWindow.webContents.send('tray-provider-changed', providerId);
+        }
+      }
+    );
+  } catch (error) {
+    console.error('[Main] Failed to initialize tray with providers:', error);
+    // Initialize tray with empty state
+    initializeTray([], null);
+  }
 }
 
 // App lifecycle events
@@ -132,6 +168,7 @@ app.on('window-all-closed', () => {
 
 // Cleanup before quit
 app.on('before-quit', () => {
+  destroyTray();
   unregisterIpcHandlers();
 });
 

@@ -33,6 +33,9 @@ export type {
   ProviderScope,
   HybridProviderFields,
   CurrentProviderResult,
+  // Provider backfill types
+  ProviderBackup,
+  SwitchProviderResult,
 } from './types';
 
 // Validation types

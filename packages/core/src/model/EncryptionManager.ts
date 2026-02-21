@@ -61,7 +61,15 @@ class APIKeyCache {
   /**
    * Generate cache key from provider ID and key name
    */
-  static createCacheKey(providerId: string, keyName: string): string {
+  static createCacheKey(providerId: string, keyName: string): string;
+  /**
+   * Generate cache key from provider ID, key name, and tool ID
+   */
+  static createCacheKey(providerId: string, keyName: string, toolId: string): string;
+  static createCacheKey(providerId: string, keyName: string, toolId?: string): string {
+    if (toolId !== undefined && toolId !== 'global') {
+      return `${providerId}:${toolId}:${keyName}`;
+    }
     return `${providerId}:${keyName}`;
   }
 
@@ -123,11 +131,16 @@ class APIKeyCache {
 
   /**
    * Delete all keys for a specific provider
+   * @param providerId - Provider ID
+   * @param toolId - Optional tool ID to further filter
    */
-  deleteByProvider(providerId: string): number {
+  deleteByProvider(providerId: string, toolId?: string): number {
     const keysToDelete: string[] = [];
+    const prefix = toolId !== undefined
+      ? `${providerId}:${toolId}:`
+      : `${providerId}:`;
     for (const key of Array.from(this.cache.keys())) {
-      if (key.startsWith(`${providerId}:`)) {
+      if (key.startsWith(prefix)) {
         keysToDelete.push(key);
       }
     }
@@ -343,10 +356,13 @@ export class EncryptionManager {
    *
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
+   * @param toolId - Tool ID (default: 'global')
    * @returns Cached API key or undefined if not in cache
    */
-  getCachedAPIKey(providerId: string, keyName: string = 'primary'): string | undefined {
-    const cacheKey = APIKeyCache.createCacheKey(providerId, keyName);
+  getCachedAPIKey(providerId: string, keyName?: string, toolId?: string): string | undefined {
+    const name = keyName ?? 'primary';
+    const effectiveToolId = toolId ?? 'global';
+    const cacheKey = APIKeyCache.createCacheKey(providerId, name, effectiveToolId);
     return this.cache.get(cacheKey);
   }
 
@@ -356,19 +372,30 @@ export class EncryptionManager {
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
    * @param apiKey - The decrypted API key to cache
+   * @param toolId - Tool ID (default: 'global')
    */
-  setCachedAPIKey(providerId: string, keyName: string, apiKey: string): void;
-  setCachedAPIKey(providerId: string, apiKey: string): void;
-  setCachedAPIKey(providerId: string, keyNameOrApiKey: string, apiKey?: string): void {
-    if (apiKey === undefined) {
-      // Called as setCachedAPIKey(providerId, apiKey)
-      const keyName = 'primary';
-      const cacheKey = APIKeyCache.createCacheKey(providerId, keyName);
-      this.cache.set(cacheKey, keyNameOrApiKey);
-    } else {
-      // Called as setCachedAPIKey(providerId, keyName, apiKey)
-      const cacheKey = APIKeyCache.createCacheKey(providerId, keyNameOrApiKey);
+  setCachedAPIKey(
+    providerId: string,
+    keyNameOrApiKey: string,
+    apiKeyOrToolId?: string | undefined,
+    apiKey?: string
+  ): void {
+    // Handle overloads:
+    // setCachedAPIKey(providerId, apiKey)
+    // setCachedAPIKey(providerId, keyName, apiKey)
+    // setCachedAPIKey(providerId, keyName, toolId, apiKey)
+    if (apiKey !== undefined) {
+      // setCachedAPIKey(providerId, keyName, toolId, apiKey)
+      const cacheKey = APIKeyCache.createCacheKey(providerId, keyNameOrApiKey, apiKeyOrToolId as string);
       this.cache.set(cacheKey, apiKey);
+    } else if (apiKeyOrToolId !== undefined) {
+      // setCachedAPIKey(providerId, keyName, apiKey)
+      const cacheKey = APIKeyCache.createCacheKey(providerId, keyNameOrApiKey);
+      this.cache.set(cacheKey, apiKeyOrToolId);
+    } else {
+      // setCachedAPIKey(providerId, apiKey)
+      const cacheKey = APIKeyCache.createCacheKey(providerId, 'primary');
+      this.cache.set(cacheKey, keyNameOrApiKey);
     }
   }
 
@@ -379,9 +406,12 @@ export class EncryptionManager {
    *
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
+   * @param toolId - Tool ID (default: 'global')
    */
-  invalidateCachedAPIKey(providerId: string, keyName: string = 'primary'): void {
-    const cacheKey = APIKeyCache.createCacheKey(providerId, keyName);
+  invalidateCachedAPIKey(providerId: string, keyName?: string, toolId?: string): void {
+    const name = keyName ?? 'primary';
+    const effectiveToolId = toolId ?? 'global';
+    const cacheKey = APIKeyCache.createCacheKey(providerId, name, effectiveToolId);
     this.cache.delete(cacheKey);
   }
 
@@ -389,10 +419,11 @@ export class EncryptionManager {
    * Invalidate all cached API keys for a provider
    *
    * @param providerId - Provider ID
+   * @param toolId - Optional tool ID to further filter
    * @returns Number of cache entries removed
    */
-  invalidateProviderCache(providerId: string): number {
-    return this.cache.deleteByProvider(providerId);
+  invalidateProviderCache(providerId: string, toolId?: string): number {
+    return this.cache.deleteByProvider(providerId, toolId);
   }
 
   /**

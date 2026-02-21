@@ -18,8 +18,10 @@ import type {
   ModelExportData,
   ModelInfo,
   ModelManagerOptions,
+  ProviderBackup,
   ProviderScope,
   SetAPIKeyInput,
+  SwitchProviderResult,
   UpdateProviderInput,
   UsageLog,
   UsageLogFilters,
@@ -361,8 +363,8 @@ export class ModelManager {
       [id, effectiveToolId]
     );
 
-    // Invalidate all cached API keys for this provider
-    this.encryption.invalidateProviderCache(id);
+    // Invalidate all cached API keys for this provider (with toolId)
+    this.encryption.invalidateProviderCache(id, effectiveToolId);
 
     const stmt = this.db.getStatement('provider_delete');
     stmt.run(id, effectiveToolId);
@@ -415,14 +417,15 @@ export class ModelManager {
 
   /**
    * Set an API key for a provider
-   * @param input - API key input
-   * @param toolId - Optional tool ID (defaults to 'global')
+   * @param input - API key input (can include toolId)
+   * @param toolId - Optional tool ID (defaults to 'global', overridden by input.toolId)
    * @returns API key metadata (not the actual key)
    */
   async setAPIKey(input: SetAPIKeyInput, toolId?: string): Promise<APIKey> {
     await this.ensureInitialized();
 
-    const effectiveToolId = toolId ?? 'global';
+    // Prefer input.toolId, then parameter toolId, then default to 'global'
+    const effectiveToolId = input.toolId ?? toolId ?? 'global';
 
     // Verify provider exists
     const provider = await this.getProvider(input.providerId, effectiveToolId);
@@ -456,8 +459,8 @@ export class ModelManager {
         ]
       );
 
-      // Invalidate cache when key is updated
-      this.encryption.invalidateCachedAPIKey(input.providerId, keyName);
+      // Invalidate cache when key is updated (with toolId)
+      this.encryption.invalidateCachedAPIKey(input.providerId, keyName, effectiveToolId);
 
       const apiKey = await this.getAPIKeyRecord(input.providerId, keyName, effectiveToolId);
       if (!apiKey) {
@@ -478,10 +481,10 @@ export class ModelManager {
         isValid: 0,
       });
 
-      // Cache the new API key
-      this.encryption.setCachedAPIKey(input.providerId, keyName, input.key);
+      // Cache the new API key with toolId
+      this.encryption.setCachedAPIKey(input.providerId, keyName, effectiveToolId, input.key);
 
-      const apiKey = await this.getAPIKeyRecord(input.providerId, keyName);
+      const apiKey = await this.getAPIKeyRecord(input.providerId, keyName, effectiveToolId);
       if (!apiKey) {
         throw new Error('Failed to create API key');
       }
@@ -519,8 +522,8 @@ export class ModelManager {
     const name = keyName || 'primary';
     const effectiveToolId = toolId ?? 'global';
 
-    // Check cache first
-    const cachedKey = this.encryption.getCachedAPIKey(providerId, name);
+    // Check cache first (with toolId)
+    const cachedKey = this.encryption.getCachedAPIKey(providerId, name, effectiveToolId);
     if (cachedKey !== undefined) {
       return cachedKey;
     }
@@ -542,8 +545,8 @@ export class ModelManager {
 
     const decrypted = await this.encryption.decrypt(encryptedData);
 
-    // Cache the decrypted key for future use
-    this.encryption.setCachedAPIKey(providerId, name, decrypted);
+    // Cache the decrypted key for future use (with toolId)
+    this.encryption.setCachedAPIKey(providerId, name, effectiveToolId, decrypted);
 
     return decrypted;
   }
@@ -639,8 +642,8 @@ export class ModelManager {
       [providerId, effectiveToolId, name]
     );
 
-    // Invalidate cache when key is deleted
-    this.encryption.invalidateCachedAPIKey(providerId, name);
+    // Invalidate cache when key is deleted (with toolId)
+    this.encryption.invalidateCachedAPIKey(providerId, name, effectiveToolId);
   }
 
   /**
@@ -1031,8 +1034,8 @@ export class ModelManager {
    * Get API key with priority logic for hybrid tool isolation
    *
    * Priority order (when toolId is provided):
-   * 1. Tool-specific provider's API key
-   * 2. Global provider's API key (fallback)
+   * 1. Tool-specific API key for the provider (with provider_tool_id = toolId)
+   * 2. Global API key for the provider (fallback, with provider_tool_id = 'global')
    *
    * @param providerId - Provider ID
    * @param keyName - Key name (default: 'primary')
@@ -1048,17 +1051,16 @@ export class ModelManager {
 
     const name = keyName || 'primary';
 
-    // If toolId provided, try tool-specific provider's API key first
-    if (toolId) {
-      const toolProvider = await this.getToolCurrentProvider(toolId);
-      if (toolProvider && toolProvider.id === providerId) {
-        const key = await this.getAPIKey(providerId, name);
-        if (key) return key;
+    // If toolId provided, try tool-specific API key first
+    if (toolId && toolId !== 'global') {
+      const toolKey = await this.getAPIKey(providerId, name, toolId);
+      if (toolKey) {
+        return toolKey;
       }
     }
 
-    // Fall back to regular getAPIKey (global provider)
-    return this.getAPIKey(providerId, name);
+    // Fall back to global API key
+    return this.getAPIKey(providerId, name, 'global');
   }
 
   /**
@@ -1196,6 +1198,286 @@ export class ModelManager {
    */
   async createToolProvider(toolId: string, input: CreateProviderInput): Promise<AIProvider> {
     return this.createProvider({ ...input, toolId });
+  }
+
+  // ============================================
+  // Provider Backfill Mechanism
+  // ============================================
+
+  /**
+   * Key for storing backup in provider's meta field
+   */
+  private static readonly BACKUP_META_KEY = '_providerSwitchBackup';
+
+  /**
+   * Backup the current provider configuration before switching
+   * Stores backup data in the new provider's meta field
+   *
+   * @param newProviderId - The ID of the new provider to switch to
+   * @param newProviderToolId - The tool ID of the new provider (defaults to 'global')
+   * @returns The backup data that was created, or null if no current provider
+   */
+  async backupProviderConfig(
+    newProviderId: string,
+    newProviderToolId?: string
+  ): Promise<ProviderBackup | null> {
+    await this.ensureInitialized();
+
+    const newToolId = newProviderToolId ?? 'global';
+
+    // Get the current provider based on scope
+    const currentResult = await this.getCurrentProvider(newToolId === 'global' ? undefined : newToolId);
+
+    if (!currentResult) {
+      // No current provider to backup
+      return null;
+    }
+
+    const backup: ProviderBackup = {
+      previousProviderId: currentResult.provider.id,
+      previousConfig: currentResult.provider.config,
+      previousScope: currentResult.scope,
+      previousToolId: currentResult.toolId,
+      backupTimestamp: new Date().toISOString(),
+    };
+
+    // Store backup in the new provider's meta field
+    await this.updateProviderMeta(newProviderId, newToolId, {
+      [ModelManager.BACKUP_META_KEY]: backup,
+    });
+
+    return backup;
+  }
+
+  /**
+   * Restore provider configuration from backup
+   *
+   * @param providerId - The provider ID that has the backup
+   * @param toolId - The tool ID of the provider (defaults to 'global')
+   * @returns True if restoration was successful, false if no backup found
+   */
+  async restoreProviderConfig(providerId: string, toolId?: string): Promise<boolean> {
+    await this.ensureInitialized();
+
+    const effectiveToolId = toolId ?? 'global';
+
+    // Get the backup from the provider's meta
+    const row = await this.db.get<{ meta: string }>(
+      'SELECT meta FROM providers WHERE id = ? AND tool_id = ?',
+      [providerId, effectiveToolId]
+    );
+
+    if (!row || !row.meta) {
+      return false;
+    }
+
+    let meta: Record<string, unknown>;
+    try {
+      meta = JSON.parse(row.meta);
+    } catch {
+      return false;
+    }
+
+    const backup = meta[ModelManager.BACKUP_META_KEY] as ProviderBackup | undefined;
+    if (!backup) {
+      return false;
+    }
+
+    // Restore the previous provider's current status
+    if (backup.previousScope === 'global') {
+      // Restore global default provider
+      await this.setGlobalDefaultProvider(backup.previousProviderId);
+    } else {
+      // Restore tool-specific provider
+      if (backup.previousToolId) {
+        await this.setToolOverrideProvider(backup.previousToolId, backup.previousProviderId);
+      }
+    }
+
+    // Clear the backup after restoration
+    await this.clearBackupConfig(providerId, effectiveToolId);
+
+    return true;
+  }
+
+  /**
+   * Clear the backup configuration from a provider's meta field
+   *
+   * @param providerId - The provider ID
+   * @param toolId - The tool ID of the provider (defaults to 'global')
+   */
+  async clearBackupConfig(providerId: string, toolId?: string): Promise<void> {
+    await this.ensureInitialized();
+
+    const effectiveToolId = toolId ?? 'global';
+
+    // Get current meta
+    const row = await this.db.get<{ meta: string }>(
+      'SELECT meta FROM providers WHERE id = ? AND tool_id = ?',
+      [providerId, effectiveToolId]
+    );
+
+    if (!row) {
+      return;
+    }
+
+    let meta: Record<string, unknown>;
+    try {
+      meta = JSON.parse(row.meta || '{}');
+    } catch {
+      meta = {};
+    }
+
+    // Remove backup key
+    delete meta[ModelManager.BACKUP_META_KEY];
+
+    // Update meta
+    await this.db.run(
+      'UPDATE providers SET meta = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?',
+      [JSON.stringify(meta), providerId, effectiveToolId]
+    );
+  }
+
+  /**
+   * Get the backup data from a provider's meta field
+   *
+   * @param providerId - The provider ID
+   * @param toolId - The tool ID of the provider (defaults to 'global')
+   * @returns The backup data or null if not found
+   */
+  async getProviderBackup(providerId: string, toolId?: string): Promise<ProviderBackup | null> {
+    await this.ensureInitialized();
+
+    const effectiveToolId = toolId ?? 'global';
+
+    const row = await this.db.get<{ meta: string }>(
+      'SELECT meta FROM providers WHERE id = ? AND tool_id = ?',
+      [providerId, effectiveToolId]
+    );
+
+    if (!row || !row.meta) {
+      return null;
+    }
+
+    try {
+      const meta = JSON.parse(row.meta);
+      const backup = meta[ModelManager.BACKUP_META_KEY];
+      return backup as ProviderBackup || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Switch provider with backfill mechanism
+   * Creates a backup before switching and restores on failure
+   *
+   * @param newProviderId - The ID of the new provider to switch to
+   * @param options - Switch options
+   * @param options.toolId - Tool ID for tool-specific switch (defaults to global)
+   * @param options.validateSwitch - Optional async function to validate the switch
+   * @returns Result of the switch operation
+   */
+  async switchProviderWithBackfill(
+    newProviderId: string,
+    options?: {
+      toolId?: string;
+      validateSwitch?: (provider: AIProvider) => Promise<boolean>;
+    }
+  ): Promise<SwitchProviderResult> {
+    await this.ensureInitialized();
+
+    const toolId = options?.toolId ?? 'global';
+    const validateSwitch = options?.validateSwitch;
+    let backupCreated = false;
+    let backupRestored = false;
+
+    try {
+      // Step 1: Backup current configuration
+      const backup = await this.backupProviderConfig(newProviderId, toolId);
+      backupCreated = backup !== null;
+
+      // Step 2: Perform the switch
+      if (toolId === 'global') {
+        await this.setGlobalDefaultProvider(newProviderId);
+      } else {
+        await this.setToolOverrideProvider(toolId, newProviderId);
+      }
+
+      // Step 3: Validate the switch if validator provided
+      if (validateSwitch) {
+        const newProvider = await this.getProvider(newProviderId, toolId);
+        if (!newProvider) {
+          throw new Error(`Provider '${newProviderId}' not found after switch`);
+        }
+
+        const isValid = await validateSwitch(newProvider);
+        if (!isValid) {
+          throw new Error('Switch validation failed');
+        }
+      }
+
+      // Step 4: Clear backup on success
+      if (backupCreated) {
+        await this.clearBackupConfig(newProviderId, toolId);
+      }
+
+      const newProvider = await this.getProvider(newProviderId, toolId);
+
+      return {
+        success: true,
+        newProvider: newProvider ?? undefined,
+        backupCreated,
+        backupRestored,
+      };
+    } catch (error) {
+      // Step 5: Restore backup on failure
+      if (backupCreated) {
+        const restored = await this.restoreProviderConfig(newProviderId, toolId);
+        backupRestored = restored;
+      }
+
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+        backupCreated,
+        backupRestored,
+      };
+    }
+  }
+
+  /**
+   * Update a provider's meta field by merging with new data
+   *
+   * @param providerId - Provider ID
+   * @param toolId - Tool ID
+   * @param newMeta - New meta data to merge
+   */
+  private async updateProviderMeta(
+    providerId: string,
+    toolId: string,
+    newMeta: Record<string, unknown>
+  ): Promise<void> {
+    const row = await this.db.get<{ meta: string }>(
+      'SELECT meta FROM providers WHERE id = ? AND tool_id = ?',
+      [providerId, toolId]
+    );
+
+    let existingMeta: Record<string, unknown> = {};
+    if (row && row.meta) {
+      try {
+        existingMeta = JSON.parse(row.meta);
+      } catch {
+        existingMeta = {};
+      }
+    }
+
+    const mergedMeta = { ...existingMeta, ...newMeta };
+
+    await this.db.run(
+      'UPDATE providers SET meta = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?',
+      [JSON.stringify(mergedMeta), providerId, toolId]
+    );
   }
 
   // ============================================

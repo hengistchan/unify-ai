@@ -310,6 +310,8 @@ export interface SetAPIKeyInput {
   key: string;
   /** Key name/identifier (default: 'primary') */
   keyName?: string;
+  /** Tool ID for tool-specific API keys (default: 'global') */
+  toolId?: string;
 }
 
 /**
@@ -629,4 +631,41 @@ export interface CurrentProviderResult {
   scope: ProviderScope;
   /** Tool ID if tool-specific */
   toolId?: string;
+}
+
+// ============================================
+// Provider Backfill Types
+// ============================================
+
+/**
+ * Backup data for provider switching
+ * Stored in the new provider's meta field during switching
+ */
+export interface ProviderBackup {
+  /** The previous provider ID */
+  previousProviderId: string;
+  /** The previous provider's config (for restoration) */
+  previousConfig: ProviderConfig;
+  /** The previous provider's scope (global or tool-specific) */
+  previousScope: ProviderScope;
+  /** The tool ID if tool-specific */
+  previousToolId?: string;
+  /** Timestamp when backup was created */
+  backupTimestamp: string;
+}
+
+/**
+ * Result of switch provider with backfill operation
+ */
+export interface SwitchProviderResult {
+  /** Whether the switch was successful */
+  success: boolean;
+  /** The new provider (if switch succeeded) */
+  newProvider?: AIProvider;
+  /** Error message (if switch failed) */
+  error?: string;
+  /** Whether a backup was created */
+  backupCreated: boolean;
+  /** Whether a backup was restored (on failure) */
+  backupRestored: boolean;
 }

@@ -916,4 +916,221 @@ describe('ModelManager', () => {
       expect(manager.isInitialized()).toBe(false);
     });
   });
+
+  describe('API key management with toolId support', () => {
+    describe('setAPIKey() with toolId', () => {
+      it('should set API key with toolId in input', async () => {
+        const input: SetAPIKeyInput = {
+          providerId: 'openai',
+          key: 'sk-tool-specific-key',
+          keyName: 'primary',
+          toolId: 'cursor',
+        };
+
+        // First create a tool-specific provider
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+
+        const apiKey = await manager.setAPIKey(input);
+
+        expect(apiKey.providerId).toBe('openai');
+        expect(apiKey.keyName).toBe('primary');
+      });
+
+      it('should prefer input.toolId over parameter toolId', async () => {
+        // Create a tool-specific provider
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+
+        const input: SetAPIKeyInput = {
+          providerId: 'openai',
+          key: 'sk-input-tool-id-key',
+          toolId: 'cursor', // input.toolId
+        };
+
+        // Pass different toolId as parameter - should be ignored
+        const apiKey = await manager.setAPIKey(input, 'global');
+
+        expect(apiKey.providerId).toBe('openai');
+      });
+    });
+
+    describe('getAPIKey() with toolId', () => {
+      it('should get global API key when toolId is global', async () => {
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        const key = await manager.getAPIKey('openai', 'primary', 'global');
+
+        expect(key).toBe('sk-global-key');
+      });
+
+      it('should return null when tool-specific key does not exist', async () => {
+        // Set global key only
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        // Try to get key for a different toolId that doesn't have a key
+        const key = await manager.getAPIKey('openai', 'primary', 'nonexistent-tool');
+
+        expect(key).toBeNull();
+      });
+    });
+
+    describe('getAPIKeyWithPriority()', () => {
+      it('should return tool-specific key when available', async () => {
+        // Create tool-specific provider and key
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-cursor-key',
+          toolId: 'cursor',
+        });
+
+        // Set global key as well
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        // Should return tool-specific key
+        const key = await manager.getAPIKeyWithPriority('openai', 'primary', 'cursor');
+
+        expect(key).toBe('sk-cursor-key');
+      });
+
+      it('should fall back to global key when tool-specific key not found', async () => {
+        // Set only global key
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        // Query with toolId that has no specific key
+        const key = await manager.getAPIKeyWithPriority('openai', 'primary', 'cursor');
+
+        expect(key).toBe('sk-global-key');
+      });
+
+      it('should return global key when toolId is not provided', async () => {
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        const key = await manager.getAPIKeyWithPriority('openai');
+
+        expect(key).toBe('sk-global-key');
+      });
+
+      it('should return null when no key exists anywhere', async () => {
+        const key = await manager.getAPIKeyWithPriority('anthropic', 'primary', 'cursor');
+
+        expect(key).toBeNull();
+      });
+    });
+
+    describe('deleteAPIKey() with toolId', () => {
+      it('should delete tool-specific API key', async () => {
+        // Create tool-specific provider and key
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-cursor-key',
+          toolId: 'cursor',
+        });
+
+        // Set global key
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-global-key',
+        });
+
+        // Delete tool-specific key
+        await manager.deleteAPIKey('openai', 'primary', 'cursor');
+
+        // Tool-specific key should be deleted
+        const toolKey = await manager.getAPIKey('openai', 'primary', 'cursor');
+        expect(toolKey).toBeNull();
+
+        // Global key should still exist
+        const globalKey = await manager.getAPIKey('openai', 'primary', 'global');
+        expect(globalKey).toBe('sk-global-key');
+      });
+    });
+
+    describe('hasValidAPIKey() with toolId', () => {
+      it('should check tool-specific key validity', async () => {
+        // Create tool-specific provider and key
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-cursor-key-with-sufficient-length',
+          toolId: 'cursor',
+        });
+
+        // Validate the key
+        await manager.validateAPIKey('openai', 'cursor');
+
+        const hasValid = await manager.hasValidAPIKey('openai', 'cursor');
+        expect(hasValid).toBe(true);
+      });
+
+      it('should return false for toolId without valid key', async () => {
+        const hasValid = await manager.hasValidAPIKey('openai', 'nonexistent-tool');
+        expect(hasValid).toBe(false);
+      });
+    });
+
+    describe('validateAPIKey() with toolId', () => {
+      it('should validate tool-specific API key', async () => {
+        // Create tool-specific provider and key
+        await manager.createProvider({
+          id: 'openai',
+          name: 'OpenAI for Cursor',
+          type: 'openai-compatible',
+          toolId: 'cursor',
+        });
+        await manager.setAPIKey({
+          providerId: 'openai',
+          key: 'sk-cursor-key-with-sufficient-length',
+          toolId: 'cursor',
+        });
+
+        const isValid = await manager.validateAPIKey('openai', 'cursor');
+        expect(isValid).toBe(true);
+      });
+
+      it('should throw error for non-existent tool-specific provider', async () => {
+        await expect(manager.validateAPIKey('openai', 'nonexistent-tool')).rejects.toThrow();
+      });
+    });
+  });
 });

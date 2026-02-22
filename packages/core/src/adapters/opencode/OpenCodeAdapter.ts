@@ -494,10 +494,54 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
   }
 
   private parseJsonWithComments(content: string): OpenCodeConfig {
-    const withoutComments = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    let result = '';
+    let inString = false;
+    let escape = false;
+
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+      const nextChar = content[i + 1];
+
+      if (escape) {
+        result += char;
+        escape = false;
+        continue;
+      }
+
+      if (char === '\\' && inString) {
+        result += char;
+        escape = true;
+        continue;
+      }
+
+      if (char === '"') {
+        inString = !inString;
+        result += char;
+        continue;
+      }
+
+      if (!inString) {
+        if (char === '/' && nextChar === '/') {
+          while (i < content.length && content[i] !== '\n') {
+            i++;
+          }
+          continue;
+        }
+        if (char === '/' && nextChar === '*') {
+          i += 2;
+          while (i < content.length - 1 && !(content[i] === '*' && content[i + 1] === '/')) {
+            i++;
+          }
+          i++;
+          continue;
+        }
+      }
+
+      result += char;
+    }
 
     try {
-      return JSON.parse(withoutComments);
+      return JSON.parse(result);
     } catch {
       return {};
     }

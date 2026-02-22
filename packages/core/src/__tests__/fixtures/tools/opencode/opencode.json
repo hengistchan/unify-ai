@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "claude-3-5-sonnet",
+  "instructions": [".opencode/rules/custom.md"],
+  "mcp": {
+    "filesystem": {
+      "type": "local",
+      "command": ["mcp-server-filesystem", "--root", "./src"],
+      "enabled": true
+    },
+    "remote-server": {
+      "type": "remote",
+      "url": "https://api.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer token"
+      }
+    }
+  },
+  "command": {
+    "check": {
+      "template": "Run type checking and linting",
+      "description": "Check code quality"
+    }
+  }
+}

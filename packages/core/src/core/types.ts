@@ -150,9 +150,10 @@ export interface CommandConfig {
   id: string;
   name: string;
   description?: string;
-  template: string; // Command template
+  template: string;
   arguments?: CommandArgument[];
   enabled?: boolean;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CommandArgument {

@@ -158,13 +158,15 @@ export const ToolCapabilities = {
 
   /**
    * OpenCode capabilities
-   * - Rules: instructions array in opencode.json
-   * - MCP: mcpServers in opencode.json
+   * - Rules: AGENTS.md (primary), CLAUDE.md (fallback), instructions array
+   * - MCP: mcp object in opencode.json (local/remote)
+   * - Commands: .opencode/commands/*.md or JSON command field
    */
   opencode: (): CapabilityDeclaration[] => [
     Capabilities.fullRules(),
     Capabilities.fullMCP(),
     Capabilities.fullSettings(),
+    Capabilities.fullCommands(),
   ],
 };
 

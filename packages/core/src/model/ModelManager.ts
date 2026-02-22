@@ -160,7 +160,18 @@ export class ModelManager {
       const providers = await this.db.all<any>('SELECT * FROM providers');
 
       for (const provider of providers) {
-        const models = provider.models ? JSON.parse(provider.models) : [];
+        let models: any[] = [];
+        try {
+          models = provider.models ? JSON.parse(provider.models) : [];
+        } catch {
+          models = [];
+        }
+
+        // Also check if provider has built-in models from BUILTIN_PROVIDERS
+        const builtinProvider = BUILTIN_PROVIDERS.find(bp => bp.id === provider.id);
+        if (builtinProvider?.models) {
+          models = builtinProvider.models;
+        }
 
         for (const model of models) {
           const modelId = `${provider.id}:${model.id}`;
@@ -171,7 +182,12 @@ export class ModelManager {
               providerId: provider.id,
               modelId: model.id,
               displayName: model.displayName || model.id,
-              contextWindow: model.contextWindow || 4096,
+              contextWindow:
+                model.contextWindow || model.providerId === 'openai'
+                  ? 128000
+                  : model.providerId === 'anthropic'
+                    ? 200000
+                    : 4096,
               maxOutputTokens: model.maxOutputTokens || 4096,
               pricingInput: model.pricing?.inputPerK || 0,
               pricingOutput: model.pricing?.outputPerK || 0,

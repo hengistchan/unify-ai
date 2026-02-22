@@ -3,11 +3,13 @@
  *
  * OpenCode configuration format:
  * - opencode.json / opencode.jsonc - Main JSON config file
- * - .opencode/ - Directory for agents, commands, skills, tools, themes
+ * - AGENTS.md - Primary rules file (project root)
+ * - CLAUDE.md - Fallback rules file (Claude Code compatibility)
+ * - ~/.config/opencode/AGENTS.md - Global rules
  *
  * Supported capabilities:
- * - Rules: instructions array in JSON
- * - MCP: mcpServers object in JSON
+ * - Rules: AGENTS.md (primary), CLAUDE.md (fallback), instructions array references
+ * - MCP: mcp object with local/remote type support
  * - Settings: Various settings in JSON
  */
 
@@ -22,8 +24,7 @@ import {
   type UnifiedConfig,
   type RuleConfig,
   type MCPServerConfig,
-  type MCPConfig,
-  type ToolSettings,
+  type CommandConfig,
   type ParseResult,
   type GenerateResult,
   type ConvertOptions,
@@ -36,9 +37,30 @@ import {
 } from '../../core/types';
 import { ToolCapabilities } from '../base/Capability';
 
-/**
- * OpenCode config.json structure
- */
+interface OpenCodeLocalMCP {
+  type: 'local';
+  command: string[];
+  enabled?: boolean;
+  environment?: Record<string, string>;
+}
+
+interface OpenCodeRemoteMCP {
+  type: 'remote';
+  url: string;
+  enabled?: boolean;
+  headers?: Record<string, string>;
+}
+
+type OpenCodeMCPConfig = OpenCodeLocalMCP | OpenCodeRemoteMCP;
+
+interface OpenCodeCommandConfig {
+  template: string;
+  description?: string;
+  agent?: string;
+  subtask?: boolean;
+  model?: string;
+}
+
 interface OpenCodeConfig {
   $schema?: string;
   theme?: string;
@@ -51,9 +73,9 @@ interface OpenCodeConfig {
   instructions?: string[];
   disabled_providers?: string[];
   enabled_providers?: string[];
-  mcp?: Record<string, unknown>;
+  mcp?: Record<string, OpenCodeMCPConfig>;
   agent?: Record<string, unknown>;
-  command?: Record<string, unknown>;
+  command?: Record<string, OpenCodeCommandConfig>;
   keybinds?: Record<string, unknown>;
   formatter?: Record<string, unknown>;
   permission?: Record<string, unknown>;
@@ -65,9 +87,6 @@ interface OpenCodeConfig {
   server?: Record<string, unknown>;
 }
 
-/**
- * Adapter for OpenCode
- */
 export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
   readonly toolMeta: ToolMeta = {
     id: ToolId.OPENCODE,
@@ -96,6 +115,24 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
         type: 'optional',
         capability: ConfigCapability.SETTINGS,
         description: 'OpenCode configuration (with comments)',
+      },
+      {
+        pattern: 'AGENTS.md',
+        type: 'optional',
+        capability: ConfigCapability.RULES,
+        description: 'OpenCode rules file (primary)',
+      },
+      {
+        pattern: 'CLAUDE.md',
+        type: 'optional',
+        capability: ConfigCapability.RULES,
+        description: 'Claude Code compatibility rules file',
+      },
+      {
+        pattern: '.opencode/commands/*.md',
+        type: 'optional',
+        capability: ConfigCapability.COMMANDS,
+        description: 'OpenCode custom commands',
       },
     ];
   }
@@ -129,9 +166,65 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
 
     const rules: RuleConfig[] = [];
     const mcpServers: MCPServerConfig[] = [];
+    const commands: CommandConfig[] = [];
+
+    const agentsMdPath = path.join(projectRoot, 'AGENTS.md');
+    const claudeMdPath = path.join(projectRoot, 'CLAUDE.md');
+
+    let hasPrimaryRules = false;
+    try {
+      const content = await fs.readFile(agentsMdPath, 'utf-8');
+      rules.push({
+        id: 'opencode-agents',
+        name: 'AGENTS.md',
+        content,
+        enabled: true,
+        metadata: {
+          source: 'opencode',
+          path: 'AGENTS.md',
+          primary: true,
+        },
+      });
+      sourceFiles.push({
+        path: 'AGENTS.md',
+        absolutePath: agentsMdPath,
+        exists: true,
+      });
+      hasPrimaryRules = true;
+    } catch {
+      // AGENTS.md doesn't exist
+    }
+
+    if (!hasPrimaryRules) {
+      try {
+        const content = await fs.readFile(claudeMdPath, 'utf-8');
+        rules.push({
+          id: 'opencode-claude-compat',
+          name: 'CLAUDE.md',
+          content,
+          enabled: true,
+          metadata: {
+            source: 'opencode',
+            path: 'CLAUDE.md',
+            primary: true,
+            compatibility: 'claude-code',
+          },
+        });
+        sourceFiles.push({
+          path: 'CLAUDE.md',
+          absolutePath: claudeMdPath,
+          exists: true,
+        });
+      } catch {
+        // CLAUDE.md doesn't exist
+      }
+    }
 
     if (config.instructions && Array.isArray(config.instructions)) {
       for (const instruction of config.instructions) {
+        if (instruction === 'AGENTS.md' || instruction === 'CLAUDE.md') {
+          continue;
+        }
         const rulePath = path.join(projectRoot, instruction);
         try {
           const content = await fs.readFile(rulePath, 'utf-8');
@@ -159,26 +252,83 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
 
     if (config.mcp && typeof config.mcp === 'object') {
       for (const [name, serverConfig] of Object.entries(config.mcp)) {
-        const mcpConfig = serverConfig as Record<string, unknown>;
-        if (typeof mcpConfig === 'object' && mcpConfig !== null) {
+        if (typeof serverConfig !== 'object' || serverConfig === null) {
+          continue;
+        }
+
+        const mcpType = serverConfig.type;
+
+        if (mcpType === 'local') {
+          const localConfig = serverConfig as OpenCodeLocalMCP;
+          const commandArray = localConfig.command || [];
           mcpServers.push({
             name,
-            command: String(mcpConfig.command || ''),
-            args: Array.isArray(mcpConfig.args) ? mcpConfig.args.map(String) : undefined,
-            env:
-              typeof mcpConfig.env === 'object'
-                ? (mcpConfig.env as Record<string, string>)
-                : undefined,
-            cwd: mcpConfig.cwd ? String(mcpConfig.cwd) : undefined,
-            disabled: mcpConfig.enabled === true,
+            command: commandArray[0] || '',
+            args: commandArray.length > 1 ? commandArray.slice(1) : undefined,
+            env: localConfig.environment,
+            disabled: localConfig.enabled === false,
             metadata: {
               source: 'opencode',
-              type: mcpConfig.type ? String(mcpConfig.type) : undefined,
-              url: mcpConfig.url ? String(mcpConfig.url) : undefined,
+              type: 'local',
+            },
+          });
+        } else if (mcpType === 'remote') {
+          const remoteConfig = serverConfig as OpenCodeRemoteMCP;
+          mcpServers.push({
+            name,
+            command: '',
+            disabled: remoteConfig.enabled === false,
+            metadata: {
+              source: 'opencode',
+              type: 'remote',
+              url: remoteConfig.url,
+              headers: remoteConfig.headers,
             },
           });
         }
       }
+    }
+
+    if (config.command && typeof config.command === 'object') {
+      for (const [name, cmdConfig] of Object.entries(config.command)) {
+        if (typeof cmdConfig !== 'object' || cmdConfig === null) {
+          continue;
+        }
+        commands.push({
+          id: `opencode-cmd-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+          name,
+          description: cmdConfig.description,
+          template: cmdConfig.template || '',
+          enabled: true,
+        });
+      }
+    }
+
+    const commandsDir = path.join(projectRoot, '.opencode', 'commands');
+    try {
+      const commandFiles = await fs.readdir(commandsDir);
+      for (const file of commandFiles) {
+        if (!file.endsWith('.md')) {
+          continue;
+        }
+        const filePath = path.join(commandsDir, file);
+        try {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const parsed = this.parseCommandMarkdown(content, file);
+          if (parsed) {
+            commands.push(parsed);
+            sourceFiles.push({
+              path: path.relative(projectRoot, filePath),
+              absolutePath: filePath,
+              exists: true,
+            });
+          }
+        } catch {
+          // Skip files that can't be read
+        }
+      }
+    } catch {
+      // Commands directory doesn't exist
     }
 
     const unifiedConfig: UnifiedConfig = {
@@ -187,6 +337,7 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       mcp: {
         servers: mcpServers,
       },
+      commands: commands.length > 0 ? commands : undefined,
     };
 
     return {
@@ -208,42 +359,99 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
     const mcpConfig = config.mcp?.servers || [];
 
     const instructions: string[] = [];
-    const rulesContent: Record<string, string> = {};
+    let primaryRuleContent: string | null = null;
+    let primaryRulePath = 'AGENTS.md';
 
     for (const rule of rules) {
-      if (rule.metadata?.source === 'opencode') {
-        const rulePath = rule.metadata?.path as string | undefined;
-        if (rulePath) {
-          instructions.push(rulePath);
-          rulesContent[rulePath] = rule.content;
-        }
+      if (rule.metadata?.primary === true) {
+        primaryRuleContent = rule.content;
+        primaryRulePath = (rule.metadata?.path as string) || 'AGENTS.md';
+      } else if (rule.metadata?.path && typeof rule.metadata.path === 'string') {
+        const rulePath = rule.metadata.path;
+        instructions.push(rulePath);
+        generatedFiles.push({
+          path: rulePath,
+          content: rule.content,
+          encoding: 'utf-8',
+          overwrite: true,
+        });
+      } else {
+        const ruleFileName = rule.name
+          ? `${rule.name.replace(/[^a-zA-Z0-9_-]/g, '_')}.md`
+          : `rule-${rule.id}.md`;
+        instructions.push(ruleFileName);
+        generatedFiles.push({
+          path: ruleFileName,
+          content: rule.content,
+          encoding: 'utf-8',
+          overwrite: true,
+        });
       }
     }
 
-    const mcpServers: Record<string, unknown> = {};
+    if (primaryRuleContent !== null) {
+      generatedFiles.push({
+        path: primaryRulePath,
+        content: primaryRuleContent,
+        encoding: 'utf-8',
+        overwrite: true,
+      });
+    }
+
+    const mcpServers: Record<string, OpenCodeMCPConfig> = {};
     for (const server of mcpConfig) {
-      const serverConfig: Record<string, unknown> = {
-        command: server.command,
+      const mcpType = (server.metadata?.type as string) || 'local';
+
+      if (mcpType === 'remote') {
+        const remoteMcp: OpenCodeRemoteMCP = {
+          type: 'remote',
+          url: (server.metadata?.url as string) || '',
+          enabled: !server.disabled,
+        };
+        if (server.metadata?.headers && typeof server.metadata.headers === 'object') {
+          remoteMcp.headers = server.metadata.headers as Record<string, string>;
+        }
+        mcpServers[server.name] = remoteMcp;
+      } else {
+        const commandArray: string[] = [];
+        if (server.command) {
+          commandArray.push(server.command);
+        }
+        if (server.args && server.args.length > 0) {
+          commandArray.push(...server.args);
+        }
+        const localMcp: OpenCodeLocalMCP = {
+          type: 'local',
+          command: commandArray,
+          enabled: !server.disabled,
+        };
+        if (server.env && Object.keys(server.env).length > 0) {
+          localMcp.environment = server.env;
+        }
+        mcpServers[server.name] = localMcp;
+      }
+    }
+
+    const commands = config.commands || [];
+    const opencodeCommands: Record<string, OpenCodeCommandConfig> = {};
+
+    for (const cmd of commands) {
+      const cmdConfig: OpenCodeCommandConfig = {
+        template: cmd.template,
       };
-      if (server.args && server.args.length > 0) {
-        serverConfig.args = server.args;
+      if (cmd.description) {
+        cmdConfig.description = cmd.description;
       }
-      if (server.env && Object.keys(server.env).length > 0) {
-        serverConfig.env = server.env;
+      if (cmd.metadata?.agent) {
+        cmdConfig.agent = cmd.metadata.agent as string;
       }
-      if (server.cwd) {
-        serverConfig.cwd = server.cwd;
+      if (cmd.metadata?.subtask !== undefined) {
+        cmdConfig.subtask = cmd.metadata.subtask as boolean;
       }
-      if (server.disabled) {
-        serverConfig.disabled = true;
+      if (cmd.metadata?.model) {
+        cmdConfig.model = cmd.metadata.model as string;
       }
-      if (server.metadata?.type) {
-        serverConfig.type = server.metadata.type;
-      }
-      if (server.metadata?.url) {
-        serverConfig.url = server.metadata.url;
-      }
-      mcpServers[server.name] = serverConfig;
+      opencodeCommands[cmd.name] = cmdConfig;
     }
 
     const opencodeConfig: OpenCodeConfig = {
@@ -260,6 +468,10 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       opencodeConfig.mcp = mcpServers;
     }
 
+    if (Object.keys(opencodeCommands).length > 0) {
+      opencodeConfig.command = opencodeCommands;
+    }
+
     const configJson = JSON.stringify(opencodeConfig, null, 2);
     generatedFiles.push({
       path: 'opencode.json',
@@ -267,15 +479,6 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       encoding: 'utf-8',
       overwrite: true,
     });
-
-    for (const [rulePath, ruleContent] of Object.entries(rulesContent)) {
-      generatedFiles.push({
-        path: rulePath,
-        content: ruleContent,
-        encoding: 'utf-8',
-        overwrite: true,
-      });
-    }
 
     return {
       success: true,
@@ -310,6 +513,55 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
     return null;
+  }
+
+  private parseCommandMarkdown(content: string, fileName: string): CommandConfig | null {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const name = path.basename(fileName, '.md');
+      return {
+        id: `opencode-cmd-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+        name,
+        template: content.trim(),
+        enabled: true,
+      };
+    }
+
+    const frontmatter = match[1];
+    const template = match[2].trim();
+    const name = path.basename(fileName, '.md');
+
+    const metadata: Record<string, unknown> = {};
+    const lines = frontmatter.split('\n');
+    let description: string | undefined;
+
+    for (const line of lines) {
+      const colonIndex = line.indexOf(':');
+      if (colonIndex === -1) continue;
+      const key = line.slice(0, colonIndex).trim();
+      const value = line.slice(colonIndex + 1).trim();
+
+      if (key === 'description') {
+        description = value;
+      } else if (key === 'agent') {
+        metadata.agent = value;
+      } else if (key === 'subtask') {
+        metadata.subtask = value.toLowerCase() === 'true';
+      } else if (key === 'model') {
+        metadata.model = value;
+      }
+    }
+
+    return {
+      id: `opencode-cmd-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+      name,
+      description,
+      template,
+      enabled: true,
+      metadata,
+    };
   }
 }
 

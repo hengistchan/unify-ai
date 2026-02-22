@@ -374,9 +374,10 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
         const ruleFileName = rule.name
           ? `${rule.name.replace(/[^a-zA-Z0-9_-]/g, '_')}.md`
           : `rule-${rule.id}.md`;
-        instructions.push(ruleFileName);
+        const rulePath = `.opencode/rules/${ruleFileName}`;
+        instructions.push(rulePath);
         generatedFiles.push({
-          path: ruleFileName,
+          path: rulePath,
           content: rule.content,
           encoding: 'utf-8',
           overwrite: true,

@@ -153,7 +153,7 @@ export class ModelManager {
     const stmt = this.db.getStatement('provider_insert');
     stmt.run({
       id: input.id,
-      toolId: 'global',  // Use 'global' for global providers
+      toolId: 'global', // Use 'global' for global providers
       name: input.name,
       type: input.type,
       enabled: input.enabled ? 1 : 0,
@@ -201,11 +201,16 @@ export class ModelManager {
   async listProviders(): Promise<AIProvider[]> {
     await this.ensureInitialized();
 
-    const rows = await this.db.all<any>(
-      'SELECT * FROM providers ORDER BY priority DESC, name ASC'
-    );
+    const rows = await this.db.all<any>('SELECT * FROM providers ORDER BY priority DESC, name ASC');
 
-    return rows.map(rowToProvider);
+    const providers = rows.map(rowToProvider);
+
+    // Populate models from model_configs table
+    for (const provider of providers) {
+      provider.models = await this.getModels(provider.id);
+    }
+
+    return providers;
   }
 
   /**
@@ -218,12 +223,18 @@ export class ModelManager {
     await this.ensureInitialized();
 
     const effectiveToolId = toolId ?? 'global';
-    const row = await this.db.get<any>(
-      "SELECT * FROM providers WHERE id = ? AND tool_id = ?",
-      [id, effectiveToolId]
-    );
+    const row = await this.db.get<any>('SELECT * FROM providers WHERE id = ? AND tool_id = ?', [
+      id,
+      effectiveToolId,
+    ]);
 
-    return row ? rowToProvider(row) : null;
+    if (!row) return null;
+
+    const provider = rowToProvider(row);
+    // Populate models from model_configs table
+    provider.models = await this.getModels(id);
+
+    return provider;
   }
 
   /**
@@ -317,7 +328,7 @@ export class ModelManager {
       toolId: effectiveToolId,
       name: input.name ?? existing.name,
       type: existing.type,
-      enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : (existing.enabled ? 1 : 0),
+      enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : existing.enabled ? 1 : 0,
       priority: input.priority ?? existing.priority,
       config: JSON.stringify(input.config ?? existing.config),
       models: JSON.stringify(input.models ?? existing.models),
@@ -331,6 +342,30 @@ export class ModelManager {
       notes: input.notes ?? null,
       meta: JSON.stringify(input.meta ?? {}),
     });
+
+    // Update model_configs table if models are provided
+    if (input.models !== undefined) {
+      // Delete existing models for this provider
+      await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
+
+      // Insert new models
+      for (const model of input.models) {
+        const modelId = `${id}:${model.id}`;
+        const modelStmt = this.db.getStatement('model_config_insert');
+        modelStmt.run({
+          id: modelId,
+          providerId: id,
+          modelId: model.id,
+          displayName: model.displayName || model.id,
+          contextWindow: model.contextWindow || 4096,
+          maxOutputTokens: model.maxOutputTokens || 4096,
+          pricingInput: model.pricing?.inputPerK || 0,
+          pricingOutput: model.pricing?.outputPerK || 0,
+          enabled: model.enabled !== false ? 1 : 0,
+          config: JSON.stringify(model.config || {}),
+        });
+      }
+    }
 
     const provider = await this.getProvider(id, effectiveToolId);
     if (!provider) {
@@ -358,10 +393,10 @@ export class ModelManager {
     await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
 
     // Delete associated API keys (no CASCADE in schema)
-    await this.db.run(
-      'DELETE FROM api_keys WHERE provider_id = ? AND provider_tool_id = ?',
-      [id, effectiveToolId]
-    );
+    await this.db.run('DELETE FROM api_keys WHERE provider_id = ? AND provider_tool_id = ?', [
+      id,
+      effectiveToolId,
+    ]);
 
     // Invalidate all cached API keys for this provider (with toolId)
     this.encryption.invalidateProviderCache(id, effectiveToolId);
@@ -430,7 +465,9 @@ export class ModelManager {
     // Verify provider exists
     const provider = await this.getProvider(input.providerId, effectiveToolId);
     if (!provider) {
-      throw new Error(`Provider with ID '${input.providerId}' not found in scope '${effectiveToolId}'`);
+      throw new Error(
+        `Provider with ID '${input.providerId}' not found in scope '${effectiveToolId}'`
+      );
     }
 
     const keyName = input.keyName || 'primary';
@@ -707,7 +744,7 @@ export class ModelManager {
     sql += ' ORDER BY display_name ASC';
 
     const rows = await this.db.all<any>(sql, params);
-    return rows.map((row) => this.rowToModelInfo(row));
+    return rows.map(row => this.rowToModelInfo(row));
   }
 
   /**
@@ -848,7 +885,8 @@ export class ModelManager {
 
     // Filter by model availability
     if (options.modelId) {
-      sql += ' AND EXISTS (SELECT 1 FROM model_configs m WHERE m.provider_id = p.id AND m.model_id = ?)';
+      sql +=
+        ' AND EXISTS (SELECT 1 FROM model_configs m WHERE m.provider_id = p.id AND m.model_id = ?)';
       params.push(options.modelId);
     }
 
@@ -1015,9 +1053,7 @@ export class ModelManager {
    */
   private async checkHybridColumnsExist(): Promise<boolean> {
     try {
-      const columns = await this.db.all<any>(
-        "PRAGMA table_info(providers)"
-      );
+      const columns = await this.db.all<any>('PRAGMA table_info(providers)');
       const columnNames = columns.map(col => col.name);
       return (
         columnNames.includes('tool_id') &&
@@ -1127,9 +1163,7 @@ export class ModelManager {
     }
 
     // Unset all global current flags
-    await this.db.run(
-      'UPDATE providers SET is_current_global = 0 WHERE is_global = 1'
-    );
+    await this.db.run('UPDATE providers SET is_current_global = 0 WHERE is_global = 1');
 
     // Set the new global default
     await this.db.run(
@@ -1153,10 +1187,7 @@ export class ModelManager {
     }
 
     // Unset current tool flag for all providers of this tool
-    await this.db.run(
-      'UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?',
-      [toolId]
-    );
+    await this.db.run('UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?', [toolId]);
 
     // Set the new tool-specific current provider
     await this.db.run(
@@ -1173,10 +1204,7 @@ export class ModelManager {
     await this.ensureInitialized();
 
     // Unset current tool flag for all providers of this tool
-    await this.db.run(
-      'UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?',
-      [toolId]
-    );
+    await this.db.run('UPDATE providers SET is_current_tool = 0 WHERE tool_id = ?', [toolId]);
   }
 
   /**
@@ -1226,7 +1254,9 @@ export class ModelManager {
     const newToolId = newProviderToolId ?? 'global';
 
     // Get the current provider based on scope
-    const currentResult = await this.getCurrentProvider(newToolId === 'global' ? undefined : newToolId);
+    const currentResult = await this.getCurrentProvider(
+      newToolId === 'global' ? undefined : newToolId
+    );
 
     if (!currentResult) {
       // No current provider to backup
@@ -1362,7 +1392,7 @@ export class ModelManager {
     try {
       const meta = JSON.parse(row.meta);
       const backup = meta[ModelManager.BACKUP_META_KEY];
-      return backup as ProviderBackup || null;
+      return (backup as ProviderBackup) || null;
     } catch {
       return null;
     }
@@ -1528,8 +1558,10 @@ export class ModelManager {
     const providers = await this.listProviders();
 
     // Get API key metadata (not actual keys)
-    const apiKeyRows = await this.db.all<any>('SELECT provider_id, key_name, is_valid FROM api_keys');
-    const apiKeys = apiKeyRows.map((row) => ({
+    const apiKeyRows = await this.db.all<any>(
+      'SELECT provider_id, key_name, is_valid FROM api_keys'
+    );
+    const apiKeys = apiKeyRows.map(row => ({
       providerId: row.provider_id,
       keyName: row.key_name,
       hasKey: true,
@@ -1542,7 +1574,7 @@ export class ModelManager {
     return {
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
-      providers: providers.map((p) => ({
+      providers: providers.map(p => ({
         id: p.id,
         name: p.name,
         type: p.type,

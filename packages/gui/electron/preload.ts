@@ -254,12 +254,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       apiKey: string,
       options?: { timeout?: number; baseUrl?: string }
     ) =>
-      ipcRenderer.invoke(
-        IPC_CHANNELS.VALIDATE_API_KEY_WITHOUT_SAVING,
-        providerId,
-        apiKey,
-        options
-      ),
+      ipcRenderer.invoke(IPC_CHANNELS.VALIDATE_API_KEY_WITHOUT_SAVING, providerId, apiKey, options),
     deleteAPIKey: (providerId: string, keyName?: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.DELETE_API_KEY, providerId, keyName),
     hasValidAPIKey: (providerId: string) =>
@@ -267,8 +262,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // Model management
     getModels: (providerId: string) => ipcRenderer.invoke(IPC_CHANNELS.GET_MODELS, providerId),
-    updateModel: (providerId: string, modelId: string, config: any) =>
-      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_MODEL, providerId, modelId, config),
+    addModel: (providerId: string, input: any) =>
+      ipcRenderer.invoke(IPC_CHANNELS.ADD_MODEL, providerId, input),
+    updateModelDetails: (providerId: string, modelId: string, input: any) =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_MODEL_DETAILS, providerId, modelId, input),
+    deleteModel: (providerId: string, modelId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DELETE_MODEL, providerId, modelId),
+    setModelEnabled: (providerId: string, modelId: string, enabled: boolean) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_MODEL_ENABLED, providerId, modelId, enabled),
     setDefaultModel: (providerId: string, modelId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.SET_DEFAULT_MODEL, providerId, modelId),
     getDefaultModel: (providerId: string) =>
@@ -277,8 +278,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Usage tracking
     logUsage: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.LOG_USAGE, input),
     getUsageLogs: (filters?: any) => ipcRenderer.invoke(IPC_CHANNELS.GET_USAGE_LOGS, filters),
-    getUsageSummary: (filters?: any) =>
-      ipcRenderer.invoke(IPC_CHANNELS.GET_USAGE_SUMMARY, filters),
+    getUsageSummary: (filters?: any) => ipcRenderer.invoke(IPC_CHANNELS.GET_USAGE_SUMMARY, filters),
 
     // Provider selection
     getActiveProvider: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDER),

@@ -6,7 +6,13 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ModelManager } from '../../model/ModelManager';
-import type { CreateProviderInput, UpdateProviderInput, SetAPIKeyInput } from '../../model/types';
+import type {
+  CreateProviderInput,
+  UpdateProviderInput,
+  SetAPIKeyInput,
+  AddModelInput,
+  UpdateModelInput,
+} from '../../model/types';
 
 describe('ModelManager', () => {
   let manager: ModelManager;
@@ -610,6 +616,258 @@ describe('ModelManager', () => {
         await expect(
           manager.updateModel('openai', 'nonexistent', { temperature: 0.5 })
         ).rejects.toThrow();
+      });
+    });
+
+    describe('addModel()', () => {
+      it('should add a new model to provider', async () => {
+        const input: AddModelInput = {
+          id: 'gpt-5',
+          displayName: 'GPT-5',
+          contextWindow: 256000,
+          maxOutputTokens: 16384,
+          pricing: { inputPerK: 0.05, outputPerK: 0.15 },
+          enabled: true,
+        };
+
+        const model = await manager.addModel('openai', input);
+
+        expect(model.id).toBe('gpt-5');
+        expect(model.providerId).toBe('openai');
+        expect(model.displayName).toBe('GPT-5');
+        expect(model.contextWindow).toBe(256000);
+        expect(model.maxOutputTokens).toBe(16384);
+        expect(model.pricing.inputPerK).toBe(0.05);
+        expect(model.pricing.outputPerK).toBe(0.15);
+        expect(model.enabled).toBe(true);
+      });
+
+      it('should add model with default values', async () => {
+        const input: AddModelInput = {
+          id: 'test-model',
+          displayName: 'Test Model',
+          contextWindow: 8192,
+          maxOutputTokens: 4096,
+        };
+
+        const model = await manager.addModel('openai', input);
+
+        expect(model.pricing.inputPerK).toBe(0);
+        expect(model.pricing.outputPerK).toBe(0);
+        expect(model.enabled).toBe(true);
+      });
+
+      it('should throw error for duplicate model ID', async () => {
+        const input: AddModelInput = {
+          id: 'gpt-4o',
+          displayName: 'Duplicate GPT-4o',
+          contextWindow: 128000,
+          maxOutputTokens: 4096,
+        };
+
+        await expect(manager.addModel('openai', input)).rejects.toThrow();
+      });
+
+      it('should throw error for non-existent provider', async () => {
+        const input: AddModelInput = {
+          id: 'test-model',
+          displayName: 'Test Model',
+          contextWindow: 8192,
+          maxOutputTokens: 4096,
+        };
+
+        await expect(manager.addModel('nonexistent', input)).rejects.toThrow();
+      });
+
+      it('should add disabled model when enabled is false', async () => {
+        const input: AddModelInput = {
+          id: 'disabled-model',
+          displayName: 'Disabled Model',
+          contextWindow: 8192,
+          maxOutputTokens: 4096,
+          enabled: false,
+        };
+
+        const model = await manager.addModel('openai', input);
+
+        expect(model.enabled).toBe(false);
+      });
+
+      it('should add model with custom config', async () => {
+        const input: AddModelInput = {
+          id: 'config-model',
+          displayName: 'Config Model',
+          contextWindow: 8192,
+          maxOutputTokens: 4096,
+          config: {
+            temperature: 0.8,
+            topP: 0.95,
+          },
+        };
+
+        const model = await manager.addModel('openai', input);
+
+        expect(model.config?.temperature).toBe(0.8);
+        expect(model.config?.topP).toBe(0.95);
+      });
+    });
+
+    describe('updateModelDetails()', () => {
+      it('should update model display name', async () => {
+        const input: UpdateModelInput = {
+          displayName: 'Updated GPT-4o',
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.displayName).toBe('Updated GPT-4o');
+      });
+
+      it('should update model context window', async () => {
+        const input: UpdateModelInput = {
+          contextWindow: 200000,
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.contextWindow).toBe(200000);
+      });
+
+      it('should update model max output tokens', async () => {
+        const input: UpdateModelInput = {
+          maxOutputTokens: 8192,
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.maxOutputTokens).toBe(8192);
+      });
+
+      it('should update model pricing', async () => {
+        const input: UpdateModelInput = {
+          pricing: { inputPerK: 0.01, outputPerK: 0.03 },
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.pricing.inputPerK).toBe(0.01);
+        expect(model.pricing.outputPerK).toBe(0.03);
+      });
+
+      it('should update partial pricing', async () => {
+        const original = await manager.getModel('openai', 'gpt-4o');
+        const originalOutput = original!.pricing.outputPerK;
+
+        const input: UpdateModelInput = {
+          pricing: { inputPerK: 0.02 },
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.pricing.inputPerK).toBe(0.02);
+        expect(model.pricing.outputPerK).toBe(originalOutput);
+      });
+
+      it('should update model enabled status', async () => {
+        const input: UpdateModelInput = {
+          enabled: false,
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.enabled).toBe(false);
+      });
+
+      it('should update multiple fields at once', async () => {
+        const input: UpdateModelInput = {
+          displayName: 'Multi-Update Model',
+          contextWindow: 300000,
+          maxOutputTokens: 12000,
+          pricing: { inputPerK: 0.025, outputPerK: 0.075 },
+          enabled: false,
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.displayName).toBe('Multi-Update Model');
+        expect(model.contextWindow).toBe(300000);
+        expect(model.maxOutputTokens).toBe(12000);
+        expect(model.pricing.inputPerK).toBe(0.025);
+        expect(model.pricing.outputPerK).toBe(0.075);
+        expect(model.enabled).toBe(false);
+      });
+
+      it('should throw error for non-existent model', async () => {
+        const input: UpdateModelInput = {
+          displayName: 'Non-existent',
+        };
+
+        await expect(manager.updateModelDetails('openai', 'nonexistent', input)).rejects.toThrow();
+      });
+
+      it('should merge config with existing config', async () => {
+        await manager.updateModel('openai', 'gpt-4o', {
+          temperature: 0.5,
+        });
+
+        const input: UpdateModelInput = {
+          config: { topP: 0.9 },
+        };
+
+        const model = await manager.updateModelDetails('openai', 'gpt-4o', input);
+
+        expect(model.config?.temperature).toBe(0.5);
+        expect(model.config?.topP).toBe(0.9);
+      });
+    });
+
+    describe('deleteModel()', () => {
+      it('should delete a model from provider', async () => {
+        await manager.deleteModel('openai', 'gpt-4o');
+        const model = await manager.getModel('openai', 'gpt-4o');
+
+        expect(model).toBeNull();
+      });
+
+      it('should throw error for non-existent model', async () => {
+        await expect(manager.deleteModel('openai', 'nonexistent')).rejects.toThrow();
+      });
+
+      it('should throw error for non-existent provider', async () => {
+        await expect(manager.deleteModel('nonexistent', 'some-model')).rejects.toThrow();
+      });
+
+      it('should not affect other models', async () => {
+        const modelsBefore = await manager.listModels('openai');
+        const modelCount = modelsBefore.length;
+
+        await manager.deleteModel('openai', 'gpt-4o');
+
+        const modelsAfter = await manager.listModels('openai');
+        expect(modelsAfter.length).toBe(modelCount - 1);
+      });
+    });
+
+    describe('setModelEnabled()', () => {
+      it('should enable a disabled model', async () => {
+        await manager.updateModelDetails('openai', 'gpt-4o', { enabled: false });
+        const model = await manager.setModelEnabled('openai', 'gpt-4o', true);
+
+        expect(model.enabled).toBe(true);
+      });
+
+      it('should disable an enabled model', async () => {
+        const model = await manager.setModelEnabled('openai', 'gpt-4o', false);
+
+        expect(model.enabled).toBe(false);
+      });
+
+      it('should throw error for non-existent model', async () => {
+        await expect(manager.setModelEnabled('openai', 'nonexistent', true)).rejects.toThrow();
+      });
+
+      it('should throw error for non-existent provider', async () => {
+        await expect(manager.setModelEnabled('nonexistent', 'some-model', true)).rejects.toThrow();
       });
     });
   });

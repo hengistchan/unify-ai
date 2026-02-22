@@ -10,6 +10,7 @@ import { APIKeyValidator, type APIKeyValidationResult } from './APIKeyValidator'
 import type {
   AIProvider,
   APIKey,
+  AddModelInput,
   CreateProviderInput,
   CurrentProviderResult,
   EncryptedKeyData,
@@ -23,6 +24,7 @@ import type {
   SetAPIKeyInput,
   SwitchProviderResult,
   UpdateProviderInput,
+  UpdateModelInput,
   UsageLog,
   UsageLogFilters,
   UsageSummary,
@@ -906,6 +908,148 @@ export class ModelManager {
     }
 
     return updated;
+  }
+
+  /**
+   * Add a new model to a provider
+   * @param providerId - Provider ID
+   * @param input - Model creation input
+   * @returns Created model info
+   */
+  async addModel(providerId: string, input: AddModelInput): Promise<ModelInfo> {
+    await this.ensureInitialized();
+
+    const provider = await this.getProvider(providerId);
+    if (!provider) {
+      throw new Error(`Provider with ID '${providerId}' not found`);
+    }
+
+    const existing = await this.getModel(providerId, input.id);
+    if (existing) {
+      throw new Error(`Model '${input.id}' already exists for provider '${providerId}'`);
+    }
+
+    const modelId = `${providerId}:${input.id}`;
+    const stmt = this.db.getStatement('model_config_insert');
+    stmt.run({
+      id: modelId,
+      providerId: providerId,
+      modelId: input.id,
+      displayName: input.displayName,
+      contextWindow: input.contextWindow,
+      maxOutputTokens: input.maxOutputTokens,
+      pricingInput: input.pricing?.inputPerK ?? 0,
+      pricingOutput: input.pricing?.outputPerK ?? 0,
+      enabled: input.enabled !== false ? 1 : 0,
+      config: JSON.stringify(input.config || {}),
+    });
+
+    const model = await this.getModel(providerId, input.id);
+    if (!model) {
+      throw new Error('Failed to create model');
+    }
+
+    return model;
+  }
+
+  /**
+   * Update model details (name, context window, pricing, enabled, etc.)
+   * @param providerId - Provider ID
+   * @param modelId - Model ID
+   * @param input - Update input
+   * @returns Updated model info
+   */
+  async updateModelDetails(
+    providerId: string,
+    modelId: string,
+    input: UpdateModelInput
+  ): Promise<ModelInfo> {
+    await this.ensureInitialized();
+
+    const existing = await this.getModel(providerId, modelId);
+    if (!existing) {
+      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+    }
+
+    const updates: string[] = [];
+    const values: (string | number)[] = [];
+
+    if (input.displayName !== undefined) {
+      updates.push('display_name = ?');
+      values.push(input.displayName);
+    }
+    if (input.contextWindow !== undefined) {
+      updates.push('context_window = ?');
+      values.push(input.contextWindow);
+    }
+    if (input.maxOutputTokens !== undefined) {
+      updates.push('max_output_tokens = ?');
+      values.push(input.maxOutputTokens);
+    }
+    if (input.pricing !== undefined) {
+      if (input.pricing.inputPerK !== undefined) {
+        updates.push('pricing_input = ?');
+        values.push(input.pricing.inputPerK);
+      }
+      if (input.pricing.outputPerK !== undefined) {
+        updates.push('pricing_output = ?');
+        values.push(input.pricing.outputPerK);
+      }
+    }
+    if (input.enabled !== undefined) {
+      updates.push('enabled = ?');
+      values.push(input.enabled ? 1 : 0);
+    }
+    if (input.config !== undefined) {
+      updates.push('config = ?');
+      values.push(JSON.stringify({ ...existing.config, ...input.config }));
+    }
+
+    if (updates.length > 0) {
+      updates.push('updated_at = CURRENT_TIMESTAMP');
+      values.push(providerId, modelId);
+      await this.db.run(
+        `UPDATE model_configs SET ${updates.join(', ')} WHERE provider_id = ? AND model_id = ?`,
+        values
+      );
+    }
+
+    const updated = await this.getModel(providerId, modelId);
+    if (!updated) {
+      throw new Error('Failed to update model');
+    }
+
+    return updated;
+  }
+
+  /**
+   * Delete a model from a provider
+   * @param providerId - Provider ID
+   * @param modelId - Model ID
+   */
+  async deleteModel(providerId: string, modelId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    const existing = await this.getModel(providerId, modelId);
+    if (!existing) {
+      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+    }
+
+    await this.db.run('DELETE FROM model_configs WHERE provider_id = ? AND model_id = ?', [
+      providerId,
+      modelId,
+    ]);
+  }
+
+  /**
+   * Set model enabled status
+   * @param providerId - Provider ID
+   * @param modelId - Model ID
+   * @param enabled - Enabled status
+   * @returns Updated model info
+   */
+  async setModelEnabled(providerId: string, modelId: string, enabled: boolean): Promise<ModelInfo> {
+    return this.updateModelDetails(providerId, modelId, { enabled });
   }
 
   // ============================================

@@ -60,7 +60,7 @@ describe('SyncModeDialog', () => {
       expect(screen.getByText('Manage Unified Config')).toBeInTheDocument();
     });
 
-    it('should show warning when less than 2 tools detected', () => {
+    it('should show warning when less than 2 tools detected and direct-sync selected', () => {
       render(
         <SyncModeDialog
           open={true}
@@ -71,7 +71,23 @@ describe('SyncModeDialog', () => {
         />
       );
 
+      fireEvent.click(screen.getByText('Sync Between Tools'));
+
       expect(screen.getByText(/At least 2 detected tools are required/)).toBeInTheDocument();
+    });
+
+    it('should not show warning when less than 2 tools but no mode selected', () => {
+      render(
+        <SyncModeDialog
+          open={true}
+          onClose={mockOnClose}
+          onSelectMode={mockOnSelectMode}
+          hasUnifiedConfig={false}
+          detectedToolsCount={1}
+        />
+      );
+
+      expect(screen.queryByText(/At least 2 detected tools are required/)).not.toBeInTheDocument();
     });
 
     it('should show "Config exists" badge when unified config exists', () => {

@@ -4,11 +4,14 @@
  */
 
 import { useState } from 'react';
-import type { AIProvider } from '@unify-ai/core/model';
+import type { AIProvider, ModelInfo } from '@unify-ai/core/model';
 import { useModelStore } from '../../stores/modelStore';
 import { Button, Card } from '../common';
-import { Settings, Trash2, Key, Check, Pencil } from 'lucide-react';
+import { Settings, Trash2, Key, Pencil, Plus } from 'lucide-react';
 import { APIKeyDialog } from './APIKeyDialog';
+import { ModelListItem } from './ModelListItem';
+import { AddModelDialog } from './AddModelDialog';
+import { ModelEditDialog } from './ModelEditDialog';
 
 interface ProviderDetailProps {
   provider: AIProvider;
@@ -16,9 +19,18 @@ interface ProviderDetailProps {
 
 export function ProviderDetail({ provider }: ProviderDetailProps) {
   const [showKeyDialog, setShowKeyDialog] = useState(false);
+  const [showAddModelDialog, setShowAddModelDialog] = useState(false);
   const [editingBaseUrl, setEditingBaseUrl] = useState(false);
   const [baseUrlInput, setBaseUrlInput] = useState(provider.baseUrl || '');
-  const { updateProvider, deleteProvider, setProviderEnabled } = useModelStore();
+  const [editingModel, setEditingModel] = useState<ModelInfo | null>(null);
+  const {
+    updateProvider,
+    deleteProvider,
+    setProviderEnabled,
+    setDefaultModel,
+    setModelEnabled,
+    loadProviders,
+  } = useModelStore();
 
   const handleToggleEnabled = async () => {
     await setProviderEnabled(provider.id, !provider.enabled);
@@ -35,6 +47,24 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
     }
   };
 
+  const handleSetDefaultModel = async (modelId: string) => {
+    await setDefaultModel(provider.id, modelId);
+    await loadProviders();
+  };
+
+  const handleToggleModelEnabled = async (modelId: string, enabled: boolean) => {
+    await setModelEnabled(provider.id, modelId, enabled);
+    await loadProviders();
+  };
+
+  const handleModelAdded = async () => {
+    await loadProviders();
+  };
+
+  const handleModelUpdated = async () => {
+    await loadProviders();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -42,7 +72,7 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
         <div>
           <h2 className="text-2xl font-bold">{provider.name}</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Type: {provider.type} • Priority: {provider.priority}
+            Type: {provider.type} | Priority: {provider.priority}
           </p>
         </div>
         <div className="flex gap-2">
@@ -71,30 +101,42 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
 
       {/* Models Section */}
       <Card className="p-4">
-        <div className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          <h3 className="font-semibold">Models</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            <h3 className="font-semibold">Models</h3>
+            <span className="text-xs text-text-secondary">({provider.models.length})</span>
+          </div>
+          <Button size="sm" onClick={() => setShowAddModelDialog(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Model
+          </Button>
         </div>
+
         <div className="mt-3 space-y-2">
-          {provider.models.map(model => (
-            <div
-              key={model.id}
-              className="flex items-center justify-between rounded border border-border p-2"
-            >
-              <div>
-                <p className="font-medium">{model.displayName}</p>
-                <p className="text-xs text-text-secondary">
-                  {model.contextWindow.toLocaleString()} tokens
-                </p>
-              </div>
-              {provider.defaultModel === model.id && (
-                <div className="flex items-center gap-1 text-sm text-primary">
-                  <Check className="h-4 w-4" />
-                  Default
-                </div>
-              )}
-            </div>
-          ))}
+          {provider.models.length === 0 ? (
+            <p className="text-sm text-text-secondary text-center py-4">
+              No models configured. Click "Add Model" to add one.
+            </p>
+          ) : (
+            provider.models.map(model => (
+              <ModelListItem
+                key={model.id}
+                model={model}
+                isDefault={provider.defaultModel === model.id}
+                onSetDefault={() => handleSetDefaultModel(model.id)}
+                onEdit={() => setEditingModel(model)}
+                onDelete={async () => {
+                  if (confirm(`Delete model "${model.displayName}"? This cannot be undone.`)) {
+                    const { deleteModel } = useModelStore.getState();
+                    await deleteModel(provider.id, model.id);
+                    await loadProviders();
+                  }
+                }}
+                onToggleEnabled={enabled => handleToggleModelEnabled(model.id, enabled)}
+              />
+            ))
+          )}
         </div>
       </Card>
 
@@ -114,7 +156,7 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
                   placeholder="https://api.openai.com/v1"
                 />
                 <Button size="sm" onClick={handleSaveBaseUrl}>
-                  <Check className="h-3 w-3" />
+                  Save
                 </Button>
               </div>
             ) : (
@@ -143,12 +185,27 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
         </dl>
       </Card>
 
-      {/* API Key Dialog */}
+      {/* Dialogs */}
       <APIKeyDialog
         open={showKeyDialog}
         onClose={() => setShowKeyDialog(false)}
         providerId={provider.id}
         providerName={provider.name}
+      />
+
+      <AddModelDialog
+        open={showAddModelDialog}
+        onClose={() => setShowAddModelDialog(false)}
+        providerId={provider.id}
+        onSuccess={handleModelAdded}
+      />
+
+      <ModelEditDialog
+        open={editingModel !== null}
+        onClose={() => setEditingModel(null)}
+        providerId={provider.id}
+        model={editingModel}
+        onSuccess={handleModelUpdated}
       />
     </div>
   );

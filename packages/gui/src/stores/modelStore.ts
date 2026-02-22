@@ -13,6 +13,8 @@ import type {
   CreateProviderInput,
   UpdateProviderInput,
   SetAPIKeyInput,
+  AddModelInput,
+  UpdateModelInput,
   LogUsageInput,
   ProxyConfig,
   ProxyStats,
@@ -76,6 +78,14 @@ export interface ModelState {
 
   // Model Actions
   loadModels: (providerId: string) => Promise<void>;
+  addModel: (providerId: string, input: AddModelInput) => Promise<ModelInfo>;
+  updateModelDetails: (
+    providerId: string,
+    modelId: string,
+    input: UpdateModelInput
+  ) => Promise<ModelInfo>;
+  deleteModel: (providerId: string, modelId: string) => Promise<void>;
+  setModelEnabled: (providerId: string, modelId: string, enabled: boolean) => Promise<void>;
   setDefaultModel: (providerId: string, modelId: string) => Promise<void>;
 
   // Usage Actions
@@ -355,6 +365,60 @@ export const useModelStore = create<ModelState>((set, get) => ({
       set({ modelsByProvider, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load models';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  addModel: async (providerId: string, input: AddModelInput) => {
+    set({ loading: true, error: null });
+    try {
+      const model = await window.electronAPI.model.addModel(providerId, input);
+      await get().loadProviders();
+      set({ loading: false });
+      return model;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to add model';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  updateModelDetails: async (providerId: string, modelId: string, input: UpdateModelInput) => {
+    set({ loading: true, error: null });
+    try {
+      const model = await window.electronAPI.model.updateModelDetails(providerId, modelId, input);
+      await get().loadProviders();
+      set({ loading: false });
+      return model;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update model';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  deleteModel: async (providerId: string, modelId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await window.electronAPI.model.deleteModel(providerId, modelId);
+      await get().loadProviders();
+      set({ loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete model';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  setModelEnabled: async (providerId: string, modelId: string, enabled: boolean) => {
+    set({ loading: true, error: null });
+    try {
+      await window.electronAPI.model.setModelEnabled(providerId, modelId, enabled);
+      await get().loadProviders();
+      set({ loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to toggle model';
       set({ error: message, loading: false });
       throw error;
     }

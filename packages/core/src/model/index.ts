@@ -22,6 +22,8 @@ export type {
   CreateProviderInput,
   UpdateProviderInput,
   SetAPIKeyInput,
+  AddModelInput,
+  UpdateModelInput,
   LogUsageInput,
   UsageLogFilters,
   ModelExportData,

@@ -52,7 +52,10 @@ export const IPC_CHANNELS = {
 
   // Model management - Models
   GET_MODELS: 'get-models',
-  UPDATE_MODEL: 'update-model',
+  ADD_MODEL: 'add-model',
+  UPDATE_MODEL_DETAILS: 'update-model-details',
+  DELETE_MODEL: 'delete-model',
+  SET_MODEL_ENABLED: 'set-model-enabled',
   SET_DEFAULT_MODEL: 'set-default-model',
   GET_DEFAULT_MODEL: 'get-default-model',
 

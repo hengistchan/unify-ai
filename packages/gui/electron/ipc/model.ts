@@ -10,6 +10,8 @@ import type {
   CreateProviderInput,
   UpdateProviderInput,
   SetAPIKeyInput,
+  AddModelInput,
+  UpdateModelInput,
   LogUsageInput,
   UsageLogFilters,
   ValidationOptions,
@@ -189,12 +191,41 @@ export function registerModelIpcHandlers(): void {
   });
 
   ipcMain.handle(
-    IPC_CHANNELS.UPDATE_MODEL,
-    async (_event, providerId: string, modelId: string, config: any) => {
-      console.log('[Model IPC] Updating model:', modelId);
+    IPC_CHANNELS.ADD_MODEL,
+    async (_event, providerId: string, input: AddModelInput) => {
+      console.log('[Model IPC] Adding model to provider:', providerId, input.id);
       const manager = getModelManager();
-      const model = await manager.updateModel(providerId, modelId, config);
-      console.log('[Model IPC] Model updated:', model.id);
+      const model = await manager.addModel(providerId, input);
+      console.log('[Model IPC] Model added:', model.id);
+      return model;
+    }
+  );
+
+  ipcMain.handle(
+    IPC_CHANNELS.UPDATE_MODEL_DETAILS,
+    async (_event, providerId: string, modelId: string, input: UpdateModelInput) => {
+      console.log('[Model IPC] Updating model details:', modelId);
+      const manager = getModelManager();
+      const model = await manager.updateModelDetails(providerId, modelId, input);
+      console.log('[Model IPC] Model details updated:', model.id);
+      return model;
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.DELETE_MODEL, async (_event, providerId: string, modelId: string) => {
+    console.log('[Model IPC] Deleting model:', modelId);
+    const manager = getModelManager();
+    await manager.deleteModel(providerId, modelId);
+    console.log('[Model IPC] Model deleted:', modelId);
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.SET_MODEL_ENABLED,
+    async (_event, providerId: string, modelId: string, enabled: boolean) => {
+      console.log('[Model IPC] Setting model enabled:', modelId, enabled);
+      const manager = getModelManager();
+      const model = await manager.setModelEnabled(providerId, modelId, enabled);
+      console.log('[Model IPC] Model enabled state updated');
       return model;
     }
   );

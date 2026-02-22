@@ -321,6 +321,44 @@ export interface SetAPIKeyInput {
 }
 
 /**
+ * Input for adding a new model to a provider
+ */
+export interface AddModelInput {
+  /** Model identifier */
+  id: string;
+  /** Display name */
+  displayName: string;
+  /** Context window size (tokens) */
+  contextWindow: number;
+  /** Maximum output tokens */
+  maxOutputTokens: number;
+  /** Pricing information */
+  pricing?: Partial<ModelPricing>;
+  /** Whether model is enabled (default: true) */
+  enabled?: boolean;
+  /** Model-specific configuration */
+  config?: ModelConfig;
+}
+
+/**
+ * Input for updating a model
+ */
+export interface UpdateModelInput {
+  /** Display name */
+  displayName?: string;
+  /** Context window size (tokens) */
+  contextWindow?: number;
+  /** Maximum output tokens */
+  maxOutputTokens?: number;
+  /** Pricing information */
+  pricing?: Partial<ModelPricing>;
+  /** Whether model is enabled */
+  enabled?: boolean;
+  /** Model-specific configuration */
+  config?: Partial<ModelConfig>;
+}
+
+/**
  * Input for logging usage
  */
 export interface LogUsageInput {

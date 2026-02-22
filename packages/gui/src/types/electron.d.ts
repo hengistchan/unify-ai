@@ -7,6 +7,8 @@ import type {
   CreateProviderInput,
   UpdateProviderInput,
   SetAPIKeyInput,
+  AddModelInput,
+  UpdateModelInput,
   LogUsageInput,
   UsageLog,
   UsageSummary,
@@ -70,7 +72,14 @@ export interface ElectronAPI {
 
     // Model management
     getModels: (providerId: string) => Promise<ModelInfo[]>;
-    updateModel: (providerId: string, modelId: string, config: Partial<ModelConfig>) => Promise<ModelInfo>;
+    addModel: (providerId: string, input: AddModelInput) => Promise<ModelInfo>;
+    updateModelDetails: (
+      providerId: string,
+      modelId: string,
+      input: UpdateModelInput
+    ) => Promise<ModelInfo>;
+    deleteModel: (providerId: string, modelId: string) => Promise<void>;
+    setModelEnabled: (providerId: string, modelId: string, enabled: boolean) => Promise<ModelInfo>;
     setDefaultModel: (providerId: string, modelId: string) => Promise<void>;
     getDefaultModel: (providerId: string) => Promise<ModelInfo | null>;
 

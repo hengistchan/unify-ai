@@ -93,21 +93,21 @@ export function Home() {
   };
 
   const handleQuickSync = async () => {
-    if (!currentProject || detectedTools.length < 2) {
+    if (!currentProject || detectedTools.length < 1) {
       addToast({
         type: 'warning',
         title: 'Cannot sync',
-        message: 'Open a project with at least 2 detected tools to sync',
+        message: 'Open a project with at least 1 detected tool to sync',
       });
       return;
     }
 
     const detectedList = detectedTools.filter(t => t.detected);
-    if (detectedList.length < 2) {
+    if (detectedList.length < 1) {
       addToast({
         type: 'info',
-        title: 'Need more tools',
-        message: 'At least 2 detected tools are needed for sync',
+        title: 'Need at least one tool',
+        message: 'At least 1 detected tool is needed for sync',
       });
       return;
     }
@@ -190,7 +190,7 @@ export function Home() {
               <div className="text-right">
                 <p className="text-sm text-text-secondary">{detectedCount} tools detected</p>
               </div>
-              {detectedCount >= 2 && (
+              {detectedCount >= 1 && (
                 <button
                   onClick={handleQuickSync}
                   className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary-hover transition-colors"

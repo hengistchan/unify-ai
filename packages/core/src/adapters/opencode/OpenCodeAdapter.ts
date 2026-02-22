@@ -123,12 +123,6 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
         description: 'OpenCode rules file (primary)',
       },
       {
-        pattern: 'CLAUDE.md',
-        type: 'optional',
-        capability: ConfigCapability.RULES,
-        description: 'Claude Code compatibility rules file',
-      },
-      {
         pattern: '.opencode/commands/*.md',
         type: 'optional',
         capability: ConfigCapability.COMMANDS,
@@ -357,6 +351,7 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
 
     const rules = config.rules || [];
     const mcpConfig = config.mcp?.servers || [];
+    const commands = config.commands || [];
 
     const instructions: string[] = [];
     let primaryRuleContent: string | null = null;
@@ -432,32 +427,43 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       }
     }
 
-    const commands = config.commands || [];
-    const opencodeCommands: Record<string, OpenCodeCommandConfig> = {};
-
     for (const cmd of commands) {
-      const cmdConfig: OpenCodeCommandConfig = {
-        template: cmd.template,
-      };
+      const cmdFileName = cmd.name
+        ? `${cmd.name.replace(/[^a-zA-Z0-9_-]/g, '-')}.md`
+        : `command-${cmd.id}.md`;
+
+      let cmdContent = '';
+
+      const frontmatterLines: string[] = [];
       if (cmd.description) {
-        cmdConfig.description = cmd.description;
+        frontmatterLines.push(`description: ${cmd.description}`);
       }
       if (cmd.metadata?.agent) {
-        cmdConfig.agent = cmd.metadata.agent as string;
+        frontmatterLines.push(`agent: ${cmd.metadata.agent}`);
       }
       if (cmd.metadata?.subtask !== undefined) {
-        cmdConfig.subtask = cmd.metadata.subtask as boolean;
+        frontmatterLines.push(`subtask: ${cmd.metadata.subtask}`);
       }
       if (cmd.metadata?.model) {
-        cmdConfig.model = cmd.metadata.model as string;
+        frontmatterLines.push(`model: ${cmd.metadata.model}`);
       }
-      opencodeCommands[cmd.name] = cmdConfig;
+
+      if (frontmatterLines.length > 0) {
+        cmdContent = `---\n${frontmatterLines.join('\n')}\n---\n\n${cmd.template}`;
+      } else {
+        cmdContent = cmd.template;
+      }
+
+      generatedFiles.push({
+        path: `.opencode/commands/${cmdFileName}`,
+        content: cmdContent,
+        encoding: 'utf-8',
+        overwrite: true,
+      });
     }
 
     const opencodeConfig: OpenCodeConfig = {
       $schema: 'https://opencode.ai/config.json',
-      model: 'anthropic/claude-sonnet-4-5',
-      autoupdate: true,
     };
 
     if (instructions.length > 0) {
@@ -468,17 +474,17 @@ export class OpenCodeAdapter extends BaseAdapter implements IAdapter {
       opencodeConfig.mcp = mcpServers;
     }
 
-    if (Object.keys(opencodeCommands).length > 0) {
-      opencodeConfig.command = opencodeCommands;
-    }
+    const hasConfig = Object.keys(mcpServers).length > 0 || instructions.length > 0;
 
-    const configJson = JSON.stringify(opencodeConfig, null, 2);
-    generatedFiles.push({
-      path: 'opencode.json',
-      content: configJson,
-      encoding: 'utf-8',
-      overwrite: true,
-    });
+    if (hasConfig) {
+      const configJson = JSON.stringify(opencodeConfig, null, 2);
+      generatedFiles.push({
+        path: 'opencode.json',
+        content: configJson,
+        encoding: 'utf-8',
+        overwrite: true,
+      });
+    }
 
     return {
       success: true,

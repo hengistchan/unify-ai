@@ -50,35 +50,6 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
   };
 
   /**
-   * Save API key
-   * Only called after successful validation or when user explicitly chooses to save
-   */
-  const handleSave = async () => {
-    if (!apiKey.trim()) {
-      onClose();
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await setAPIKey({
-        providerId,
-        key: apiKey.trim(),
-      });
-      handleClose();
-    } catch (error) {
-      console.error('Failed to save API key:', error);
-      setValidationResult({
-        valid: false,
-        error: error instanceof Error ? error.message : 'Failed to save API key',
-        errorType: 'unknown',
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  /**
    * Validate then save if valid
    * This is the recommended flow for users
    */
@@ -134,7 +105,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
   /**
    * Get user-friendly error message
    */
-  const getErrorMessage = (result: ValidationResult): string => {
+  const getErrorMessage = (result: APIKeyValidationResult): string => {
     switch (result.errorType) {
       case 'invalid_key':
         return 'Invalid API key. Please check and try again.';
@@ -169,7 +140,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
             <input
               type={showKey ? 'text' : 'password'}
               value={apiKey}
-              onChange={(e) => {
+              onChange={e => {
                 setApiKey(e.target.value);
                 setValidationResult(null);
               }}
@@ -191,9 +162,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
         {validationResult && (
           <div
             className={`flex items-start gap-2 rounded p-3 text-sm ${
-              validationResult.valid
-                ? 'bg-success-muted text-success'
-                : 'bg-error-muted text-error'
+              validationResult.valid ? 'bg-success-muted text-success' : 'bg-error-muted text-error'
             }`}
           >
             {validationResult.valid ? (
@@ -213,7 +182,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
         <div className="flex items-center justify-between gap-2 pt-2">
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleValidate}
               loading={validating}
@@ -231,7 +200,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleClose} disabled={saving || validating}>
+            <Button variant="secondary" onClick={handleClose} disabled={saving || validating}>
               Cancel
             </Button>
             <Button
@@ -246,8 +215,8 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
 
         {/* Help text */}
         <p className="text-xs text-text-secondary">
-          Click "Test Key" to validate without saving, or "Validate & Save" to verify and store
-          your key in one step.
+          Click "Test Key" to validate without saving, or "Validate & Save" to verify and store your
+          key in one step.
         </p>
       </div>
     </Modal>

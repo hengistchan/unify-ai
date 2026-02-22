@@ -7,7 +7,6 @@ import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from './channels';
 import { ModelManager } from '@unify-ai/core/model';
 import type {
-  AIProvider,
   CreateProviderInput,
   UpdateProviderInput,
   SetAPIKeyInput,
@@ -132,15 +131,12 @@ export function registerModelIpcHandlers(): void {
     return apiKey;
   });
 
-  ipcMain.handle(
-    IPC_CHANNELS.GET_API_KEY,
-    async (_event, providerId: string, keyName?: string) => {
-      console.log('[Model IPC] Getting API key for provider:', providerId);
-      const manager = getModelManager();
-      const key = await manager.getAPIKey(providerId, keyName);
-      return key;
-    }
-  );
+  ipcMain.handle(IPC_CHANNELS.GET_API_KEY, async (_event, providerId: string, keyName?: string) => {
+    console.log('[Model IPC] Getting API key for provider:', providerId);
+    const manager = getModelManager();
+    const key = await manager.getAPIKey(providerId, keyName);
+    return key;
+  });
 
   ipcMain.handle(IPC_CHANNELS.VALIDATE_API_KEY, async (_event, providerId: string) => {
     console.log('[Model IPC] Validating API key for provider:', providerId);
@@ -203,12 +199,15 @@ export function registerModelIpcHandlers(): void {
     }
   );
 
-  ipcMain.handle(IPC_CHANNELS.SET_DEFAULT_MODEL, async (_event, providerId: string, modelId: string) => {
-    console.log('[Model IPC] Setting default model:', modelId);
-    const manager = getModelManager();
-    await manager.setDefaultModel(providerId, modelId);
-    console.log('[Model IPC] Default model set');
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.SET_DEFAULT_MODEL,
+    async (_event, providerId: string, modelId: string) => {
+      console.log('[Model IPC] Setting default model:', modelId);
+      const manager = getModelManager();
+      await manager.setDefaultModel(providerId, modelId);
+      console.log('[Model IPC] Default model set');
+    }
+  );
 
   ipcMain.handle(IPC_CHANNELS.GET_DEFAULT_MODEL, async (_event, providerId: string) => {
     console.log('[Model IPC] Getting default model for provider:', providerId);
@@ -274,7 +273,6 @@ export function registerModelIpcHandlers(): void {
 export async function cleanupModelManager(): Promise<void> {
   if (modelManager) {
     console.log('[Model IPC] Cleaning up ModelManager...');
-    await modelManager.dispose();
     modelManager = null;
     console.log('[Model IPC] ModelManager cleaned up');
   }

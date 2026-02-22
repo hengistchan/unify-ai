@@ -20,6 +20,7 @@ import type {
   RequestLog,
   APIKeyValidationResult,
 } from '@unify-ai/core/model';
+import type { ToolProviderInfo, GlobalProviderUsage } from '../types/electron';
 
 // ============================================
 // Type Definitions
@@ -42,6 +43,10 @@ export interface ModelState {
   proxyStatus: ProxyStatus;
   proxyStats: ProxyStats | null;
   requestLogs: RequestLog[];
+
+  // Tool-specific providers (hybrid tool isolation)
+  toolProviderMap: Map<string, ToolProviderInfo>;
+  globalProviderUsage: GlobalProviderUsage[];
 
   // UI State
   loading: boolean;
@@ -88,6 +93,14 @@ export interface ModelState {
   // Utility Actions
   clearError: () => void;
   reset: () => void;
+
+  // Tool-specific Provider Actions (hybrid tool isolation)
+  loadToolProvider: (toolId: string) => Promise<ToolProviderInfo>;
+  loadGlobalProviders: () => Promise<AIProvider[]>;
+  loadToolProviders: (toolId: string) => Promise<AIProvider[]>;
+  setToolOverrideProvider: (toolId: string, providerId: string) => Promise<void>;
+  clearToolOverride: (toolId: string) => Promise<void>;
+  loadGlobalProviderUsage: () => Promise<void>;
 }
 
 // ============================================
@@ -104,6 +117,8 @@ const initialState = {
   proxyStatus: 'stopped' as ProxyStatus,
   proxyStats: null,
   requestLogs: [],
+  toolProviderMap: new Map<string, ToolProviderInfo>(),
+  globalProviderUsage: [],
   loading: false,
   error: null,
 };
@@ -170,7 +185,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
         providers,
         modelsByProvider,
         selectedProviderId: get().selectedProviderId === id ? null : get().selectedProviderId,
-        loading: false
+        loading: false,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete provider';
@@ -183,9 +198,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await window.electronAPI.model.setProviderEnabled(id, enabled);
-      const providers = get().providers.map(p =>
-        p.id === id ? { ...p, enabled } : p
-      );
+      const providers = get().providers.map(p => (p.id === id ? { ...p, enabled } : p));
       set({ providers, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update provider';
@@ -198,9 +211,7 @@ export const useModelStore = create<ModelState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       await window.electronAPI.model.setProviderPriority(id, priority);
-      const providers = get().providers.map(p =>
-        p.id === id ? { ...p, priority } : p
-      );
+      const providers = get().providers.map(p => (p.id === id ? { ...p, priority } : p));
       set({ providers, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update provider priority';
@@ -468,5 +479,83 @@ export const useModelStore = create<ModelState>((set, get) => ({
 
   reset: () => {
     set(initialState);
+  },
+
+  // ============================================
+  // Tool-specific Provider Actions
+  // ============================================
+
+  loadToolProvider: async (toolId: string) => {
+    try {
+      const info = await window.electronAPI.model.getCurrentProvider(toolId);
+      const toolProviderMap = new Map(get().toolProviderMap);
+      toolProviderMap.set(toolId, info);
+      set({ toolProviderMap });
+      return info;
+    } catch (error) {
+      console.error('Failed to load tool provider:', error);
+      throw error;
+    }
+  },
+
+  loadGlobalProviders: async () => {
+    try {
+      const providers = await window.electronAPI.model.listGlobalProviders();
+      return providers;
+    } catch (error) {
+      console.error('Failed to load global providers:', error);
+      throw error;
+    }
+  },
+
+  loadToolProviders: async (toolId: string) => {
+    try {
+      const providers = await window.electronAPI.model.listToolProviders(toolId);
+      return providers;
+    } catch (error) {
+      console.error('Failed to load tool providers:', error);
+      throw error;
+    }
+  },
+
+  setToolOverrideProvider: async (toolId: string, providerId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await window.electronAPI.model.setToolOverrideProvider(toolId, providerId);
+      const info = await window.electronAPI.model.getCurrentProvider(toolId);
+      const toolProviderMap = new Map(get().toolProviderMap);
+      toolProviderMap.set(toolId, info);
+      await get().loadGlobalProviderUsage();
+      set({ toolProviderMap, loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to set tool override';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  clearToolOverride: async (toolId: string) => {
+    set({ loading: true, error: null });
+    try {
+      await window.electronAPI.model.clearToolOverride(toolId);
+      const info = await window.electronAPI.model.getCurrentProvider(toolId);
+      const toolProviderMap = new Map(get().toolProviderMap);
+      toolProviderMap.set(toolId, info);
+      await get().loadGlobalProviderUsage();
+      set({ toolProviderMap, loading: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to clear tool override';
+      set({ error: message, loading: false });
+      throw error;
+    }
+  },
+
+  loadGlobalProviderUsage: async () => {
+    try {
+      const usage = await window.electronAPI.model.getGlobalProviderUsage();
+      set({ globalProviderUsage: usage });
+    } catch (error) {
+      console.error('Failed to load global provider usage:', error);
+    }
   },
 }));

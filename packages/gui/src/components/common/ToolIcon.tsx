@@ -10,7 +10,7 @@ export interface ToolIconProps {
 }
 
 const sizeMap = {
-  sm: 'text-lg',
+  sm: 'text-base',
   md: 'text-2xl',
   lg: 'text-4xl',
 };
@@ -31,12 +31,10 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
 
   // Tools with emoji fallbacks
   const emojiMap: Record<string, string> = {
-    cursor: '⚡',
-    windsurf: '🌊',
+    'claude-code': '⚡',
+    opencode: '🔵',
     codex: '📝',
     cline: '📋',
-    aider: '🤝',
-    continue: '▶️',
   };
 
   const bootstrapIcon = bootstrapIconMap[toolId];
@@ -68,13 +66,9 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
 export function getToolName(toolId: string): string {
   const names: Record<string, string> = {
     'claude-code': 'Claude Code',
-    cursor: 'Cursor',
-    copilot: 'GitHub Copilot',
-    windsurf: 'Windsurf',
+    opencode: 'OpenCode',
     codex: 'Codex',
     cline: 'Cline',
-    aider: 'Aider',
-    continue: 'Continue',
   };
   return names[toolId] || toolId;
 }

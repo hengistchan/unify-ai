@@ -45,7 +45,7 @@ function getTrayIconPath(): string {
 /**
  * Create tray icon image
  */
-function createTrayIcon(): nativeImage {
+function createTrayIcon(): Electron.NativeImage {
   const iconPath = getTrayIconPath();
 
   try {

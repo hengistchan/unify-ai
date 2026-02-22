@@ -2,9 +2,11 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'default';
+export type BadgeSize = 'sm' | 'md';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
+  size?: BadgeSize;
   children: React.ReactNode;
 }
 
@@ -16,8 +18,14 @@ const variantStyles: Record<BadgeVariant, string> = {
   default: 'bg-bg-tertiary text-text-secondary',
 };
 
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'px-1.5 py-0 text-[10px]',
+  md: 'px-2 py-0.5 text-xs',
+};
+
 export const Badge: React.FC<BadgeProps> = ({
   variant = 'default',
+  size = 'md',
   children,
   className,
   ...props
@@ -26,10 +34,10 @@ export const Badge: React.FC<BadgeProps> = ({
     <span
       className={cn(
         'inline-flex items-center',
-        'px-2 py-0.5',
-        'text-xs font-medium',
+        'font-medium',
         'rounded-full',
         variantStyles[variant],
+        sizeStyles[size],
         className
       )}
       {...props}

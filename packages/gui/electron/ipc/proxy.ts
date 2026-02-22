@@ -39,7 +39,7 @@ export function registerProxyIpcHandlers(): void {
   console.log('[Proxy IPC] Registering proxy handlers...');
 
   // Start proxy server
-  ipcMain.handle(IPC_CHANNELS.START_PROXY, async (_event, config?: any) => {
+  ipcMain.handle(IPC_CHANNELS.START_PROXY, async (_event, _config?: any) => {
     console.log('[Proxy IPC] Starting proxy server...');
     const proxy = getProxyServer();
     await proxy.start();

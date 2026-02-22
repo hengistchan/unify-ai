@@ -20,6 +20,18 @@ import type {
   APIKeyValidationResult,
 } from '@unify-ai/core/model';
 
+export interface ToolProviderInfo {
+  toolId: string;
+  providerId: string | null;
+  isOverride: boolean;
+}
+
+export interface GlobalProviderUsage {
+  providerId: string;
+  providerName: string;
+  toolsUsing: string[];
+}
+
 export interface ElectronAPI {
   getAppVersion: () => Promise<string>;
   openFolder: () => Promise<string | null>;
@@ -70,6 +82,14 @@ export interface ElectronAPI {
     // Provider selection
     getActiveProvider: () => Promise<AIProvider | null>;
     getActiveProviders: () => Promise<AIProvider[]>;
+
+    // Tool-specific provider management (hybrid tool isolation)
+    getCurrentProvider: (toolId: string) => Promise<ToolProviderInfo>;
+    listGlobalProviders: () => Promise<AIProvider[]>;
+    listToolProviders: (toolId: string) => Promise<AIProvider[]>;
+    setToolOverrideProvider: (toolId: string, providerId: string) => Promise<void>;
+    clearToolOverride: (toolId: string) => Promise<void>;
+    getGlobalProviderUsage: () => Promise<GlobalProviderUsage[]>;
   };
 
   // Proxy Server API

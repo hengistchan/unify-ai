@@ -24,7 +24,7 @@ vi.mock('@unify-ai/core', () => ({
     WINDSURF: 'windsurf',
     CLINE: 'cline',
     AIDER: 'aider',
-    CONTINUE: 'continue',
+    OPENCODE: 'opencode',
     CODEX: 'codex',
   },
   UnifiedConfig: {},

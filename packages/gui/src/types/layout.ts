@@ -9,7 +9,7 @@ export type AITool =
   | 'codex'
   | 'cline'
   | 'aider'
-  | 'continue';
+  | 'opencode';
 
 /**
  * Tool configuration status

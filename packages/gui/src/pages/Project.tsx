@@ -198,7 +198,7 @@ export function Project() {
             variant="primary"
             size="sm"
             onClick={() => setShowSyncModeDialog(true)}
-            disabled={detectedCount < 2}
+            disabled={detectedCount < 1}
           >
             <RefreshCw className="w-4 h-4 mr-1" />
             Sync Config

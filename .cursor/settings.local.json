@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": ["Bash(pnpm typecheck)", "Bash(git add:*)"]
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["shadcn"]
-}

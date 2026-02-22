@@ -234,14 +234,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProviders: () => ipcRenderer.invoke(IPC_CHANNELS.GET_PROVIDERS),
     getProvider: (providerId: string) => ipcRenderer.invoke(IPC_CHANNELS.GET_PROVIDER, providerId),
     createProvider: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.CREATE_PROVIDER, input),
-    updateProvider: (providerId: string, input: any) =>
-      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_PROVIDER, providerId, input),
-    deleteProvider: (providerId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.DELETE_PROVIDER, providerId),
-    setProviderEnabled: (providerId: string, enabled: boolean) =>
-      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_ENABLED, providerId, enabled),
-    setProviderPriority: (providerId: string, priority: number) =>
-      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_PRIORITY, providerId, priority),
+    updateProvider: (providerId: string, input: any, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_PROVIDER, providerId, input, toolId),
+    deleteProvider: (providerId: string, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DELETE_PROVIDER, providerId, toolId),
+    setProviderEnabled: (providerId: string, enabled: boolean, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_ENABLED, providerId, enabled, toolId),
+    setProviderPriority: (providerId: string, priority: number, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_PROVIDER_PRIORITY, providerId, priority, toolId),
 
     // API key management
     setAPIKey: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.SET_API_KEY, input),

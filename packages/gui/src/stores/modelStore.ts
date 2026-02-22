@@ -57,10 +57,10 @@ export interface ModelState {
   // Provider Actions
   loadProviders: () => Promise<void>;
   createProvider: (input: CreateProviderInput) => Promise<AIProvider>;
-  updateProvider: (id: string, input: UpdateProviderInput) => Promise<AIProvider>;
-  deleteProvider: (id: string) => Promise<void>;
-  setProviderEnabled: (id: string, enabled: boolean) => Promise<void>;
-  setProviderPriority: (id: string, priority: number) => Promise<void>;
+  updateProvider: (id: string, input: UpdateProviderInput, toolId?: string) => Promise<AIProvider>;
+  deleteProvider: (id: string, toolId?: string) => Promise<void>;
+  setProviderEnabled: (id: string, enabled: boolean, toolId?: string) => Promise<void>;
+  setProviderPriority: (id: string, priority: number, toolId?: string) => Promise<void>;
   selectProvider: (id: string | null) => void;
   loadActiveProvider: () => Promise<void>;
   setActiveProvider: (providerId: string) => Promise<void>;
@@ -170,11 +170,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  updateProvider: async (id: string, input: UpdateProviderInput) => {
+  updateProvider: async (id: string, input: UpdateProviderInput, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      const provider = await window.electronAPI.model.updateProvider(id, input);
-      const providers = get().providers.map(p => (p.id === id ? provider : p));
+      const provider = await window.electronAPI.model.updateProvider(id, input, toolId);
+      const providers = get().providers.map(p =>
+        p.id === id && p.toolId === toolId ? provider : p
+      );
       set({ providers, loading: false });
       return provider;
     } catch (error) {
@@ -184,11 +186,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  deleteProvider: async (id: string) => {
+  deleteProvider: async (id: string, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.deleteProvider(id);
-      const providers = get().providers.filter(p => p.id !== id);
+      await window.electronAPI.model.deleteProvider(id, toolId);
+      const providers = get().providers.filter(
+        p => !(p.id === id && (toolId === undefined || p.toolId === toolId))
+      );
       const modelsByProvider = new Map(get().modelsByProvider);
       modelsByProvider.delete(id);
       set({
@@ -204,11 +208,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  setProviderEnabled: async (id: string, enabled: boolean) => {
+  setProviderEnabled: async (id: string, enabled: boolean, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.setProviderEnabled(id, enabled);
-      const providers = get().providers.map(p => (p.id === id ? { ...p, enabled } : p));
+      await window.electronAPI.model.setProviderEnabled(id, enabled, toolId);
+      const providers = get().providers.map(p =>
+        p.id === id && (toolId === undefined || p.toolId === toolId) ? { ...p, enabled } : p
+      );
       set({ providers, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update provider';
@@ -217,11 +223,13 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  setProviderPriority: async (id: string, priority: number) => {
+  setProviderPriority: async (id: string, priority: number, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.setProviderPriority(id, priority);
-      const providers = get().providers.map(p => (p.id === id ? { ...p, priority } : p));
+      await window.electronAPI.model.setProviderPriority(id, priority, toolId);
+      const providers = get().providers.map(p =>
+        p.id === id && (toolId === undefined || p.toolId === toolId) ? { ...p, priority } : p
+      );
       set({ providers, loading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update provider priority';

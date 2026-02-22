@@ -53,10 +53,10 @@ export interface ElectronAPI {
     getProviders: () => Promise<AIProvider[]>;
     getProvider: (providerId: string) => Promise<AIProvider | null>;
     createProvider: (input: CreateProviderInput) => Promise<AIProvider>;
-    updateProvider: (providerId: string, input: UpdateProviderInput) => Promise<AIProvider>;
-    deleteProvider: (providerId: string) => Promise<void>;
-    setProviderEnabled: (providerId: string, enabled: boolean) => Promise<void>;
-    setProviderPriority: (providerId: string, priority: number) => Promise<void>;
+    updateProvider: (providerId: string, input: UpdateProviderInput, toolId?: string) => Promise<AIProvider>;
+    deleteProvider: (providerId: string, toolId?: string) => Promise<void>;
+    setProviderEnabled: (providerId: string, enabled: boolean, toolId?: string) => Promise<void>;
+    setProviderPriority: (providerId: string, priority: number, toolId?: string) => Promise<void>;
 
     // API key management
     setAPIKey: (input: SetAPIKeyInput) => Promise<APIKey>;

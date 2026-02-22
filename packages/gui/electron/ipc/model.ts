@@ -85,38 +85,47 @@ export function registerModelIpcHandlers(): void {
 
   ipcMain.handle(
     IPC_CHANNELS.UPDATE_PROVIDER,
-    async (_event, providerId: string, input: UpdateProviderInput) => {
-      console.log('[Model IPC] Updating provider:', providerId);
+    async (_event, providerId: string, input: UpdateProviderInput, toolId?: string) => {
+      console.log('[Model IPC] Updating provider:', providerId, 'toolId:', toolId);
       const manager = getModelManager();
-      const provider = await manager.updateProvider(providerId, input);
+      const provider = await manager.updateProvider(providerId, input, toolId);
       console.log('[Model IPC] Provider updated:', provider.id);
       return provider;
     }
   );
 
-  ipcMain.handle(IPC_CHANNELS.DELETE_PROVIDER, async (_event, providerId: string) => {
-    console.log('[Model IPC] Deleting provider:', providerId);
-    const manager = getModelManager();
-    await manager.deleteProvider(providerId);
-    console.log('[Model IPC] Provider deleted:', providerId);
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.DELETE_PROVIDER,
+    async (_event, providerId: string, toolId?: string) => {
+      console.log('[Model IPC] Deleting provider:', providerId, 'toolId:', toolId);
+      const manager = getModelManager();
+      await manager.deleteProvider(providerId, toolId);
+      console.log('[Model IPC] Provider deleted:', providerId);
+    }
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.SET_PROVIDER_ENABLED,
-    async (_event, providerId: string, enabled: boolean) => {
-      console.log('[Model IPC] Setting provider enabled:', providerId, enabled);
+    async (_event, providerId: string, enabled: boolean, toolId?: string) => {
+      console.log('[Model IPC] Setting provider enabled:', providerId, enabled, 'toolId:', toolId);
       const manager = getModelManager();
-      await manager.setProviderEnabled(providerId, enabled);
+      await manager.setProviderEnabled(providerId, enabled, toolId);
       console.log('[Model IPC] Provider enabled state updated');
     }
   );
 
   ipcMain.handle(
     IPC_CHANNELS.SET_PROVIDER_PRIORITY,
-    async (_event, providerId: string, priority: number) => {
-      console.log('[Model IPC] Setting provider priority:', providerId, priority);
+    async (_event, providerId: string, priority: number, toolId?: string) => {
+      console.log(
+        '[Model IPC] Setting provider priority:',
+        providerId,
+        priority,
+        'toolId:',
+        toolId
+      );
       const manager = getModelManager();
-      await manager.setProviderPriority(providerId, priority);
+      await manager.setProviderPriority(providerId, priority, toolId);
       console.log('[Model IPC] Provider priority updated');
     }
   );

@@ -7,7 +7,7 @@ import { useState } from 'react';
 import type { AIProvider, ModelInfo } from '@unify-ai/core/model';
 import { useModelStore } from '../../stores/modelStore';
 import { Button, Card } from '../common';
-import { Settings, Trash2, Key, Pencil, Plus } from 'lucide-react';
+import { Settings, Trash2, Key, Pencil, Plus, Globe, Wrench } from 'lucide-react';
 import { APIKeyDialog } from './APIKeyDialog';
 import { ModelListItem } from './ModelListItem';
 import { AddModelDialog } from './AddModelDialog';
@@ -33,17 +33,21 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
   } = useModelStore();
 
   const handleToggleEnabled = async () => {
-    await setProviderEnabled(provider.id, !provider.enabled);
+    await setProviderEnabled(provider.id, !provider.enabled, provider.toolId ?? undefined);
   };
 
   const handleSaveBaseUrl = async () => {
-    await updateProvider(provider.id, { baseUrl: baseUrlInput.trim() || undefined });
+    await updateProvider(
+      provider.id,
+      { baseUrl: baseUrlInput.trim() || undefined },
+      provider.toolId ?? undefined
+    );
     setEditingBaseUrl(false);
   };
 
   const handleDelete = async () => {
     if (confirm(`Delete provider "${provider.name}"? This cannot be undone.`)) {
-      await deleteProvider(provider.id);
+      await deleteProvider(provider.id, provider.toolId ?? undefined);
     }
   };
 
@@ -70,7 +74,20 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold">{provider.name}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">{provider.name}</h2>
+            {provider.toolId ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-warning-muted text-warning">
+                <Wrench className="h-3 w-3" />
+                {provider.toolId}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-success-muted text-success">
+                <Globe className="h-3 w-3" />
+                Global
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm text-text-secondary">
             Type: {provider.type} | Priority: {provider.priority}
           </p>

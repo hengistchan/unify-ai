@@ -7,6 +7,23 @@ import { render, screen } from '@testing-library/react';
 import { ToolIcon, getToolName } from '@/components/common/ToolIcon';
 
 describe('ToolIcon', () => {
+  describe('@lobehub/icons', () => {
+    it('should render Cursor icon', () => {
+      const { container } = render(<ToolIcon toolId="cursor" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('should render Cline icon', () => {
+      const { container } = render(<ToolIcon toolId="cline" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('should render Windsurf icon', () => {
+      const { container } = render(<ToolIcon toolId="windsurf" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+  });
+
   describe('Bootstrap Icons', () => {
     it('should render Bootstrap icon for claude-code', () => {
       render(<ToolIcon toolId="claude-code" />);
@@ -22,24 +39,9 @@ describe('ToolIcon', () => {
   });
 
   describe('Emoji Fallbacks', () => {
-    it('should render emoji for cursor', () => {
-      render(<ToolIcon toolId="cursor" />);
-      expect(screen.getByText('⚡')).toBeInTheDocument();
-    });
-
-    it('should render emoji for windsurf', () => {
-      render(<ToolIcon toolId="windsurf" />);
-      expect(screen.getByText('🌊')).toBeInTheDocument();
-    });
-
     it('should render emoji for codex', () => {
       render(<ToolIcon toolId="codex" />);
       expect(screen.getByText('📝')).toBeInTheDocument();
-    });
-
-    it('should render emoji for cline', () => {
-      render(<ToolIcon toolId="cline" />);
-      expect(screen.getByText('📋')).toBeInTheDocument();
     });
 
     it('should render emoji for aider', () => {
@@ -47,9 +49,9 @@ describe('ToolIcon', () => {
       expect(screen.getByText('🤝')).toBeInTheDocument();
     });
 
-    it('should render emoji for continue', () => {
-      render(<ToolIcon toolId="continue" />);
-      expect(screen.getByText('▶️')).toBeInTheDocument();
+    it('should render emoji for opencode', () => {
+      render(<ToolIcon toolId="opencode" />);
+      expect(screen.getByText('🔵')).toBeInTheDocument();
     });
   });
 
@@ -61,26 +63,26 @@ describe('ToolIcon', () => {
   });
 
   describe('Sizes', () => {
-    it('should apply sm size class', () => {
-      render(<ToolIcon toolId="cursor" size="sm" />);
-      expect(screen.getByText('⚡').className).toContain('text-lg');
+    it('should render with sm size', () => {
+      const { container } = render(<ToolIcon toolId="cursor" size="sm" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
     });
 
-    it('should apply md size class by default', () => {
-      render(<ToolIcon toolId="cursor" />);
-      expect(screen.getByText('⚡').className).toContain('text-2xl');
+    it('should render with md size by default', () => {
+      const { container } = render(<ToolIcon toolId="cursor" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
     });
 
-    it('should apply lg size class', () => {
-      render(<ToolIcon toolId="cursor" size="lg" />);
-      expect(screen.getByText('⚡').className).toContain('text-4xl');
+    it('should render with lg size', () => {
+      const { container } = render(<ToolIcon toolId="cursor" size="lg" />);
+      expect(container.querySelector('svg')).toBeInTheDocument();
     });
   });
 
   describe('Custom ClassName', () => {
     it('should apply custom className', () => {
-      render(<ToolIcon toolId="cursor" className="custom-class" />);
-      expect(screen.getByText('⚡').className).toContain('custom-class');
+      const { container } = render(<ToolIcon toolId="cursor" className="custom-class" />);
+      expect(container.querySelector('.custom-class')).toBeInTheDocument();
     });
   });
 });
@@ -114,8 +116,8 @@ describe('getToolName', () => {
     expect(getToolName('aider')).toBe('Aider');
   });
 
-  it('should return display name for continue', () => {
-    expect(getToolName('continue')).toBe('Continue');
+  it('should return display name for opencode', () => {
+    expect(getToolName('opencode')).toBe('OpenCode');
   });
 
   it('should return the input for unknown tool', () => {

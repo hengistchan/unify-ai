@@ -1,7 +1,9 @@
 /**
  * Tool Icon Component
- * Renders icons for AI tools using Bootstrap Icons or emojis as fallback
+ * Renders icons for AI tools using @lobehub/icons, Bootstrap Icons, or emojis as fallback
  */
+
+import { Cursor, Cline, Windsurf } from '@lobehub/icons';
 
 export interface ToolIconProps {
   toolId: string;
@@ -10,40 +12,50 @@ export interface ToolIconProps {
 }
 
 const sizeMap = {
+  sm: 20,
+  md: 32,
+  lg: 48,
+};
+
+const sizeClassMap = {
   sm: 'text-base',
   md: 'text-2xl',
   lg: 'text-4xl',
 };
 
-/**
- * Get icon element for a tool
- * Bootstrap Icons available: anthropic, claude, openai, github
- * Fallback to emojis for other tools
- */
+const emojiIcons: Record<string, string> = {
+  aider: '🤝',
+  codex: '📝',
+  opencode: '🔵',
+};
+
+const bootstrapIcons: Record<string, string> = {
+  'claude-code': 'bi-claude',
+  copilot: 'bi-github',
+};
+
 export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps) {
-  const sizeClass = sizeMap[size];
+  const iconSize = sizeMap[size];
+  const sizeClass = sizeClassMap[size];
 
-  // Tools with Bootstrap Icons
-  const bootstrapIconMap: Record<string, string> = {
-    'claude-code': 'bi-claude',
-    copilot: 'bi-github', // Copilot is GitHub's product
-  };
+  if (toolId === 'cursor') {
+    return <Cursor size={iconSize} className={className} />;
+  }
 
-  // Tools with emoji fallbacks
-  const emojiMap: Record<string, string> = {
-    'claude-code': '⚡',
-    opencode: '🔵',
-    codex: '📝',
-    cline: '📋',
-  };
+  if (toolId === 'cline') {
+    return <Cline size={iconSize} className={className} />;
+  }
 
-  const bootstrapIcon = bootstrapIconMap[toolId];
-  const emoji = emojiMap[toolId];
+  if (toolId === 'windsurf') {
+    return <Windsurf size={iconSize} className={className} />;
+  }
 
+  const bootstrapIcon = bootstrapIcons[toolId];
   if (bootstrapIcon) {
     return <i className={`bi ${bootstrapIcon} ${sizeClass} ${className}`} aria-hidden="true" />;
   }
 
+  const emoji = emojiIcons[toolId];
   if (emoji) {
     return (
       <span className={`${sizeClass} ${className}`} aria-hidden="true">
@@ -52,7 +64,6 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
     );
   }
 
-  // Default fallback
   return (
     <span className={`${sizeClass} ${className}`} aria-hidden="true">
       🔧
@@ -60,15 +71,16 @@ export function ToolIcon({ toolId, size = 'md', className = '' }: ToolIconProps)
   );
 }
 
-/**
- * Get tool display name
- */
 export function getToolName(toolId: string): string {
   const names: Record<string, string> = {
     'claude-code': 'Claude Code',
-    opencode: 'OpenCode',
+    cursor: 'Cursor',
+    copilot: 'GitHub Copilot',
+    windsurf: 'Windsurf',
     codex: 'Codex',
     cline: 'Cline',
+    aider: 'Aider',
+    opencode: 'OpenCode',
   };
   return names[toolId] || toolId;
 }

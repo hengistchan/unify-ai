@@ -23,6 +23,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@lobehub/icons": "^4.6.0",
     "@unify-ai/core": "workspace:*",
     "bootstrap-icons": "^1.13.1",
     "clsx": "^2.1.1",

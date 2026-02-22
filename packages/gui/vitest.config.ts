@@ -13,6 +13,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
     },
+    exclude: ['**/node_modules/**', '**/dist/**'],
+    alias: {
+      '@lobehub/icons': path.resolve(__dirname, './src/__tests__/__mocks__/@lobehub/icons.tsx'),
+    },
   },
   resolve: {
     alias: {

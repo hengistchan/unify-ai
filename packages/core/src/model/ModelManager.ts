@@ -141,6 +141,48 @@ export class ModelManager {
       for (const provider of BUILTIN_PROVIDERS) {
         await this.createProviderInternal(provider);
       }
+    } else {
+      // Check if model_configs is empty and populate if needed
+      await this.populateModelConfigsIfEmpty();
+    }
+  }
+
+  /**
+   * Populate model_configs table if empty (for existing databases)
+   */
+  private async populateModelConfigsIfEmpty(): Promise<void> {
+    const modelCount = await this.db.get<{ count: number }>(
+      'SELECT COUNT(*) as count FROM model_configs'
+    );
+
+    if (!modelCount || modelCount.count === 0) {
+      // Get all providers and their models from JSON column
+      const providers = await this.db.all<any>('SELECT * FROM providers');
+
+      for (const provider of providers) {
+        const models = provider.models ? JSON.parse(provider.models) : [];
+
+        for (const model of models) {
+          const modelId = `${provider.id}:${model.id}`;
+          try {
+            const modelStmt = this.db.getStatement('model_config_insert');
+            modelStmt.run({
+              id: modelId,
+              providerId: provider.id,
+              modelId: model.id,
+              displayName: model.displayName || model.id,
+              contextWindow: model.contextWindow || 4096,
+              maxOutputTokens: model.maxOutputTokens || 4096,
+              pricingInput: model.pricing?.inputPerK || 0,
+              pricingOutput: model.pricing?.outputPerK || 0,
+              enabled: model.enabled !== false ? 1 : 0,
+              config: JSON.stringify(model.config || {}),
+            });
+          } catch (error) {
+            // Model might already exist, skip
+          }
+        }
+      }
     }
   }
 

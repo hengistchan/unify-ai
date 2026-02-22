@@ -76,7 +76,7 @@ async function runInteractiveInit(
         { name: 'Windsurf', value: 'windsurf' },
         { name: 'Cline', value: 'cline' },
         { name: 'Aider', value: 'aider' },
-        { name: 'Continue', value: 'continue' },
+        { name: 'OpenCode', value: 'opencode' },
       ],
     },
     {
@@ -118,13 +118,13 @@ async function runFromToolInit(
     windsurf: ToolId.WINDSURF,
     cline: ToolId.CLINE,
     aider: ToolId.AIDER,
-    continue: ToolId.CONTINUE,
+    opencode: ToolId.OPENCODE,
   };
 
   const toolId = toolIdMap[options.from];
   if (!toolId) {
     logger.error(`Tool '${options.from}' is not supported.`);
-    logger.info('Supported tools: claude-code, cursor, copilot, windsurf, cline, aider, continue');
+    logger.info('Supported tools: claude-code, cursor, copilot, windsurf, cline, aider, opencode');
     process.exit(1);
   }
 
@@ -132,7 +132,7 @@ async function runFromToolInit(
 
   if (!adapter) {
     logger.error(`Tool '${options.from}' is not supported.`);
-    logger.info('Supported tools: claude-code, cursor, copilot, windsurf, cline, aider, continue');
+    logger.info('Supported tools: claude-code, cursor, copilot, windsurf, cline, aider, opencode');
     process.exit(1);
   }
 

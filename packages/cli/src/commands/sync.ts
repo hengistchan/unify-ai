@@ -72,7 +72,7 @@ export const syncCommand = new Command('sync')
         'windsurf',
         'cline',
         'aider',
-        'continue',
+        'opencode',
       ];
       const toolsToSync = _tools.length > 0 ? _tools : allTools;
 
@@ -126,7 +126,7 @@ async function executeSync(
     windsurf: ToolId.WINDSURF,
     cline: ToolId.CLINE,
     aider: ToolId.AIDER,
-    continue: ToolId.CONTINUE,
+    opencode: ToolId.OPENCODE,
   };
 
   for (const toolId of tools) {

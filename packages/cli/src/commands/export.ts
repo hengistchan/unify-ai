@@ -42,7 +42,7 @@ export const exportCommand = new Command('export')
       const targets =
         tools.length > 0
           ? tools
-          : ['claude-code', 'cursor', 'copilot', 'windsurf', 'cline', 'aider', 'continue'];
+          : ['claude-code', 'cursor', 'copilot', 'windsurf', 'cline', 'aider', 'opencode'];
 
       for (const toolId of targets) {
         // Map string to ToolId
@@ -53,7 +53,7 @@ export const exportCommand = new Command('export')
           windsurf: ToolId.WINDSURF,
           cline: ToolId.CLINE,
           aider: ToolId.AIDER,
-          continue: ToolId.CONTINUE,
+          opencode: ToolId.OPENCODE,
         };
 
         const tid = toolIdMap[toolId];

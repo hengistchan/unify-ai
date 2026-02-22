@@ -36,7 +36,7 @@ const TOOL_CONFIG_PATTERNS: Record<string, string[]> = {
   codex: ['CODEX.md', 'codex.toml'],
   cline: ['.clinerules', '.cline/**/*'],
   aider: ['.aider.conf.yml', 'aider.conf.yml'],
-  continue: ['.continue/config.json', 'continue.json'],
+  opencode: ['opencode.json', 'opencode.jsonc', '.opencode/'],
 };
 
 export const watchCommand = new Command('watch')

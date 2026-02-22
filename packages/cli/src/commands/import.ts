@@ -51,7 +51,7 @@ export const importCommand = new Command('import')
           windsurf: ToolId.WINDSURF,
           cline: ToolId.CLINE,
           aider: ToolId.AIDER,
-          continue: ToolId.CONTINUE,
+          opencode: ToolId.OPENCODE,
         };
 
         const tid = toolIdMap[toolId];

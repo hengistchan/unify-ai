@@ -192,6 +192,24 @@ export const CONTINUE_PATTERNS: FilePattern[] = [
 ];
 
 /**
+ * OpenCode file patterns
+ */
+export const OPENCODE_PATTERNS: FilePattern[] = [
+  {
+    pattern: 'opencode.json',
+    type: 'optional',
+    capability: ConfigCapability.SETTINGS,
+    description: 'OpenCode configuration',
+  },
+  {
+    pattern: 'opencode.jsonc',
+    type: 'optional',
+    capability: ConfigCapability.SETTINGS,
+    description: 'OpenCode configuration (with comments)',
+  },
+];
+
+/**
  * File pattern mapping for all tools
  */
 export const TOOL_PATTERNS: Record<ToolId, FilePattern[]> = {
@@ -202,6 +220,7 @@ export const TOOL_PATTERNS: Record<ToolId, FilePattern[]> = {
   [ToolId.WINDSURF]: WINDSURF_PATTERNS,
   [ToolId.CLINE]: CLINE_PATTERNS,
   [ToolId.AIDER]: AIDER_PATTERNS,
+  [ToolId.OPENCODE]: OPENCODE_PATTERNS,
   [ToolId.CONTINUE]: CONTINUE_PATTERNS,
 };
 

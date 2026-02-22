@@ -59,6 +59,7 @@ export enum ToolId {
   WINDSURF = 'windsurf',
   CLINE = 'cline',
   AIDER = 'aider',
+  OPENCODE = 'opencode',
   CONTINUE = 'continue',
 }
 

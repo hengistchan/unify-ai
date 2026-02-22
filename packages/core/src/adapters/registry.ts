@@ -15,6 +15,7 @@ import { CodexAdapter, codexAdapter } from '../adapters/codex';
 import { ClineAdapter, clineAdapter } from '../adapters/cline';
 import { AiderAdapter, aiderAdapter } from '../adapters/aider';
 import { ContinueAdapter, continueAdapter } from '../adapters/continue';
+import { OpenCodeAdapter, opencodeAdapter } from '../adapters/opencode';
 
 /**
  * Adapter registry
@@ -38,6 +39,7 @@ export class AdapterRegistry {
     this.register(clineAdapter);
     this.register(aiderAdapter);
     this.register(continueAdapter);
+    this.register(opencodeAdapter);
 
     // Call each adapter's initialize method
     for (const adapter of this.adapters.values()) {
@@ -139,5 +141,5 @@ export {
   CodexAdapter,
   ClineAdapter,
   AiderAdapter,
-  ContinueAdapter,
+  OpenCodeAdapter,
 };

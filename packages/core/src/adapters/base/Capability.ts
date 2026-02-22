@@ -167,6 +167,17 @@ export const ToolCapabilities = {
     Capabilities.fullSettings(),
     Capabilities.fullPrompts(),
   ],
+
+  /**
+   * OpenCode capabilities
+   * - Rules: instructions array in opencode.json
+   * - MCP: mcpServers in opencode.json
+   */
+  opencode: (): CapabilityDeclaration[] => [
+    Capabilities.fullRules(),
+    Capabilities.fullMCP(),
+    Capabilities.fullSettings(),
+  ],
 };
 
 /**

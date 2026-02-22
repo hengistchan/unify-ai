@@ -31,7 +31,7 @@
         "windsurf",
         "cline",
         "aider",
-        "continue",
+        "opencode",
         "all"
       ]
     },
@@ -486,8 +486,8 @@
         "aider": {
           "$ref": "#/$defs/aider_config"
         },
-        "continue_config": {
-          "$ref": "#/$defs/continue_config"
+        "opencode": {
+          "$ref": "#/$defs/opencode_config"
         }
       }
     },
@@ -624,17 +624,17 @@
       }
     },
 
-    "continue_config": {
+    "opencode_config": {
       "type": "object",
-      "description": "Continue-specific configuration",
+      "description": "OpenCode-specific configuration",
       "properties": {
         "config_file": {
           "type": "string",
-          "default": ".continue/config.yaml"
+          "default": "opencode.json"
         },
         "format": {
           "type": "string",
-          "default": "yaml"
+          "default": "json"
         }
       }
     }

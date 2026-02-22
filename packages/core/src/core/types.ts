@@ -60,7 +60,6 @@ export enum ToolId {
   CLINE = 'cline',
   AIDER = 'aider',
   OPENCODE = 'opencode',
-  CONTINUE = 'continue',
 }
 
 /**

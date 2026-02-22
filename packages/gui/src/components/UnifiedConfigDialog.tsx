@@ -28,7 +28,7 @@ const SUPPORTED_TOOLS = [
   'codex',
   'cline',
   'aider',
-  'continue',
+  'opencode',
 ] as const;
 
 interface UnifiedConfigDialogProps {

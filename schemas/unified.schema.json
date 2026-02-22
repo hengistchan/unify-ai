@@ -89,9 +89,9 @@
           "$ref": "target.schema.json",
           "description": "Aider CLI configuration"
         },
-        "continue": {
+        "opencode": {
           "$ref": "target.schema.json",
-          "description": "Continue VS Code extension configuration"
+          "description": "OpenCode CLI configuration"
         }
       }
     },
@@ -213,7 +213,7 @@
               "windsurf",
               "cline",
               "aider",
-              "continue"
+              "opencode"
             ]
           }
         },
@@ -411,7 +411,7 @@
               "windsurf",
               "cline",
               "aider",
-              "continue",
+              "opencode",
               "all"
             ]
           },
@@ -450,7 +450,7 @@
         "aider": {
           "$ref": "#/$defs/tool_features"
         },
-        "continue": {
+        "opencode": {
           "$ref": "#/$defs/tool_features"
         }
       }

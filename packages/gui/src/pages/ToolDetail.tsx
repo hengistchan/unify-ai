@@ -29,7 +29,7 @@ const toolDescriptions: Record<string, string> = {
   codex: "OpenAI's coding assistant",
   cline: 'Autonomous coding agent for VS Code',
   aider: 'AI pair programming in your terminal',
-  continue: 'Open-source AI code assistant',
+  opencode: 'Interactive CLI tool for software engineering tasks',
 };
 
 export function ToolDetail() {

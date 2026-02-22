@@ -168,30 +168,6 @@ export const AIDER_PATTERNS: FilePattern[] = [
 ];
 
 /**
- * Continue.dev file patterns
- */
-export const CONTINUE_PATTERNS: FilePattern[] = [
-  {
-    pattern: '.continue/config.yaml',
-    type: 'optional',
-    capability: ConfigCapability.SETTINGS,
-    description: 'Continue configuration',
-  },
-  {
-    pattern: '.continue/config.yml',
-    type: 'optional',
-    capability: ConfigCapability.SETTINGS,
-    description: 'Continue configuration (yml)',
-  },
-  {
-    pattern: '.continue/config.json',
-    type: 'optional',
-    capability: ConfigCapability.SETTINGS,
-    description: 'Continue configuration (json)',
-  },
-];
-
-/**
  * OpenCode file patterns
  */
 export const OPENCODE_PATTERNS: FilePattern[] = [
@@ -221,7 +197,6 @@ export const TOOL_PATTERNS: Record<ToolId, FilePattern[]> = {
   [ToolId.CLINE]: CLINE_PATTERNS,
   [ToolId.AIDER]: AIDER_PATTERNS,
   [ToolId.OPENCODE]: OPENCODE_PATTERNS,
-  [ToolId.CONTINUE]: CONTINUE_PATTERNS,
 };
 
 /**
@@ -254,8 +229,7 @@ export const ALL_CONFIG_PATTERNS: string[] = [
   // Aider
   '.aider.conf.yml',
   '.aider.conf.yaml',
-  // Continue
-  '.continue/config.yaml',
-  '.continue/config.yml',
-  '.continue/config.json',
+  // OpenCode
+  'opencode.json',
+  'opencode.jsonc',
 ];

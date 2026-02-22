@@ -14,7 +14,6 @@ import { WindsurfAdapter, windsurfAdapter } from '../adapters/windsurf';
 import { CodexAdapter, codexAdapter } from '../adapters/codex';
 import { ClineAdapter, clineAdapter } from '../adapters/cline';
 import { AiderAdapter, aiderAdapter } from '../adapters/aider';
-import { ContinueAdapter, continueAdapter } from '../adapters/continue';
 import { OpenCodeAdapter, opencodeAdapter } from '../adapters/opencode';
 
 /**
@@ -38,7 +37,6 @@ export class AdapterRegistry {
     this.register(codexAdapter);
     this.register(clineAdapter);
     this.register(aiderAdapter);
-    this.register(continueAdapter);
     this.register(opencodeAdapter);
 
     // Call each adapter's initialize method

@@ -35,7 +35,9 @@ export function SyncModeDialog({
     }
   };
 
-  const canProceed = selectedMode !== null && detectedToolsCount >= 2;
+  const needsTwoTools = selectedMode === 'direct-sync';
+  const minTools = needsTwoTools ? 2 : 1;
+  const canProceed = selectedMode !== null && detectedToolsCount >= minTools;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -151,10 +153,17 @@ export function SyncModeDialog({
           </div>
 
           {/* Requirements */}
-          {detectedToolsCount < 2 && (
+          {selectedMode === 'direct-sync' && detectedToolsCount < 2 && (
             <div className="p-3 bg-warning-muted border border-warning/30 rounded-lg">
               <p className="text-sm text-warning">
-                At least 2 detected tools are required for sync (found {detectedToolsCount})
+                At least 2 detected tools are required for direct sync (found {detectedToolsCount})
+              </p>
+            </div>
+          )}
+          {selectedMode === 'unified-config' && detectedToolsCount < 1 && (
+            <div className="p-3 bg-warning-muted border border-warning/30 rounded-lg">
+              <p className="text-sm text-warning">
+                At least 1 detected tool is required (found {detectedToolsCount})
               </p>
             </div>
           )}

@@ -19,7 +19,7 @@ describe('ProviderRegistry', () => {
 
       expect(openai).toBeDefined();
       expect(openai?.name).toBe('OpenAI');
-      expect(openai?.type).toBe('openai');
+      expect(openai?.type).toBe('openai-compatible');
       expect(openai?.enabled).toBe(true);
       expect(openai?.priority).toBe(100);
       expect(openai?.baseUrl).toBe('https://api.openai.com/v1');
@@ -41,7 +41,7 @@ describe('ProviderRegistry', () => {
 
       expect(deepseek).toBeDefined();
       expect(deepseek?.name).toBe('DeepSeek');
-      expect(deepseek?.type).toBe('deepseek');
+      expect(deepseek?.type).toBe('openai-compatible');
       expect(deepseek?.enabled).toBe(true);
       expect(deepseek?.priority).toBe(80);
       expect(deepseek?.baseUrl).toBe('https://api.deepseek.com/v1');
@@ -62,7 +62,7 @@ describe('ProviderRegistry', () => {
 
       expect(google).toBeDefined();
       expect(google?.name).toBe('Google AI');
-      expect(google?.type).toBe('google');
+      expect(google?.type).toBe('openai-compatible');
       expect(google?.enabled).toBe(false); // Disabled by default
       expect(google?.priority).toBe(60);
       expect(google?.baseUrl).toBe('https://generativelanguage.googleapis.com/v1beta');
@@ -140,9 +140,9 @@ describe('ProviderRegistry', () => {
     });
 
     it('should have descending priority order for built-in providers', () => {
-      const enabledProviders = BUILTIN_PROVIDERS
-        .filter(p => p.enabled)
-        .sort((a, b) => b.priority - a.priority);
+      const enabledProviders = BUILTIN_PROVIDERS.filter(p => p.enabled).sort(
+        (a, b) => b.priority - a.priority
+      );
 
       // First should be OpenAI
       expect(enabledProviders[0].id).toBe('openai');
@@ -159,31 +159,31 @@ describe('ProviderRegistry', () => {
       const gpt4o = openai?.models.find(m => m.id === 'gpt-4o');
 
       expect(gpt4o).toBeDefined();
-      expect(gpt4o?.name).toBe('GPT-4o');
+      expect(gpt4o?.displayName).toBe('GPT-4o');
       expect(gpt4o?.contextWindow).toBe(128000);
       expect(gpt4o?.pricing).toBeDefined();
-      expect(gpt4o?.pricing.inputPer1k).toBe(0.005);
-      expect(gpt4o?.pricing.outputPer1k).toBe(0.015);
+      expect(gpt4o?.pricing.inputPerK).toBe(0.005);
+      expect(gpt4o?.pricing.outputPerK).toBe(0.015);
     });
 
     it('should have GPT-4 Turbo model', () => {
       const gpt4Turbo = openai?.models.find(m => m.id === 'gpt-4-turbo');
 
       expect(gpt4Turbo).toBeDefined();
-      expect(gpt4Turbo?.name).toBe('GPT-4 Turbo');
+      expect(gpt4Turbo?.displayName).toBe('GPT-4 Turbo');
       expect(gpt4Turbo?.contextWindow).toBe(128000);
-      expect(gpt4Turbo?.pricing.inputPer1k).toBe(0.01);
-      expect(gpt4Turbo?.pricing.outputPer1k).toBe(0.03);
+      expect(gpt4Turbo?.pricing.inputPerK).toBe(0.01);
+      expect(gpt4Turbo?.pricing.outputPerK).toBe(0.03);
     });
 
     it('should have GPT-3.5 Turbo model', () => {
       const gpt35 = openai?.models.find(m => m.id === 'gpt-3.5-turbo');
 
       expect(gpt35).toBeDefined();
-      expect(gpt35?.name).toBe('GPT-3.5 Turbo');
+      expect(gpt35?.displayName).toBe('GPT-3.5 Turbo');
       expect(gpt35?.contextWindow).toBe(16000);
-      expect(gpt35?.pricing.inputPer1k).toBe(0.0005);
-      expect(gpt35?.pricing.outputPer1k).toBe(0.0015);
+      expect(gpt35?.pricing.inputPerK).toBe(0.0005);
+      expect(gpt35?.pricing.outputPerK).toBe(0.0015);
     });
 
     it('should have 3 models', () => {
@@ -198,30 +198,30 @@ describe('ProviderRegistry', () => {
       const sonnet = anthropic?.models.find(m => m.id === 'claude-sonnet-4-5-20250929');
 
       expect(sonnet).toBeDefined();
-      expect(sonnet?.name).toBe('Claude Sonnet 4.5');
+      expect(sonnet?.displayName).toBe('Claude Sonnet 4.5');
       expect(sonnet?.contextWindow).toBe(200000);
-      expect(sonnet?.pricing.inputPer1k).toBe(0.003);
-      expect(sonnet?.pricing.outputPer1k).toBe(0.015);
+      expect(sonnet?.pricing.inputPerK).toBe(0.003);
+      expect(sonnet?.pricing.outputPerK).toBe(0.015);
     });
 
     it('should have Claude Opus 4.6 model', () => {
       const opus = anthropic?.models.find(m => m.id === 'claude-opus-4-6-20250514');
 
       expect(opus).toBeDefined();
-      expect(opus?.name).toBe('Claude Opus 4.6');
+      expect(opus?.displayName).toBe('Claude Opus 4.6');
       expect(opus?.contextWindow).toBe(200000);
-      expect(opus?.pricing.inputPer1k).toBe(0.015);
-      expect(opus?.pricing.outputPer1k).toBe(0.075);
+      expect(opus?.pricing.inputPerK).toBe(0.015);
+      expect(opus?.pricing.outputPerK).toBe(0.075);
     });
 
     it('should have Claude 3.5 Haiku model', () => {
       const haiku = anthropic?.models.find(m => m.id === 'claude-3-5-haiku-20241022');
 
       expect(haiku).toBeDefined();
-      expect(haiku?.name).toBe('Claude 3.5 Haiku');
+      expect(haiku?.displayName).toBe('Claude 3.5 Haiku');
       expect(haiku?.contextWindow).toBe(200000);
-      expect(haiku?.pricing.inputPer1k).toBe(0.001);
-      expect(haiku?.pricing.outputPer1k).toBe(0.005);
+      expect(haiku?.pricing.inputPerK).toBe(0.001);
+      expect(haiku?.pricing.outputPerK).toBe(0.005);
     });
 
     it('should have 3 models', () => {
@@ -236,20 +236,20 @@ describe('ProviderRegistry', () => {
       const chat = deepseek?.models.find(m => m.id === 'deepseek-chat');
 
       expect(chat).toBeDefined();
-      expect(chat?.name).toBe('DeepSeek Chat');
+      expect(chat?.displayName).toBe('DeepSeek Chat');
       expect(chat?.contextWindow).toBe(64000);
-      expect(chat?.pricing.inputPer1k).toBe(0.00014);
-      expect(chat?.pricing.outputPer1k).toBe(0.00028);
+      expect(chat?.pricing.inputPerK).toBe(0.00014);
+      expect(chat?.pricing.outputPerK).toBe(0.00028);
     });
 
     it('should have DeepSeek Coder model', () => {
       const coder = deepseek?.models.find(m => m.id === 'deepseek-coder');
 
       expect(coder).toBeDefined();
-      expect(coder?.name).toBe('DeepSeek Coder');
+      expect(coder?.displayName).toBe('DeepSeek Coder');
       expect(coder?.contextWindow).toBe(64000);
-      expect(coder?.pricing.inputPer1k).toBe(0.00014);
-      expect(coder?.pricing.outputPer1k).toBe(0.00028);
+      expect(coder?.pricing.inputPerK).toBe(0.00014);
+      expect(coder?.pricing.outputPerK).toBe(0.00028);
     });
 
     it('should have 2 models', () => {
@@ -264,20 +264,20 @@ describe('ProviderRegistry', () => {
       const geminiFlash = google?.models.find(m => m.id === 'gemini-2.0-flash');
 
       expect(geminiFlash).toBeDefined();
-      expect(geminiFlash?.name).toBe('Gemini 2.0 Flash');
+      expect(geminiFlash?.displayName).toBe('Gemini 2.0 Flash');
       expect(geminiFlash?.contextWindow).toBe(1000000);
-      expect(geminiFlash?.pricing.inputPer1k).toBe(0.0001);
-      expect(geminiFlash?.pricing.outputPer1k).toBe(0.0004);
+      expect(geminiFlash?.pricing.inputPerK).toBe(0.0001);
+      expect(geminiFlash?.pricing.outputPerK).toBe(0.0004);
     });
 
     it('should have Gemini 1.5 Pro model', () => {
       const geminiPro = google?.models.find(m => m.id === 'gemini-1.5-pro');
 
       expect(geminiPro).toBeDefined();
-      expect(geminiPro?.name).toBe('Gemini 1.5 Pro');
+      expect(geminiPro?.displayName).toBe('Gemini 1.5 Pro');
       expect(geminiPro?.contextWindow).toBe(2000000);
-      expect(geminiPro?.pricing.inputPer1k).toBe(0.00125);
-      expect(geminiPro?.pricing.outputPer1k).toBe(0.005);
+      expect(geminiPro?.pricing.inputPerK).toBe(0.00125);
+      expect(geminiPro?.pricing.outputPerK).toBe(0.005);
     });
 
     it('should have 2 models', () => {
@@ -306,10 +306,10 @@ describe('ProviderRegistry', () => {
       BUILTIN_PROVIDERS.forEach(provider => {
         provider.models.forEach(model => {
           expect(model.pricing).toBeDefined();
-          expect(typeof model.pricing.inputPer1k).toBe('number');
-          expect(typeof model.pricing.outputPer1k).toBe('number');
-          expect(model.pricing.inputPer1k).toBeGreaterThanOrEqual(0);
-          expect(model.pricing.outputPer1k).toBeGreaterThanOrEqual(0);
+          expect(typeof model.pricing.inputPerK).toBe('number');
+          expect(typeof model.pricing.outputPerK).toBe('number');
+          expect(model.pricing.inputPerK).toBeGreaterThanOrEqual(0);
+          expect(model.pricing.outputPerK).toBeGreaterThanOrEqual(0);
         });
       });
     });
@@ -317,16 +317,9 @@ describe('ProviderRegistry', () => {
     it('should have reasonable pricing ranges', () => {
       BUILTIN_PROVIDERS.forEach(provider => {
         provider.models.forEach(model => {
-          // Input pricing should be <= $0.1 per 1K tokens
-          expect(model.pricing.inputPer1k).toBeLessThanOrEqual(0.1);
-
-          // Output pricing should be <= $1.0 per 1K tokens
-          expect(model.pricing.outputPer1k).toBeLessThanOrEqual(1.0);
-
-          // Output should typically be >= input pricing
-          expect(model.pricing.outputPer1k).toBeGreaterThanOrEqual(
-            model.pricing.inputPer1k * 0.5
-          );
+          expect(model.pricing.inputPerK).toBeLessThanOrEqual(0.1);
+          expect(model.pricing.outputPerK).toBeLessThanOrEqual(1.0);
+          expect(model.pricing.outputPerK).toBeGreaterThanOrEqual(model.pricing.inputPerK * 0.5);
         });
       });
     });
@@ -339,26 +332,25 @@ describe('ProviderRegistry', () => {
 
       BUILTIN_PROVIDERS.forEach(provider => {
         provider.models.forEach(model => {
-          if (model.pricing.outputPer1k > maxOutputPrice) {
-            maxOutputPrice = model.pricing.outputPer1k;
+          if (model.pricing.outputPerK > maxOutputPrice) {
+            maxOutputPrice = model.pricing.outputPerK;
           }
         });
       });
 
-      expect(opus?.pricing.outputPer1k).toBe(maxOutputPrice);
+      expect(opus?.pricing.outputPerK).toBe(maxOutputPrice);
     });
 
     it('should have DeepSeek as cheapest provider', () => {
       const deepseek = BUILTIN_PROVIDERS.find(p => p.id === 'deepseek');
 
       const avgDeepSeekPrice =
-        deepseek!.models.reduce((sum, m) => sum + m.pricing.inputPer1k, 0) /
-        deepseek!.models.length;
+        deepseek!.models.reduce((sum, m) => sum + m.pricing.inputPerK, 0) / deepseek!.models.length;
 
       BUILTIN_PROVIDERS.forEach(provider => {
         if (provider.models.length > 0) {
           const avgPrice =
-            provider.models.reduce((sum, m) => sum + m.pricing.inputPer1k, 0) /
+            provider.models.reduce((sum, m) => sum + m.pricing.inputPerK, 0) /
             provider.models.length;
 
           expect(avgDeepSeekPrice).toBeLessThanOrEqual(avgPrice);

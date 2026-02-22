@@ -36,6 +36,12 @@ export interface AIProvider {
   defaultModel?: string;
   /** API base URL */
   baseUrl?: string;
+  /** Tool ID for tool-specific providers */
+  toolId?: string | null;
+  /** Whether this is the current provider for the tool */
+  isCurrentTool?: boolean;
+  /** Whether this is the current global provider */
+  isCurrentGlobal?: boolean;
   /** Creation timestamp */
   createdAt: string;
   /** Last update timestamp */
@@ -282,14 +288,14 @@ export interface UpdateProviderInput {
   enabled?: boolean;
   /** Priority */
   priority?: number;
+  /** API base URL */
+  baseUrl?: string;
   /** Provider configuration */
   config?: Partial<ProviderConfig>;
   /** Available models */
   models?: Omit<ModelInfo, 'providerId'>[];
   /** Default model ID */
   defaultModel?: string;
-  /** API base URL */
-  baseUrl?: string;
   /** Tool ID for tool-specific providers */
   toolId?: string | null;
   /** Category for the provider */

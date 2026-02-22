@@ -4,74 +4,8 @@
 
 import type { AIProvider, ModelInfo, CreateProviderInput } from '../../../model/types';
 
-/**
- * Mock OpenAI provider
- */
-export const mockOpenAIProvider: AIProvider = {
-  id: 'openai',
-  name: 'OpenAI',
-  type: 'openai-compatible',
-  enabled: true,
-  priority: 100,
-  baseUrl: 'https://api.openai.com/v1',
-  models: [mockGPT4o, mockGPT4Turbo, mockGPT35Turbo],
-  defaultModel: 'gpt-4o',
-  config: {
-    timeout: 30000,
-    maxRetries: 3,
-  },
-  createdAt: '2026-02-19T00:00:00.000Z',
-  updatedAt: '2026-02-19T00:00:00.000Z',
-};
-
-/**
- * Mock Anthropic provider
- */
-export const mockAnthropicProvider: AIProvider = {
-  id: 'anthropic',
-  name: 'Anthropic',
-  type: 'anthropic',
-  enabled: true,
-  priority: 90,
-  baseUrl: 'https://api.anthropic.com/v1',
-  models: [mockClaudeSonnet45, mockClaudeOpus46, mockClaude35Haiku],
-  defaultModel: 'claude-sonnet-4-5-20250929',
-  config: {
-    timeout: 60000,
-    maxRetries: 2,
-  },
-  createdAt: '2026-02-19T00:00:00.000Z',
-  updatedAt: '2026-02-19T00:00:00.000Z',
-};
-
-/**
- * Mock DeepSeek provider
- */
-export const mockDeepSeekProvider: AIProvider = {
-  id: 'deepseek',
-  name: 'DeepSeek',
-  type: 'openai-compatible',
-  enabled: false,
-  priority: 80,
-  baseUrl: 'https://api.deepseek.com/v1',
-  models: [mockDeepSeekChat, mockDeepSeekCoder],
-  defaultModel: 'deepseek-chat',
-  config: {},
-  createdAt: '2026-02-19T00:00:00.000Z',
-  updatedAt: '2026-02-19T00:00:00.000Z',
-};
-
-/**
- * All mock providers
- */
-export const mockProviders: AIProvider[] = [
-  mockOpenAIProvider,
-  mockAnthropicProvider,
-  mockDeepSeekProvider,
-];
-
 // ============================================
-// Mock Models
+// Mock Models (defined first to avoid circular reference)
 // ============================================
 
 export const mockGPT4o: ModelInfo = {
@@ -179,6 +113,64 @@ export const mockDeepSeekCoder: ModelInfo = {
   },
   enabled: true,
 };
+
+// ============================================
+// Mock Providers (defined after models)
+// ============================================
+
+export const mockOpenAIProvider: AIProvider = {
+  id: 'openai',
+  name: 'OpenAI',
+  type: 'openai-compatible',
+  enabled: true,
+  priority: 100,
+  baseUrl: 'https://api.openai.com/v1',
+  models: [mockGPT4o, mockGPT4Turbo, mockGPT35Turbo],
+  defaultModel: 'gpt-4o',
+  config: {
+    timeout: 30000,
+    maxRetries: 3,
+  },
+  createdAt: '2026-02-19T00:00:00.000Z',
+  updatedAt: '2026-02-19T00:00:00.000Z',
+};
+
+export const mockAnthropicProvider: AIProvider = {
+  id: 'anthropic',
+  name: 'Anthropic',
+  type: 'anthropic',
+  enabled: true,
+  priority: 90,
+  baseUrl: 'https://api.anthropic.com/v1',
+  models: [mockClaudeSonnet45, mockClaudeOpus46, mockClaude35Haiku],
+  defaultModel: 'claude-sonnet-4-5-20250929',
+  config: {
+    timeout: 60000,
+    maxRetries: 2,
+  },
+  createdAt: '2026-02-19T00:00:00.000Z',
+  updatedAt: '2026-02-19T00:00:00.000Z',
+};
+
+export const mockDeepSeekProvider: AIProvider = {
+  id: 'deepseek',
+  name: 'DeepSeek',
+  type: 'openai-compatible',
+  enabled: false,
+  priority: 80,
+  baseUrl: 'https://api.deepseek.com/v1',
+  models: [mockDeepSeekChat, mockDeepSeekCoder],
+  defaultModel: 'deepseek-chat',
+  config: {},
+  createdAt: '2026-02-19T00:00:00.000Z',
+  updatedAt: '2026-02-19T00:00:00.000Z',
+};
+
+export const mockProviders: AIProvider[] = [
+  mockOpenAIProvider,
+  mockAnthropicProvider,
+  mockDeepSeekProvider,
+];
 
 // ============================================
 // Mock Inputs

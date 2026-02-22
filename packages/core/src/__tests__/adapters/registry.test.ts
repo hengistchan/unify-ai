@@ -299,7 +299,7 @@ describe('AdapterRegistry', () => {
       expect(registry.has(ToolId.CODEX)).toBe(true);
       expect(registry.has(ToolId.CLINE)).toBe(true);
       expect(registry.has(ToolId.AIDER)).toBe(true);
-      expect(registry.has(ToolId.CONTINUE)).toBe(true);
+      expect(registry.has(ToolId.OPENCODE)).toBe(true);
     });
 
     it('should not reinitialize if already initialized', async () => {

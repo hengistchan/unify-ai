@@ -175,7 +175,7 @@ export function SyncModeDialog({
             Cancel
           </Button>
           <Button variant="primary" onClick={handleConfirm} disabled={!canProceed}>
-            {selectedMode === 'unified-config' ? 'Open' : 'Continue'}
+            {selectedMode === 'unified-config' ? 'OpenCode' : 'Continue'}
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </div>

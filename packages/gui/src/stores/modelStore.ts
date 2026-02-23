@@ -33,6 +33,7 @@ export interface ModelState {
   providers: AIProvider[];
   activeProvider: AIProvider | null;
   selectedProviderId: string | null;
+  selectedProviderToolId: string | null;
 
   // Models (by provider ID)
   modelsByProvider: Map<string, ModelInfo[]>;
@@ -62,6 +63,7 @@ export interface ModelState {
   setProviderEnabled: (id: string, enabled: boolean, toolId?: string) => Promise<void>;
   setProviderPriority: (id: string, priority: number, toolId?: string) => Promise<void>;
   selectProvider: (id: string | null) => void;
+  selectProviderWithToolId: (id: string | null, toolId: string | null) => void;
   loadActiveProvider: () => Promise<void>;
   setActiveProvider: (providerId: string) => Promise<void>;
   initializeTrayListener: () => () => void;
@@ -77,16 +79,22 @@ export interface ModelState {
   hasValidAPIKey: (providerId: string) => Promise<boolean>;
 
   // Model Actions
-  loadModels: (providerId: string) => Promise<void>;
-  addModel: (providerId: string, input: AddModelInput) => Promise<ModelInfo>;
+  loadModels: (providerId: string, toolId?: string) => Promise<void>;
+  addModel: (providerId: string, input: AddModelInput, toolId?: string) => Promise<ModelInfo>;
   updateModelDetails: (
     providerId: string,
     modelId: string,
-    input: UpdateModelInput
+    input: UpdateModelInput,
+    toolId?: string
   ) => Promise<ModelInfo>;
-  deleteModel: (providerId: string, modelId: string) => Promise<void>;
-  setModelEnabled: (providerId: string, modelId: string, enabled: boolean) => Promise<void>;
-  setDefaultModel: (providerId: string, modelId: string) => Promise<void>;
+  deleteModel: (providerId: string, modelId: string, toolId?: string) => Promise<void>;
+  setModelEnabled: (
+    providerId: string,
+    modelId: string,
+    enabled: boolean,
+    toolId?: string
+  ) => Promise<void>;
+  setDefaultModel: (providerId: string, modelId: string, toolId?: string) => Promise<void>;
 
   // Usage Actions
   loadUsageSummary: (filters?: UsageLogFilters) => Promise<void>;
@@ -121,6 +129,7 @@ const initialState = {
   providers: [],
   activeProvider: null,
   selectedProviderId: null,
+  selectedProviderToolId: null,
   modelsByProvider: new Map<string, ModelInfo[]>(),
   usageSummary: null,
   usageLogs: [],
@@ -239,7 +248,11 @@ export const useModelStore = create<ModelState>((set, get) => ({
   },
 
   selectProvider: (id: string | null) => {
-    set({ selectedProviderId: id });
+    set({ selectedProviderId: id, selectedProviderToolId: null });
+  },
+
+  selectProviderWithToolId: (id: string | null, toolId: string | null) => {
+    set({ selectedProviderId: id, selectedProviderToolId: toolId });
   },
 
   loadActiveProvider: async () => {
@@ -364,10 +377,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
   // Model Actions
   // ============================================
 
-  loadModels: async (providerId: string) => {
+  loadModels: async (providerId: string, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      const models = await window.electronAPI.model.getModels(providerId);
+      const models = await window.electronAPI.model.getModels(providerId, toolId);
       const modelsByProvider = new Map(get().modelsByProvider);
       modelsByProvider.set(providerId, models);
       set({ modelsByProvider, loading: false });
@@ -378,10 +391,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  addModel: async (providerId: string, input: AddModelInput) => {
+  addModel: async (providerId: string, input: AddModelInput, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      const model = await window.electronAPI.model.addModel(providerId, input);
+      const model = await window.electronAPI.model.addModel(providerId, input, toolId);
       await get().loadProviders();
       set({ loading: false });
       return model;
@@ -392,10 +405,20 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  updateModelDetails: async (providerId: string, modelId: string, input: UpdateModelInput) => {
+  updateModelDetails: async (
+    providerId: string,
+    modelId: string,
+    input: UpdateModelInput,
+    toolId?: string
+  ) => {
     set({ loading: true, error: null });
     try {
-      const model = await window.electronAPI.model.updateModelDetails(providerId, modelId, input);
+      const model = await window.electronAPI.model.updateModelDetails(
+        providerId,
+        modelId,
+        input,
+        toolId
+      );
       await get().loadProviders();
       set({ loading: false });
       return model;
@@ -406,10 +429,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  deleteModel: async (providerId: string, modelId: string) => {
+  deleteModel: async (providerId: string, modelId: string, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.deleteModel(providerId, modelId);
+      await window.electronAPI.model.deleteModel(providerId, modelId, toolId);
       await get().loadProviders();
       set({ loading: false });
     } catch (error) {
@@ -419,10 +442,15 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  setModelEnabled: async (providerId: string, modelId: string, enabled: boolean) => {
+  setModelEnabled: async (
+    providerId: string,
+    modelId: string,
+    enabled: boolean,
+    toolId?: string
+  ) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.setModelEnabled(providerId, modelId, enabled);
+      await window.electronAPI.model.setModelEnabled(providerId, modelId, enabled, toolId);
       await get().loadProviders();
       set({ loading: false });
     } catch (error) {
@@ -432,10 +460,10 @@ export const useModelStore = create<ModelState>((set, get) => ({
     }
   },
 
-  setDefaultModel: async (providerId: string, modelId: string) => {
+  setDefaultModel: async (providerId: string, modelId: string, toolId?: string) => {
     set({ loading: true, error: null });
     try {
-      await window.electronAPI.model.setDefaultModel(providerId, modelId);
+      await window.electronAPI.model.setDefaultModel(providerId, modelId, toolId);
       await get().loadProviders();
       set({ loading: false });
     } catch (error) {

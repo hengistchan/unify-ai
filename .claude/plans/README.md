@@ -11,33 +11,25 @@ This directory contains implementation plans for the unify-ai project.
 **Overview**: Comprehensive refactoring plan for the model module based on CC-Switch research.
 
 **Key Decisions**:
-- **Hybrid Tool Isolation**: Global providers + tool-specific overrides
+
+- **Hybrid Tool Isolation**: Global providers + tool-specific overrides (✅ implemented)
 - **Priority**: Tool override > Global config > Default
 - **Timeline**: 18 weeks (4.5 months)
 
 **Phases**:
+
 - **Phase 1** (Week 1-2): Quick fixes - API Key cache, shortcuts, tray optimization
-- **Phase 2** (Week 3-8): Hybrid tool isolation architecture
+- **Phase 2** (Week 3-8): Hybrid tool isolation architecture (✅ data layer done)
 - **Phase 3** (Week 9-18): Smart features, budget management, team collaboration
 
-### 2. Tool Isolation Redesign
-
-**Document**: [`tool-isolation-redesign-analysis.md`](./tool-isolation-redesign-analysis.md)
-
-**Purpose**: Deep analysis of tool isolation UX patterns and architecture decisions.
-
-**Key Findings**:
-- Pure tool isolation (CC-Switch) causes duplicate configuration
-- Hybrid mode (global + overrides) provides better UX
-- User mental model: "Default global, override when needed"
-
-### 3. CC-Switch Research
+### 2. CC-Switch Research
 
 **Document**: [`cc-switch-research.md`](./cc-switch-research.md)
 
 **Purpose**: In-depth research of CC-Switch v3.10.2 architecture and design patterns.
 
 **Key Insights**:
+
 - Tool isolation with composite primary key `(id, app_type)`
 - Backfill mechanism for protecting user modifications
 - Dual-layer configuration (DB + JSON)
@@ -79,12 +71,7 @@ When creating new plans:
 3. Reference existing plans when relevant
 4. Update this README when adding new plans
 
-## 🗂️ Archive
-
-Plans that are no longer active but kept for reference are stored in the `archive/` subdirectory.
-
 ## 📅 Last Updated
 
-- **Date**: 2026-02-21
-- **Updated by**: Architecture Team
-- **Major Change**: Adopted hybrid tool isolation mode (global + tool overrides)
+- **Date**: 2026-02-23
+- **Major Change**: Removed completed plans (models-manual-config-refactor, tool-isolation-redesign-analysis)

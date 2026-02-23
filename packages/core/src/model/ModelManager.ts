@@ -179,12 +179,13 @@ export class ModelManager {
         }
 
         for (const model of models) {
-          const modelId = `${provider.id}:${model.id}`;
+          const modelId = `${provider.id}:global:${model.id}`;
           try {
             const modelStmt = this.db.getStatement('model_config_insert');
             modelStmt.run({
               id: modelId,
               providerId: provider.id,
+              providerToolId: 'global',
               modelId: model.id,
               displayName: model.displayName || model.id,
               contextWindow:
@@ -236,11 +237,12 @@ export class ModelManager {
 
     // Insert models into model_configs table
     for (const model of input.models || []) {
-      const modelId = `${input.id}:${model.id}`;
+      const modelId = `${input.id}:global:${model.id}`;
       const modelStmt = this.db.getStatement('model_config_insert');
       modelStmt.run({
         id: modelId,
         providerId: input.id,
+        providerToolId: 'global',
         modelId: model.id,
         displayName: model.displayName || model.id,
         contextWindow: model.contextWindow || 4096,
@@ -270,7 +272,7 @@ export class ModelManager {
 
     // Populate models from model_configs table
     for (const provider of providers) {
-      provider.models = await this.getModels(provider.id);
+      provider.models = await this.getModels(provider.id, provider.toolId ?? undefined);
     }
 
     return providers;
@@ -295,7 +297,7 @@ export class ModelManager {
 
     const provider = rowToProvider(row);
     // Populate models from model_configs table
-    provider.models = await this.getModels(id);
+    provider.models = await this.getModels(id, effectiveToolId);
 
     return provider;
   }
@@ -341,11 +343,12 @@ export class ModelManager {
 
     // Insert models into model_configs table
     for (const model of input.models || []) {
-      const modelId = `${input.id}:${model.id}`;
+      const modelId = `${input.id}:${toolId}:${model.id}`;
       const modelStmt = this.db.getStatement('model_config_insert');
       modelStmt.run({
         id: modelId,
         providerId: input.id,
+        providerToolId: toolId,
         modelId: model.id,
         displayName: model.displayName || model.id,
         contextWindow: model.contextWindow || 4096,
@@ -408,16 +411,20 @@ export class ModelManager {
 
     // Update model_configs table if models are provided
     if (input.models !== undefined) {
-      // Delete existing models for this provider
-      await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
+      // Delete existing models for this provider in this scope
+      await this.db.run(
+        'DELETE FROM model_configs WHERE provider_id = ? AND provider_tool_id = ?',
+        [id, effectiveToolId]
+      );
 
       // Insert new models
       for (const model of input.models) {
-        const modelId = `${id}:${model.id}`;
+        const modelId = `${id}:${effectiveToolId}:${model.id}`;
         const modelStmt = this.db.getStatement('model_config_insert');
         modelStmt.run({
           id: modelId,
           providerId: id,
+          providerToolId: effectiveToolId,
           modelId: model.id,
           displayName: model.displayName || model.id,
           contextWindow: model.contextWindow || 4096,
@@ -453,7 +460,10 @@ export class ModelManager {
     }
 
     // Delete related model_configs first (no CASCADE in schema)
-    await this.db.run('DELETE FROM model_configs WHERE provider_id = ?', [id]);
+    await this.db.run('DELETE FROM model_configs WHERE provider_id = ? AND provider_tool_id = ?', [
+      id,
+      effectiveToolId,
+    ]);
 
     // Delete associated API keys (no CASCADE in schema)
     await this.db.run('DELETE FROM api_keys WHERE provider_id = ? AND provider_tool_id = ?', [
@@ -791,46 +801,50 @@ export class ModelManager {
   /**
    * List models (optionally filtered by provider)
    * @param providerId - Provider ID (optional, lists all if not provided)
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Array of models
    */
-  async listModels(providerId?: string): Promise<ModelInfo[]> {
+  async listModels(providerId?: string, toolId?: string): Promise<ModelInfo[]> {
     await this.ensureInitialized();
 
-    let sql = 'SELECT * FROM model_configs';
-    const params: string[] = [];
+    const effectiveToolId = toolId ?? 'global';
 
     if (providerId) {
-      sql += ' WHERE provider_id = ?';
-      params.push(providerId);
+      const rows = await this.db.all<any>(
+        'SELECT * FROM model_configs WHERE provider_id = ? AND provider_tool_id = ? ORDER BY display_name ASC',
+        [providerId, effectiveToolId]
+      );
+      return rows.map(row => this.rowToModelInfo(row));
     }
 
-    sql += ' ORDER BY display_name ASC';
-
-    const rows = await this.db.all<any>(sql, params);
+    const rows = await this.db.all<any>('SELECT * FROM model_configs ORDER BY display_name ASC');
     return rows.map(row => this.rowToModelInfo(row));
   }
 
   /**
    * Get models for a provider (alias for listModels with providerId)
    * @param providerId - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Array of models
    */
-  async getModels(providerId: string): Promise<ModelInfo[]> {
-    return this.listModels(providerId);
+  async getModels(providerId: string, toolId?: string): Promise<ModelInfo[]> {
+    return this.listModels(providerId, toolId);
   }
 
   /**
    * Get model info
    * @param providerId - Provider ID
    * @param modelId - Model ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Model info or null if not found
    */
-  async getModel(providerId: string, modelId: string): Promise<ModelInfo | null> {
+  async getModel(providerId: string, modelId: string, toolId?: string): Promise<ModelInfo | null> {
     await this.ensureInitialized();
 
+    const effectiveToolId = toolId ?? 'global';
     const row = await this.db.get<any>(
-      'SELECT * FROM model_configs WHERE provider_id = ? AND model_id = ?',
-      [providerId, modelId]
+      'SELECT * FROM model_configs WHERE provider_id = ? AND provider_tool_id = ? AND model_id = ?',
+      [providerId, effectiveToolId, modelId]
     );
 
     return row ? this.rowToModelInfo(row) : null;
@@ -839,41 +853,46 @@ export class ModelManager {
   /**
    * Get default model for provider
    * @param providerId - Provider ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Default model info or null
    */
-  async getDefaultModel(providerId: string): Promise<ModelInfo | null> {
+  async getDefaultModel(providerId: string, toolId?: string): Promise<ModelInfo | null> {
     await this.ensureInitialized();
 
-    const provider = await this.getProvider(providerId);
+    const effectiveToolId = toolId ?? 'global';
+    const provider = await this.getProvider(providerId, effectiveToolId);
     if (!provider || !provider.defaultModel) {
       return null;
     }
 
-    return this.getModel(providerId, provider.defaultModel);
+    return this.getModel(providerId, provider.defaultModel, effectiveToolId);
   }
 
   /**
    * Set default model for provider
    * @param providerId - Provider ID
    * @param modelId - Model ID to set as default
+   * @param toolId - Optional tool ID (defaults to 'global')
    */
-  async setDefaultModel(providerId: string, modelId: string): Promise<void> {
+  async setDefaultModel(providerId: string, modelId: string, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
-    const provider = await this.getProvider(providerId);
+    const effectiveToolId = toolId ?? 'global';
+    const provider = await this.getProvider(providerId, effectiveToolId);
     if (!provider) {
-      throw new Error(`Provider with ID '${providerId}' not found`);
+      throw new Error(`Provider with ID '${providerId}' not found in scope '${effectiveToolId}'`);
     }
 
-    // Verify model exists for this provider
-    const model = await this.getModel(providerId, modelId);
+    const model = await this.getModel(providerId, modelId, effectiveToolId);
     if (!model) {
-      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+      throw new Error(
+        `Model '${modelId}' not found for provider '${providerId}' in scope '${effectiveToolId}'`
+      );
     }
 
     await this.db.run(
-      'UPDATE providers SET default_model = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [modelId, providerId]
+      'UPDATE providers SET default_model = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND tool_id = ?',
+      [modelId, providerId, effectiveToolId]
     );
   }
 
@@ -882,18 +901,23 @@ export class ModelManager {
    * @param providerId - Provider ID
    * @param modelId - Model ID
    * @param config - Partial model configuration to update
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Updated model info
    */
   async updateModel(
     providerId: string,
     modelId: string,
-    config: Partial<ModelConfig>
+    config: Partial<ModelConfig>,
+    toolId?: string
   ): Promise<ModelInfo> {
     await this.ensureInitialized();
 
-    const existing = await this.getModel(providerId, modelId);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getModel(providerId, modelId, effectiveToolId);
     if (!existing) {
-      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+      throw new Error(
+        `Model '${modelId}' not found for provider '${providerId}' in scope '${effectiveToolId}'`
+      );
     }
 
     const mergedConfig = { ...existing.config, ...config };
@@ -901,11 +925,11 @@ export class ModelManager {
     await this.db.run(
       `UPDATE model_configs
        SET config = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE provider_id = ? AND model_id = ?`,
-      [JSON.stringify(mergedConfig), providerId, modelId]
+       WHERE provider_id = ? AND provider_tool_id = ? AND model_id = ?`,
+      [JSON.stringify(mergedConfig), providerId, effectiveToolId, modelId]
     );
 
-    const updated = await this.getModel(providerId, modelId);
+    const updated = await this.getModel(providerId, modelId, effectiveToolId);
     if (!updated) {
       throw new Error('Failed to update model');
     }
@@ -917,9 +941,10 @@ export class ModelManager {
    * Add a new model to a provider
    * @param providerId - Provider ID
    * @param input - Model creation input
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Created model info
    */
-  async addModel(providerId: string, input: AddModelInput): Promise<ModelInfo> {
+  async addModel(providerId: string, input: AddModelInput, toolId?: string): Promise<ModelInfo> {
     await this.ensureInitialized();
 
     const provider = await this.getProvider(providerId);
@@ -927,16 +952,20 @@ export class ModelManager {
       throw new Error(`Provider with ID '${providerId}' not found`);
     }
 
-    const existing = await this.getModel(providerId, input.id);
+    const existing = await this.getModel(providerId, input.id, toolId);
     if (existing) {
-      throw new Error(`Model '${input.id}' already exists for provider '${providerId}'`);
+      throw new Error(
+        `Model '${input.id}' already exists for provider '${providerId}' in scope '${toolId ?? 'global'}'`
+      );
     }
 
-    const modelId = `${providerId}:${input.id}`;
+    const effectiveToolId = toolId ?? 'global';
+    const modelId = `${providerId}:${effectiveToolId}:${input.id}`;
     const stmt = this.db.getStatement('model_config_insert');
     stmt.run({
       id: modelId,
       providerId: providerId,
+      providerToolId: effectiveToolId,
       modelId: input.id,
       displayName: input.displayName,
       contextWindow: input.contextWindow,
@@ -947,7 +976,7 @@ export class ModelManager {
       config: JSON.stringify(input.config || {}),
     });
 
-    const model = await this.getModel(providerId, input.id);
+    const model = await this.getModel(providerId, input.id, effectiveToolId);
     if (!model) {
       throw new Error('Failed to create model');
     }
@@ -960,18 +989,23 @@ export class ModelManager {
    * @param providerId - Provider ID
    * @param modelId - Model ID
    * @param input - Update input
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Updated model info
    */
   async updateModelDetails(
     providerId: string,
     modelId: string,
-    input: UpdateModelInput
+    input: UpdateModelInput,
+    toolId?: string
   ): Promise<ModelInfo> {
     await this.ensureInitialized();
 
-    const existing = await this.getModel(providerId, modelId);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getModel(providerId, modelId, effectiveToolId);
     if (!existing) {
-      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+      throw new Error(
+        `Model '${modelId}' not found for provider '${providerId}' in scope '${effectiveToolId}'`
+      );
     }
 
     const updates: string[] = [];
@@ -1010,14 +1044,14 @@ export class ModelManager {
 
     if (updates.length > 0) {
       updates.push('updated_at = CURRENT_TIMESTAMP');
-      values.push(providerId, modelId);
+      values.push(providerId, effectiveToolId, modelId);
       await this.db.run(
-        `UPDATE model_configs SET ${updates.join(', ')} WHERE provider_id = ? AND model_id = ?`,
+        `UPDATE model_configs SET ${updates.join(', ')} WHERE provider_id = ? AND provider_tool_id = ? AND model_id = ?`,
         values
       );
     }
 
-    const updated = await this.getModel(providerId, modelId);
+    const updated = await this.getModel(providerId, modelId, effectiveToolId);
     if (!updated) {
       throw new Error('Failed to update model');
     }
@@ -1029,19 +1063,23 @@ export class ModelManager {
    * Delete a model from a provider
    * @param providerId - Provider ID
    * @param modelId - Model ID
+   * @param toolId - Optional tool ID (defaults to 'global')
    */
-  async deleteModel(providerId: string, modelId: string): Promise<void> {
+  async deleteModel(providerId: string, modelId: string, toolId?: string): Promise<void> {
     await this.ensureInitialized();
 
-    const existing = await this.getModel(providerId, modelId);
+    const effectiveToolId = toolId ?? 'global';
+    const existing = await this.getModel(providerId, modelId, effectiveToolId);
     if (!existing) {
-      throw new Error(`Model '${modelId}' not found for provider '${providerId}'`);
+      throw new Error(
+        `Model '${modelId}' not found for provider '${providerId}' in scope '${effectiveToolId}'`
+      );
     }
 
-    await this.db.run('DELETE FROM model_configs WHERE provider_id = ? AND model_id = ?', [
-      providerId,
-      modelId,
-    ]);
+    await this.db.run(
+      'DELETE FROM model_configs WHERE provider_id = ? AND provider_tool_id = ? AND model_id = ?',
+      [providerId, effectiveToolId, modelId]
+    );
   }
 
   /**
@@ -1049,10 +1087,16 @@ export class ModelManager {
    * @param providerId - Provider ID
    * @param modelId - Model ID
    * @param enabled - Enabled status
+   * @param toolId - Optional tool ID (defaults to 'global')
    * @returns Updated model info
    */
-  async setModelEnabled(providerId: string, modelId: string, enabled: boolean): Promise<ModelInfo> {
-    return this.updateModelDetails(providerId, modelId, { enabled });
+  async setModelEnabled(
+    providerId: string,
+    modelId: string,
+    enabled: boolean,
+    toolId?: string
+  ): Promise<ModelInfo> {
+    return this.updateModelDetails(providerId, modelId, { enabled }, toolId);
   }
 
   // ============================================

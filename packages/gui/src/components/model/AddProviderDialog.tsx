@@ -22,6 +22,7 @@ const PROVIDER_TEMPLATES: Array<{ id: string; name: string; type: ProviderType }
   { id: 'deepseek', name: 'DeepSeek', type: 'openai-compatible' },
   { id: 'google', name: 'Google AI', type: 'openai-compatible' },
   { id: 'azure-openai', name: 'Azure OpenAI', type: 'azure' },
+  { id: 'custom', name: 'Custom Provider', type: 'openai-compatible' },
 ];
 
 const ALL_TOOLS = ['claude-code', 'opencode', 'codex', 'cline'] as const;
@@ -32,6 +33,7 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
   const { createProvider, providers } = useModelStore();
   const [step, setStep] = useState<'select' | 'configure'>('select');
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [customId, setCustomId] = useState('');
   const [name, setName] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
@@ -42,8 +44,11 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
   const previewConfig = useMemo(() => {
     if (!selectedType) return null;
 
+    const effectiveId =
+      selectedType === 'custom' ? customId.trim() || 'custom-provider' : selectedType;
+
     const baseConfig: Record<string, unknown> = {
-      id: applyToGlobal ? selectedType : `${selectedType}-{toolId}`,
+      id: applyToGlobal ? effectiveId : `${effectiveId}-{toolId}`,
       name: name.trim() || 'Provider Name',
       type: PROVIDER_TEMPLATES.find(t => t.id === selectedType)?.type || 'openai-compatible',
       enabled: true,
@@ -65,7 +70,7 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
     }
 
     return baseConfig;
-  }, [selectedType, name, baseUrl, applyToGlobal, selectedTools, apiKey]);
+  }, [selectedType, customId, name, baseUrl, applyToGlobal, selectedTools, apiKey]);
 
   const toolConflicts = useMemo((): ToolProviderStatus[] => {
     if (!selectedType) return [];
@@ -116,9 +121,14 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
 
   const handleSelectType = (type: string) => {
     setSelectedType(type);
-    const template = PROVIDER_TEMPLATES.find(t => t.id === type);
-    if (template) {
-      setName(template.name);
+    if (type === 'custom') {
+      setCustomId('');
+      setName('');
+    } else {
+      const template = PROVIDER_TEMPLATES.find(t => t.id === type);
+      if (template) {
+        setName(template.name);
+      }
     }
     setStep('configure');
   };
@@ -143,15 +153,18 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
 
   const handleCreate = async () => {
     if (!selectedType || !name.trim()) return;
+    if (selectedType === 'custom' && !customId.trim()) return;
 
     setLoading(true);
     try {
       const template = PROVIDER_TEMPLATES.find(t => t.id === selectedType);
       if (!template) throw new Error('Invalid provider type');
 
+      const effectiveId = selectedType === 'custom' ? customId.trim() : selectedType;
+
       if (applyToGlobal) {
         const input: CreateProviderInput = {
-          id: selectedType,
+          id: effectiveId,
           name: name.trim(),
           type: template.type,
           toolId: 'global',
@@ -161,7 +174,7 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
       } else {
         for (const toolId of selectedTools) {
           const input: CreateProviderInput = {
-            id: `${selectedType}-${toolId}`,
+            id: `${effectiveId}-${toolId}`,
             name: `${name.trim()} (${getToolName(toolId)})`,
             type: template.type,
             toolId: toolId,
@@ -175,13 +188,13 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
         const { setAPIKey } = useModelStore.getState();
         if (applyToGlobal) {
           await setAPIKey({
-            providerId: selectedType,
+            providerId: effectiveId,
             key: apiKey.trim(),
           });
         } else {
           for (const toolId of selectedTools) {
             await setAPIKey({
-              providerId: `${selectedType}-${toolId}`,
+              providerId: `${effectiveId}-${toolId}`,
               key: apiKey.trim(),
             });
           }
@@ -200,6 +213,7 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
   const handleClose = () => {
     setStep('select');
     setSelectedType(null);
+    setCustomId('');
     setName('');
     setApiKey('');
     setBaseUrl('');
@@ -208,7 +222,10 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
     onClose();
   };
 
-  const isValid = applyToGlobal || selectedTools.size > 0;
+  const isValid =
+    (selectedType !== 'custom' || (customId.trim().length > 0 && baseUrl.trim().length > 0)) &&
+    name.trim().length > 0 &&
+    (applyToGlobal || selectedTools.size > 0);
 
   if (!open) return null;
 
@@ -220,21 +237,54 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
       size="3xl"
     >
       {step === 'select' ? (
-        <div className="grid grid-cols-2 gap-3">
-          {PROVIDER_TEMPLATES.map(template => (
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-medium text-text-secondary mb-3">Predefined Providers</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {PROVIDER_TEMPLATES.filter(t => t.id !== 'custom').map(template => (
+                <button
+                  key={template.id}
+                  onClick={() => handleSelectType(template.id)}
+                  className="rounded border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary-muted"
+                >
+                  <p className="font-medium">{template.name}</p>
+                  <p className="mt-1 text-xs text-text-secondary">{template.type}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-border pt-6">
+            <h3 className="text-sm font-medium text-text-secondary mb-3">Custom Provider</h3>
             <button
-              key={template.id}
-              onClick={() => handleSelectType(template.id)}
-              className="rounded border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary-muted"
+              onClick={() => handleSelectType('custom')}
+              className="w-full rounded border border-dashed border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary-muted"
             >
-              <p className="font-medium">{template.name}</p>
-              <p className="mt-1 text-xs text-text-secondary">{template.type}</p>
+              <p className="font-medium text-text-secondary">+ Custom Provider</p>
+              <p className="mt-1 text-xs text-text-tertiary">Configure your own API endpoint</p>
             </button>
-          ))}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-[1fr,380px] gap-4">
           <div className="space-y-4">
+            {selectedType === 'custom' && (
+              <div>
+                <label className="block text-sm font-medium">Provider ID</label>
+                <input
+                  type="text"
+                  value={customId}
+                  onChange={e =>
+                    setCustomId(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))
+                  }
+                  className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm font-mono"
+                  placeholder="my-custom-provider"
+                />
+                <p className="mt-1 text-xs text-text-secondary">
+                  Unique identifier for this provider (lowercase letters, numbers, hyphens)
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium">Name</label>
               <input
@@ -261,16 +311,20 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Base URL (Optional)</label>
+              <label className="block text-sm font-medium">
+                Base URL {selectedType === 'custom' && <span className="text-error">*</span>}
+              </label>
               <input
                 type="text"
                 value={baseUrl}
                 onChange={e => setBaseUrl(e.target.value)}
                 className="mt-1 w-full rounded border border-border bg-surface px-3 py-2 text-sm font-mono"
-                placeholder="https://api.openai.com/v1"
+                placeholder="https://api.example.com/v1"
               />
               <p className="mt-1 text-xs text-text-secondary">
-                Leave empty to use the provider's default endpoint
+                {selectedType === 'custom'
+                  ? 'API endpoint URL for this provider'
+                  : "Leave empty to use the provider's default endpoint"}
               </p>
             </div>
 

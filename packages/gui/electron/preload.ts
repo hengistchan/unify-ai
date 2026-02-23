@@ -261,19 +261,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke(IPC_CHANNELS.HAS_VALID_API_KEY, providerId),
 
     // Model management
-    getModels: (providerId: string) => ipcRenderer.invoke(IPC_CHANNELS.GET_MODELS, providerId),
-    addModel: (providerId: string, input: any) =>
-      ipcRenderer.invoke(IPC_CHANNELS.ADD_MODEL, providerId, input),
-    updateModelDetails: (providerId: string, modelId: string, input: any) =>
-      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_MODEL_DETAILS, providerId, modelId, input),
-    deleteModel: (providerId: string, modelId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.DELETE_MODEL, providerId, modelId),
-    setModelEnabled: (providerId: string, modelId: string, enabled: boolean) =>
-      ipcRenderer.invoke(IPC_CHANNELS.SET_MODEL_ENABLED, providerId, modelId, enabled),
-    setDefaultModel: (providerId: string, modelId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.SET_DEFAULT_MODEL, providerId, modelId),
-    getDefaultModel: (providerId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.GET_DEFAULT_MODEL, providerId),
+    getModels: (providerId: string, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_MODELS, providerId, toolId),
+    addModel: (providerId: string, input: any, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.ADD_MODEL, providerId, input, toolId),
+    updateModelDetails: (providerId: string, modelId: string, input: any, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.UPDATE_MODEL_DETAILS, providerId, modelId, input, toolId),
+    deleteModel: (providerId: string, modelId: string, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DELETE_MODEL, providerId, modelId, toolId),
+    setModelEnabled: (providerId: string, modelId: string, enabled: boolean, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_MODEL_ENABLED, providerId, modelId, enabled, toolId),
+    setDefaultModel: (providerId: string, modelId: string, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_DEFAULT_MODEL, providerId, modelId, toolId),
+    getDefaultModel: (providerId: string, toolId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_DEFAULT_MODEL, providerId, toolId),
 
     // Usage tracking
     logUsage: (input: any) => ipcRenderer.invoke(IPC_CHANNELS.LOG_USAGE, input),
@@ -283,6 +284,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Provider selection
     getActiveProvider: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDER),
     getActiveProviders: () => ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_PROVIDERS),
+
+    // Hybrid tool isolation
+    getCurrentProvider: (toolId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.GET_CURRENT_PROVIDER, toolId),
+    listGlobalProviders: () => ipcRenderer.invoke(IPC_CHANNELS.LIST_GLOBAL_PROVIDERS),
+    listToolProviders: (toolId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.LIST_TOOL_PROVIDERS, toolId),
+    setToolOverrideProvider: (toolId: string, providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_TOOL_OVERRIDE_PROVIDER, toolId, providerId),
+    clearToolOverride: (toolId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.CLEAR_TOOL_OVERRIDE, toolId),
+    getGlobalProviderUsage: () => ipcRenderer.invoke(IPC_CHANNELS.GET_GLOBAL_PROVIDER_USAGE),
+    setGlobalDefaultProvider: (providerId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.SET_GLOBAL_DEFAULT_PROVIDER, providerId),
   },
 
   // ============================================

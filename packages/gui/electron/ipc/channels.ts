@@ -68,6 +68,15 @@ export const IPC_CHANNELS = {
   GET_ACTIVE_PROVIDER: 'get-active-provider',
   GET_ACTIVE_PROVIDERS: 'get-active-providers',
 
+  // Model management - Hybrid Tool Isolation
+  GET_CURRENT_PROVIDER: 'get-current-provider',
+  LIST_GLOBAL_PROVIDERS: 'list-global-providers',
+  LIST_TOOL_PROVIDERS: 'list-tool-providers',
+  SET_TOOL_OVERRIDE_PROVIDER: 'set-tool-override-provider',
+  CLEAR_TOOL_OVERRIDE: 'clear-tool-override',
+  GET_GLOBAL_PROVIDER_USAGE: 'get-global-provider-usage',
+  SET_GLOBAL_DEFAULT_PROVIDER: 'set-global-default-provider',
+
   // Proxy Server
   START_PROXY: 'start-proxy',
   STOP_PROXY: 'stop-proxy',

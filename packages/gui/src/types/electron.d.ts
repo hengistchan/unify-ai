@@ -71,17 +71,23 @@ export interface ElectronAPI {
     hasValidAPIKey: (providerId: string) => Promise<boolean>;
 
     // Model management
-    getModels: (providerId: string) => Promise<ModelInfo[]>;
-    addModel: (providerId: string, input: AddModelInput) => Promise<ModelInfo>;
+    getModels: (providerId: string, toolId?: string) => Promise<ModelInfo[]>;
+    addModel: (providerId: string, input: AddModelInput, toolId?: string) => Promise<ModelInfo>;
     updateModelDetails: (
       providerId: string,
       modelId: string,
-      input: UpdateModelInput
+      input: UpdateModelInput,
+      toolId?: string
     ) => Promise<ModelInfo>;
-    deleteModel: (providerId: string, modelId: string) => Promise<void>;
-    setModelEnabled: (providerId: string, modelId: string, enabled: boolean) => Promise<ModelInfo>;
-    setDefaultModel: (providerId: string, modelId: string) => Promise<void>;
-    getDefaultModel: (providerId: string) => Promise<ModelInfo | null>;
+    deleteModel: (providerId: string, modelId: string, toolId?: string) => Promise<void>;
+    setModelEnabled: (
+      providerId: string,
+      modelId: string,
+      enabled: boolean,
+      toolId?: string
+    ) => Promise<ModelInfo>;
+    setDefaultModel: (providerId: string, modelId: string, toolId?: string) => Promise<void>;
+    getDefaultModel: (providerId: string, toolId?: string) => Promise<ModelInfo | null>;
 
     // Usage tracking
     logUsage: (input: LogUsageInput) => Promise<UsageLog>;

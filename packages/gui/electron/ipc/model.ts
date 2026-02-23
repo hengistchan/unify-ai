@@ -191,20 +191,20 @@ export function registerModelIpcHandlers(): void {
   // Model Management
   // ============================================
 
-  ipcMain.handle(IPC_CHANNELS.GET_MODELS, async (_event, providerId: string) => {
-    console.log('[Model IPC] Getting models for provider:', providerId);
+  ipcMain.handle(IPC_CHANNELS.GET_MODELS, async (_event, providerId: string, toolId?: string) => {
+    console.log('[Model IPC] Getting models for provider:', providerId, 'toolId:', toolId);
     const manager = getModelManager();
-    const models = await manager.listModels(providerId);
+    const models = await manager.listModels(providerId, toolId);
     console.log(`[Model IPC] Retrieved ${models.length} models`);
     return models;
   });
 
   ipcMain.handle(
     IPC_CHANNELS.ADD_MODEL,
-    async (_event, providerId: string, input: AddModelInput) => {
-      console.log('[Model IPC] Adding model to provider:', providerId, input.id);
+    async (_event, providerId: string, input: AddModelInput, toolId?: string) => {
+      console.log('[Model IPC] Adding model to provider:', providerId, input.id, 'toolId:', toolId);
       const manager = getModelManager();
-      const model = await manager.addModel(providerId, input);
+      const model = await manager.addModel(providerId, input, toolId);
       console.log('[Model IPC] Model added:', model.id);
       return model;
     }
@@ -212,28 +212,37 @@ export function registerModelIpcHandlers(): void {
 
   ipcMain.handle(
     IPC_CHANNELS.UPDATE_MODEL_DETAILS,
-    async (_event, providerId: string, modelId: string, input: UpdateModelInput) => {
-      console.log('[Model IPC] Updating model details:', modelId);
+    async (
+      _event,
+      providerId: string,
+      modelId: string,
+      input: UpdateModelInput,
+      toolId?: string
+    ) => {
+      console.log('[Model IPC] Updating model details:', modelId, 'toolId:', toolId);
       const manager = getModelManager();
-      const model = await manager.updateModelDetails(providerId, modelId, input);
+      const model = await manager.updateModelDetails(providerId, modelId, input, toolId);
       console.log('[Model IPC] Model details updated:', model.id);
       return model;
     }
   );
 
-  ipcMain.handle(IPC_CHANNELS.DELETE_MODEL, async (_event, providerId: string, modelId: string) => {
-    console.log('[Model IPC] Deleting model:', modelId);
-    const manager = getModelManager();
-    await manager.deleteModel(providerId, modelId);
-    console.log('[Model IPC] Model deleted:', modelId);
-  });
+  ipcMain.handle(
+    IPC_CHANNELS.DELETE_MODEL,
+    async (_event, providerId: string, modelId: string, toolId?: string) => {
+      console.log('[Model IPC] Deleting model:', modelId, 'toolId:', toolId);
+      const manager = getModelManager();
+      await manager.deleteModel(providerId, modelId, toolId);
+      console.log('[Model IPC] Model deleted:', modelId);
+    }
+  );
 
   ipcMain.handle(
     IPC_CHANNELS.SET_MODEL_ENABLED,
-    async (_event, providerId: string, modelId: string, enabled: boolean) => {
-      console.log('[Model IPC] Setting model enabled:', modelId, enabled);
+    async (_event, providerId: string, modelId: string, enabled: boolean, toolId?: string) => {
+      console.log('[Model IPC] Setting model enabled:', modelId, enabled, 'toolId:', toolId);
       const manager = getModelManager();
-      const model = await manager.setModelEnabled(providerId, modelId, enabled);
+      const model = await manager.setModelEnabled(providerId, modelId, enabled, toolId);
       console.log('[Model IPC] Model enabled state updated');
       return model;
     }
@@ -241,10 +250,17 @@ export function registerModelIpcHandlers(): void {
 
   ipcMain.handle(
     IPC_CHANNELS.SET_DEFAULT_MODEL,
-    async (_event, providerId: string, modelId: string) => {
-      console.log('[Model IPC] Setting default model:', modelId);
+    async (_event, providerId: string, modelId: string, toolId?: string) => {
+      console.log(
+        '[Model IPC] Setting default model:',
+        modelId,
+        'for provider:',
+        providerId,
+        'toolId:',
+        toolId
+      );
       const manager = getModelManager();
-      await manager.setDefaultModel(providerId, modelId);
+      await manager.setDefaultModel(providerId, modelId, toolId);
       console.log('[Model IPC] Default model set');
     }
   );
@@ -302,6 +318,101 @@ export function registerModelIpcHandlers(): void {
     const providers = await manager.getActiveProviders();
     console.log(`[Model IPC] Retrieved ${providers.length} active providers`);
     return providers;
+  });
+
+  // ============================================
+  // Hybrid Tool Isolation
+  // ============================================
+
+  ipcMain.handle(IPC_CHANNELS.GET_CURRENT_PROVIDER, async (_event, toolId: string) => {
+    console.log('[Model IPC] Getting current provider for tool:', toolId);
+    const manager = getModelManager();
+    const result = await manager.getCurrentProvider(toolId);
+    if (result) {
+      return {
+        toolId,
+        providerId: result.provider.id,
+        isOverride: result.scope === 'tool-specific',
+      };
+    }
+    return { toolId, providerId: null, isOverride: false };
+  });
+
+  ipcMain.handle(IPC_CHANNELS.LIST_GLOBAL_PROVIDERS, async () => {
+    console.log('[Model IPC] Listing global providers');
+    const manager = getModelManager();
+    const providers = await manager.listGlobalProviders();
+    console.log(`[Model IPC] Retrieved ${providers.length} global providers`);
+    return providers;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.LIST_TOOL_PROVIDERS, async (_event, toolId: string) => {
+    console.log('[Model IPC] Listing providers for tool:', toolId);
+    const manager = getModelManager();
+    const providers = await manager.listToolProviders(toolId);
+    console.log(`[Model IPC] Retrieved ${providers.length} tool providers`);
+    return providers;
+  });
+
+  ipcMain.handle(
+    IPC_CHANNELS.SET_TOOL_OVERRIDE_PROVIDER,
+    async (_event, toolId: string, providerId: string) => {
+      console.log('[Model IPC] Setting tool override:', toolId, '->', providerId);
+      const manager = getModelManager();
+
+      const existingProvider = await manager.getProvider(providerId, toolId);
+      if (!existingProvider) {
+        const globalProvider = await manager.getProvider(providerId, 'global');
+        if (globalProvider) {
+          const newProvider = await manager.createProvider({
+            id: providerId,
+            name: globalProvider.name,
+            type: globalProvider.type,
+            toolId: toolId,
+            baseUrl: globalProvider.baseUrl,
+            config: globalProvider.config,
+          });
+          await manager.setToolOverrideProvider(toolId, newProvider.id);
+          console.log('[Model IPC] Created and set tool override:', newProvider.id);
+        } else {
+          throw new Error(`Provider '${providerId}' not found in global or tool scope`);
+        }
+      } else {
+        await manager.setToolOverrideProvider(toolId, providerId);
+        console.log('[Model IPC] Tool override set');
+      }
+    }
+  );
+
+  ipcMain.handle(IPC_CHANNELS.CLEAR_TOOL_OVERRIDE, async (_event, toolId: string) => {
+    console.log('[Model IPC] Clearing tool override for:', toolId);
+    const manager = getModelManager();
+    await manager.clearToolOverride(toolId);
+    console.log('[Model IPC] Tool override cleared');
+  });
+
+  ipcMain.handle(IPC_CHANNELS.GET_GLOBAL_PROVIDER_USAGE, async () => {
+    console.log('[Model IPC] Getting global provider usage');
+    const manager = getModelManager();
+    const providers = await manager.listGlobalProviders();
+    const usage: Array<{ providerId: string; providerName: string; toolsUsing: string[] }> = [];
+
+    for (const provider of providers) {
+      usage.push({
+        providerId: provider.id,
+        providerName: provider.name,
+        toolsUsing: [],
+      });
+    }
+
+    return usage;
+  });
+
+  ipcMain.handle(IPC_CHANNELS.SET_GLOBAL_DEFAULT_PROVIDER, async (_event, providerId: string) => {
+    console.log('[Model IPC] Setting global default provider:', providerId);
+    const manager = getModelManager();
+    await manager.setGlobalDefaultProvider(providerId);
+    console.log('[Model IPC] Global default provider set');
   });
 
   console.log('[Model IPC] All model handlers registered');

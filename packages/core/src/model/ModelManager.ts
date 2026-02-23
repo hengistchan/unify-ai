@@ -56,6 +56,9 @@ function rowToProvider(row: any): AIProvider {
     models: row.models ? JSON.parse(row.models) : [],
     defaultModel: row.default_model || undefined,
     baseUrl: row.base_url || undefined,
+    toolId: row.tool_id || undefined,
+    isCurrentGlobal: row.is_current_global === 1,
+    isCurrentTool: row.is_current_tool === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

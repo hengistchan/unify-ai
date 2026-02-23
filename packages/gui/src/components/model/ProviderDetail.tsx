@@ -69,6 +69,8 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
     await loadProviders();
   };
 
+  const isGlobal = !provider.toolId || provider.toolId === 'global';
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -76,15 +78,15 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">{provider.name}</h2>
-            {provider.toolId ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-warning-muted text-warning">
-                <Wrench className="h-3 w-3" />
-                {provider.toolId}
-              </span>
-            ) : (
+            {isGlobal ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-success-muted text-success">
                 <Globe className="h-3 w-3" />
                 Global
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-warning-muted text-warning">
+                <Wrench className="h-3 w-3" />
+                {provider.toolId}
               </span>
             )}
           </div>

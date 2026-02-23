@@ -14,9 +14,16 @@ interface APIKeyDialogProps {
   onClose: () => void;
   providerId: string;
   providerName: string;
+  toolId?: string;
 }
 
-export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKeyDialogProps) {
+export function APIKeyDialog({
+  open,
+  onClose,
+  providerId,
+  providerName,
+  toolId,
+}: APIKeyDialogProps) {
   const { setAPIKey, validateAPIKeyWithoutSaving } = useModelStore();
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
@@ -70,6 +77,7 @@ export function APIKeyDialog({ open, onClose, providerId, providerName }: APIKey
           await setAPIKey({
             providerId,
             key: apiKey.trim(),
+            toolId: toolId ?? 'global',
           });
           handleClose();
         } catch (error) {

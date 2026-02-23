@@ -13,6 +13,7 @@ interface AddModelDialogProps {
   open: boolean;
   onClose: () => void;
   providerId: string;
+  toolId?: string;
   onSuccess: () => void;
 }
 
@@ -23,7 +24,13 @@ interface FormErrors {
   maxOutputTokens?: string;
 }
 
-export function AddModelDialog({ open, onClose, providerId, onSuccess }: AddModelDialogProps) {
+export function AddModelDialog({
+  open,
+  onClose,
+  providerId,
+  toolId,
+  onSuccess,
+}: AddModelDialogProps) {
   const { addModel } = useModelStore();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +80,7 @@ export function AddModelDialog({ open, onClose, providerId, onSuccess }: AddMode
     setError(null);
 
     try {
-      await addModel(providerId, formData);
+      await addModel(providerId, formData, toolId);
       handleReset();
       onSuccess();
       onClose();

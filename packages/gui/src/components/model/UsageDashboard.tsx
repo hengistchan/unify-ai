@@ -31,17 +31,18 @@ export function UsageDashboard() {
     );
   }
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || num === null) return '0';
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(amount);
+    }).format(amount ?? 0);
   };
 
   return (
@@ -67,7 +68,8 @@ export function UsageDashboard() {
                 {formatNumber(usageSummary.totalInputTokens + usageSummary.totalOutputTokens)}
               </p>
               <p className="text-xs text-text-secondary">
-                {formatNumber(usageSummary.totalInputTokens)} in / {formatNumber(usageSummary.totalOutputTokens)} out
+                {formatNumber(usageSummary.totalInputTokens)} in /{' '}
+                {formatNumber(usageSummary.totalOutputTokens)} out
               </p>
             </div>
           </div>

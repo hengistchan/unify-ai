@@ -27,13 +27,13 @@ export function Models() {
   const {
     providers,
     selectedProviderId,
+    selectedProviderToolId,
     loading,
     error,
     loadProviders,
     loadActiveProvider,
-    selectProvider,
+    selectProviderWithToolId,
     initializeTrayListener,
-    setToolOverrideProvider,
   } = useModelStore();
 
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -72,7 +72,10 @@ export function Models() {
     return cleanup;
   }, [initializeTrayListener]);
 
-  const selectedProvider = providers.find(p => p.id === selectedProviderId);
+  const selectedProvider = providers.find(
+    p =>
+      p.id === selectedProviderId && (p.toolId || 'global') === (selectedProviderToolId || 'global')
+  );
 
   return (
     <div className="flex h-screen">
@@ -122,7 +125,8 @@ export function Models() {
                   size="sm"
                   variant="ghost"
                   onClick={async () => {
-                    await useModelStore.getState().clearToolOverride(selectedToolTab);
+                    const { clearToolOverride, loadProviders } = useModelStore.getState();
+                    await clearToolOverride(selectedToolTab);
                     await loadProviders();
                   }}
                 >
@@ -140,12 +144,9 @@ export function Models() {
         <ProviderList
           providers={filteredProviders}
           selectedId={selectedProviderId}
-          onSelect={async providerId => {
-            if (selectedToolTab !== 'all' && selectedToolTab !== 'global') {
-              await setToolOverrideProvider(selectedToolTab, providerId);
-              await loadProviders();
-            }
-            selectProvider(providerId);
+          selectedToolId={selectedProviderToolId}
+          onSelect={(providerId, toolId) => {
+            selectProviderWithToolId(providerId, toolId);
           }}
         />
 

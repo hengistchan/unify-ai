@@ -52,12 +52,12 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
   };
 
   const handleSetDefaultModel = async (modelId: string) => {
-    await setDefaultModel(provider.id, modelId);
+    await setDefaultModel(provider.id, modelId, provider.toolId ?? undefined);
     await loadProviders();
   };
 
   const handleToggleModelEnabled = async (modelId: string, enabled: boolean) => {
-    await setModelEnabled(provider.id, modelId, enabled);
+    await setModelEnabled(provider.id, modelId, enabled, provider.toolId ?? undefined);
     await loadProviders();
   };
 
@@ -148,7 +148,7 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
                 onDelete={async () => {
                   if (confirm(`Delete model "${model.displayName}"? This cannot be undone.`)) {
                     const { deleteModel } = useModelStore.getState();
-                    await deleteModel(provider.id, model.id);
+                    await deleteModel(provider.id, model.id, provider.toolId ?? undefined);
                     await loadProviders();
                   }
                 }}
@@ -210,12 +210,14 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
         onClose={() => setShowKeyDialog(false)}
         providerId={provider.id}
         providerName={provider.name}
+        toolId={provider.toolId ?? 'global'}
       />
 
       <AddModelDialog
         open={showAddModelDialog}
         onClose={() => setShowAddModelDialog(false)}
         providerId={provider.id}
+        toolId={provider.toolId ?? 'global'}
         onSuccess={handleModelAdded}
       />
 
@@ -223,6 +225,7 @@ export function ProviderDetail({ provider }: ProviderDetailProps) {
         open={editingModel !== null}
         onClose={() => setEditingModel(null)}
         providerId={provider.id}
+        toolId={provider.toolId ?? 'global'}
         model={editingModel}
         onSuccess={handleModelUpdated}
       />

@@ -13,6 +13,7 @@ interface ModelEditDialogProps {
   open: boolean;
   onClose: () => void;
   providerId: string;
+  toolId?: string;
   model: ModelInfo | null;
   onSuccess: () => void;
 }
@@ -27,6 +28,7 @@ export function ModelEditDialog({
   open,
   onClose,
   providerId,
+  toolId,
   model,
   onSuccess,
 }: ModelEditDialogProps) {
@@ -90,7 +92,7 @@ export function ModelEditDialog({
     setError(null);
 
     try {
-      await updateModelDetails(providerId, model.id, formData);
+      await updateModelDetails(providerId, model.id, formData, toolId);
       onSuccess();
       onClose();
     } catch (err) {
@@ -111,7 +113,7 @@ export function ModelEditDialog({
     setError(null);
 
     try {
-      await deleteModel(providerId, model.id);
+      await deleteModel(providerId, model.id, toolId);
       onSuccess();
       onClose();
     } catch (err) {

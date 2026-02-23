@@ -19,7 +19,8 @@ interface ProviderWithHybridFields extends AIProvider {
 interface ProviderListProps {
   providers: ProviderWithHybridFields[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  selectedToolId: string | null;
+  onSelect: (id: string, toolId: string | null) => void;
   currentToolId?: string;
   globalProviderName?: string;
 }
@@ -27,6 +28,7 @@ interface ProviderListProps {
 export function ProviderList({
   providers,
   selectedId,
+  selectedToolId,
   onSelect,
   currentToolId: _currentToolId,
   globalProviderName,
@@ -45,14 +47,16 @@ export function ProviderList({
     <div className="space-y-2">
       {providers.map(provider => {
         const isActive = activeProvider?.id === provider.id;
-        const isSelected = selectedId === provider.id;
+        const providerToolId = provider.toolId || 'global';
+        const isSelected = selectedId === provider.id && selectedToolId === providerToolId;
         const isGlobal = provider.isGlobal ?? (provider.toolId === 'global' || !provider.toolId);
         const isToolOverride = !isGlobal && provider.toolId;
+        const uniqueKey = `${provider.id}:${providerToolId}`;
 
         return (
           <button
-            key={provider.id}
-            onClick={() => onSelect(provider.id)}
+            key={uniqueKey}
+            onClick={() => onSelect(provider.id, provider.toolId || null)}
             className={cn(
               'w-full rounded border p-3 text-left transition-colors',
               isSelected ? 'border-primary bg-primary-muted' : 'border-border hover:border-primary',

@@ -172,15 +172,29 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
         };
         await createProvider(input);
       } else {
+        const { setToolOverrideProvider } = useModelStore.getState();
         for (const toolId of selectedTools) {
-          const input: CreateProviderInput = {
-            id: `${effectiveId}-${toolId}`,
-            name: `${name.trim()} (${getToolName(toolId)})`,
-            type: template.type,
-            toolId: toolId,
-            baseUrl: baseUrl.trim() || undefined,
-          };
-          await createProvider(input);
+          try {
+            const input: CreateProviderInput = {
+              id: effectiveId,
+              name: name.trim(),
+              type: template.type,
+              toolId: toolId,
+              baseUrl: baseUrl.trim() || undefined,
+            };
+            await createProvider(input);
+          } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : '';
+            if (errorMsg.includes('already exists')) {
+              // Provider already exists for this tool, just set as override
+              console.log(
+                `Provider ${effectiveId} already exists for ${toolId}, setting as override`
+              );
+            } else {
+              throw error;
+            }
+          }
+          await setToolOverrideProvider(toolId, effectiveId);
         }
       }
 
@@ -194,8 +208,9 @@ export function AddProviderDialog({ open, onClose }: AddProviderDialogProps) {
         } else {
           for (const toolId of selectedTools) {
             await setAPIKey({
-              providerId: `${effectiveId}-${toolId}`,
+              providerId: effectiveId,
               key: apiKey.trim(),
+              toolId: toolId,
             });
           }
         }
